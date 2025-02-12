@@ -15,23 +15,23 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH PIDOF 1 16.01.2023 "" "Comenzi utilizator"
+.TH PIDOF 1 16.01.2023 procps\-ng 
 .SH NUME
 pidof \- găsește ID\-ul de proces al unui program care rulează
 .SH REZUMAT
 \fBpidof\fP [\fB\-s\fP] [\fB\-c\fP] [\fB\-q\fP] [\fB\-w\fP] [\fB\-x\fP] [\fB\-o\fP
-\fIomitpid[,omitpid...]...\fP] [\fB\-t\fP] [\fB\-S\fP \fIseparator\fP] \fIprogram\fP
-\fI[\fP\fBprogram...\fP\fI]\fP
+\fIomitpid\fP[,.\|.\|.\&]] \&.\|.\|.\& [\fB\-t\fP] [\fB\-S\fP \fIseparator\fP] \fIprogram\fP
+\&.\|.\|.
 .SH DESCRIERE
-\fBPidof\fP găsește ID\-urile de proces (pid\-urile) ale programelor numite.
-Afișează acele id\-uri la ieșirea standard.
+\fBPidof\fP găsește ID\-urile de proces (pid\-urile) ale programelor
+numite. Afișează acele id\-uri la ieșirea standard.
 .SH OPȚIUNI
 .IP \fB\-s\fP
 O singură „împușcătură” \- această opțiune indică programului să returneze
 doar un \fIpid\fP.
 .IP \fB\-c\fP
 Returnează numai ID\-urile de proces care rulează cu același director
-rădăcină.  Această opțiune este ignorată pentru utilizatorii non\-root,
+rădăcină. Această opțiune este ignorată pentru utilizatorii non\-root,
 deoarece aceștia nu vor putea verifica directorul rădăcină curent al
 proceselor pe care nu le dețin.
 .IP \fB\-q\fP
@@ -53,7 +53,7 @@ Afișează toți identificatorii firelor de execuție în loc de identificatorii
 proceselor.
 .IP "\fB\-S\fP \fIseparator\fP"
 Utilizează \fIseparator\fP ca separator pus între pid\-uri. Folosit numai atunci
-când sunt afișate mai multe pid\-uri pentru program.  Opțiunea \fB\-d\fP este un
+când sunt afișate mai multe pid\-uri pentru program. Opțiunea \fB\-d\fP este un
 alias pentru această opțiune pentru compatibilitate cu sysvinit \fBpidof\fP.
 .SH "STARE DE IEȘIRE"
 .TP 
@@ -62,16 +62,14 @@ A fost găsit cel puțin un program cu numele solicitat.
 .TP 
 \fB1\fP
 Nu a fost găsit niciun program cu numele solicitat.
-
 .SH ERORI
 Când se utilizează opțiunea \fB\-x\fP, \fBpidof\fP are doar o metodă simplă de
 detectare a scripturilor și va pierde scripturile care, de exemplu, folosesc
 „env”. Această limitare se datorează modului în care arată scripturile în
 sistemul de fișiere \fIproc\fP.
-
 .SH "CONSULTAȚI ȘI"
 \fBpgrep\fP(1), \fBpkill\fP(1)
 .SH AUTOR
-.UR jcapik@redhat.com
+.MT jcapik@redhat.com
 Jaromir Capik
-.UE
+.ME

@@ -65,10 +65,12 @@ makREL(ADDR_CURR_ESP)
 makREL(ADDR_STACK_START)
 makREL(AUTOGRP_ID)
 makREL(AUTOGRP_NICE)
+makREL(CAPS_PERMITTED)
 makREL(CGNAME)
 makREL(CGROUP)
 makREL(CMD)
 makREL(CMDLINE)
+makREL(DOCKER_ID)
 makREL(ENVIRON)
 makREL(EXE)
 makREL(FLAGS)
@@ -119,6 +121,7 @@ makREL(NS_USER)
 makREL(NS_UTS)
 makREL(OOM_ADJ)
 makREL(OOM_SCORE)
+makREL(OPEN_FILES)
 makREL(PRIORITY)
 makREL(PRIORITY_RT)
 makREL(PROCESSOR)
@@ -126,6 +129,7 @@ makREL(PROCESSOR_NODE)
 makREL(RSS)
 makREL(RSS_RLIM)
 makREL(SCHED_CLASS)
+makREL(SCHED_CLASSSTR)
 makREL(SD_MACH)
 makREL(SD_OUID)
 makREL(SD_SEAT)
@@ -138,6 +142,8 @@ makREL(SIGCATCH)
 makREL(SIGIGNORE)
 makREL(SIGNALS)
 makREL(SIGPENDING)
+makREL(SMAP_HUGE_TLBPRV)
+makREL(SMAP_HUGE_TLBSHR)
 makREL(SMAP_PRV_TOTAL)
 makREL(SMAP_PSS)
 makREL(STATE)
@@ -512,7 +518,7 @@ void reset_global(void){
   bsd_c_option          = 0;
   bsd_e_option          = 0;
   cached_euid           = geteuid();
-  cached_tty            = PIDS_VAL(0, s_int, p, Pids_info);
+  cached_tty            = PIDS_VAL(0, s_int, p);
 /* forest_prefix must be all zero because of POSIX */
   forest_type           = 0;
   format_flags          = 0;   /* -l -f l u s -j... */

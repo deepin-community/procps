@@ -1,5 +1,5 @@
 .\"
-.\" Copyright (c) 2011-2023 Craig Small <csmall@dropbear.xyz>
+.\" Copyright (c) 2011-2024 Craig Small <csmall@dropbear.xyz>
 .\" Copyright (c) 2013-2023 Jim Warner <james.warner@comcast.net>
 .\" Copyright (c) 2011-2012 Sami Kerola <kerolasa@iki.fi>
 .\" Copyright (c) 2004-2006 Albert Cahalan
@@ -16,13 +16,13 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH SYSCTL 8 2023\-08\-19 procps\-ng Systemadministration
+.TH SYSCTL 8 2024\-07\-19 procps\-ng 
 .SH NAMN
 sysctl — konfigurera kärnparametrar under gång
 .SH SYNOPSIS
-\fBsysctl\fP [\fIflaggor\fP] [\fIvariabel\fP[\fB=\fP\fIvärde\fP]] […]
-.br
-\fBsysctl \-p\fP [\fIfil\fP eller \fIreguttr\fP] […]
+\fBsysctl\fP [\fIoption\fP .\|.\|.\&] \fIvariable\fP[\fB=\fP\fIvalue\fP] .\|.\|.
+.P
+\fBsysctl \-p\fP \fIfile\-or\-regexp\fP .\|.\|.
 .SH BESKRIVNING
 \fBsysctl\fP används för att ändra kärnparametrar under gång.  De tillgängliga
 parametrarna är de som listas under \fB/proc/sys/\fP.  Procfs krävs för att
@@ -66,7 +66,8 @@ argument till \fBsysctl\fP är filer, vilka läses i den ordning de
 anges. Filargumentet kan anges som ett reguljärt uttryck.
 .TP 
 \fB\-a\fP, \fB\-\-all\fP
-Visa alla värden som för närvarande är tillgängliga.
+Display all values currently available except deprecated and verboten
+parameters.
 .TP 
 \fB\-\-deprecated\fP
 Inkludera utgående parametrar i värdelistningen med \fB\-\-all\fP.
@@ -105,29 +106,58 @@ Visa hjälptext och avsluta.
 .TP 
 \fB\-V\fP, \fB\-\-version\fP
 Visa versionsinformation och avsluta.
-.SH SYSTEMFILSPRECEDENS
+.SH FILER
+.TS
+Li.
+/proc/sys
+/etc/sysctl.d/*.conf
+/run/sysctl.d/*.conf
+/usr/local/lib/sysctl.d/*.conf
+/usr/lib/sysctl.d/*.conf
+/lib/sysctl.d/*.conf
+/etc/sysctl.conf
+.TE
+.SH OBSERVERA
+.SS "System file precedence"
 När man använder flaggan \fB\-\-system\fP kommer \fBsysctl\fP läsa filer från
 kataloger i följande lista i angiven ordning från början till slut. När en
 fil med ett angivet filnamn lästs in kommer eventuella filer med samma namn
 i senare kataloger ingoreras.
-
+.P
+.TS
+Li.
 /etc/sysctl.d/*.conf
-.br
 /run/sysctl.d/*.conf
-.br
 /usr/local/lib/sysctl.d/*.conf
-.br
 /usr/lib/sysctl.d/*.conf
-.br
 /lib/sysctl.d/*.conf
-.br
-/etc/sysctl.conf
-
+.TE
+.P
 Alla konfigurationsfiler sorteras i lexikografisk ordning, oavsett vilken
 katalog de finns i. Konfigurationsfiler kan antingen ersättas helt (genom
 att ha en ny konfigurationsfil med samma namn i en katalog med högre
 prioritet) eller ersättas delvis (genom att ha en konfigurationsfil som
 ordnas senare).
+.P
+The file \fI/etc/sysctl.conf\fP is read last which means it can
+replace/override any parameters previously set in files in the listed
+directories.
+
+.SS "Deprecated parameters"
+\fBbase_reachable_time\fP och \fBretrans_time\fP är föråldrade. Kommandot
+\fBsysctl\fP tillåter inte ändring av dessa parametrar. Användare som
+insisterar på att använda föråldrade kärngränssnitt får trycka värdet till
+filsystemet \fB/proc\fP på annat sätt.  Till exempel:
+.PP
+echo 256 > /proc/sys/net/ipv6/neigh/eth0/base_reachable_time
+
+.SS "Verboten parameters"
+Certain kernel parameters should not be read due to side\-effects and will be
+skipped by \fBsysctl\fP using the \fB\-\-all\fP option.
+.TP 
+\fBstat_refresh\fP
+This parameter returns no value but flushes per\-cpu vm statistics.
+
 .SH EXEMPEL
 /sbin/sysctl \-a
 .br
@@ -144,37 +174,9 @@ ordnas senare).
 /sbin/sysctl \-a \-\-pattern 'net.ipv4.conf.(eth|wlan)0.arp'
 .br
 /sbin/sysctl \-\-pattern '\[char94]net.ipv6' \-\-system
-.SH "FÖRÅLDRADE PARAMETRAR"
-\fBbase_reachable_time\fP och \fBretrans_time\fP är föråldrade. Kommandot
-\fBsysctl\fP tillåter inte ändring av dessa parametrar. Användare som
-insisterar på att använda föråldrade kärngränssnitt får trycka värdet till
-filsystemet \fB/proc\fP på annat sätt.  Till exempel:
-.PP
-echo 256 > /proc/sys/net/ipv6/neigh/eth0/base_reachable_time
-.SH FILER
-\fI/proc/sys\fP
-.br
-\fI/etc/sysctl.d/*.conf\fP
-.br
-\fI/run/sysctl.d/*.conf\fP
-.br
-\fI/usr/local/lib/sysctl.d/*.conf\fP
-.br
-\fI/usr/lib/sysctl.d/*.conf\fP
-.br
-\fI/lib/sysctl.d/*.conf\fP
-.br
-\fI/etc/sysctl.conf\fP
 .SH "SE ÄVEN"
 \fBproc\fP(5), \fBsysctl.conf\fP(5), \fBregex\fP(7)
-.SH UPPHOVSMAN
-.UR staikos@0wned.org
-George Staikos
-.UE
 .SH "RAPPORTERA FEL"
-Skicka felrapporter till
-.UR procps@freelists.org
-.UE
-Skicka synpunkter på översättningen till
-.UR tp\-sv@listor.tp\-sv.se
-.UE
+Please send bug reports to
+.MT procps@freelists.org
+.ME .

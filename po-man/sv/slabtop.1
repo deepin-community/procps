@@ -16,11 +16,11 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH SLABTOP 1 2021\-03\-11 procps\-ng Användarkommandon
+.TH SLABTOP 1 2023\-12\-26 procps\-ng 
 .SH NAMN
 slabtop — visa information om kärnans skivcache i realtid
 .SH SYNOPSIS
-\fBslabtop\fP [\fIflaggor\fP]
+\fBslabtop\fP [\fIoption\fP .\|.\|.]
 .SH BESKRIVNING
 \fBslabtop\fP visar detaljerad information om kärnans skiv\-cache i realtid.
 Det visar en lista över toppskivorna sorterade efter en av de listade
@@ -40,6 +40,22 @@ Sortera efter \fIS\fP, där \fIS\fP är ett av sorteringskriterierna.
 .TP 
 \fB\-o\fP, \fB\-\-once\fP
 Visa utdata en gång och avsluta sedan.
+.TP 
+\fB\-\-human\fP
+Show slab sizes automatically scaled to shortest three digit unit and
+display the units of print out.  Following units are used.
+.sp
+.nf
+  B = byte
+  Ki = kibibyte
+  Mi = mebibyte
+  Gi = gibibyte
+  Ti = tebibyte
+  Pi = pebibyte
+.fi
+.sp
+.TP 
+If this flag is not used, the slab sizes will be shown in KiB.
 .TP 
 \fB\-V\fP, \fB\-\-version\fP
 Visa versionsinformation och avsluta.
@@ -105,9 +121,6 @@ Skrivet av Chris Rivera och Robert Love.
 .PP
 \fBslabtop\fP inspirerades av Martin Blighs perl\-skript \fBvmtop\fP.
 .SH "RAPPORTERA FEL"
-Skicka felrapporter till
-.UR procps@freelists.org
-.UE
-Skicka synpunkter på översättningen till
-.UR tp\-sv@listor.tp\-sv.se
-.UE
+Please send bug reports to
+.MT procps@freelists.org
+.ME .

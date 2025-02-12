@@ -44,9 +44,7 @@
 
 #ifdef ENABLE_PIDWAIT
 #include <sys/epoll.h>
-#ifndef HAVE_PIDFD_OPEN
 #include <sys/syscall.h>
-#endif /* !HAVE_PIDFD_OPEN */
 #endif
 
 /* EXIT_SUCCESS is 0 */
@@ -80,12 +78,15 @@ enum pids_item Items[] = {
     PIDS_STATE,
     PIDS_TIME_ELAPSED,
     PIDS_CGROUP_V,
-    PIDS_SIGCATCH
+    PIDS_SIGCATCH,
+    PIDS_ENVIRON_V
 };
+#define ITEMS_COUNT (sizeof Items / sizeof *Items)
+
 enum rel_items {
     EU_PID, EU_PPID, EU_PGRP, EU_EUID, EU_RUID, EU_RGID, EU_SESSION,
     EU_TGID, EU_STARTTIME, EU_TTYNAME, EU_CMD, EU_CMDLINE, EU_STA, EU_ELAPSED,
-    EU_CGROUP, EU_SIGCATCH
+    EU_CGROUP, EU_SIGCATCH, EU_ENVIRON
 };
 #define grow_size(x) do { \
 	if ((x) < 0 || (size_t)(x) >= INT_MAX / 5 / sizeof(struct el)) \
@@ -118,7 +119,6 @@ static int opt_negate = 0;
 static int opt_exact = 0;
 static int opt_count = 0;
 static int opt_signal = SIGTERM;
-static int opt_lock = 0;
 static int opt_case = 0;
 static int opt_echo = 0;
 static int opt_threads = 0;
@@ -139,8 +139,8 @@ static struct el *opt_euid = NULL;
 static struct el *opt_ruid = NULL;
 static struct el *opt_nslist = NULL;
 static struct el *opt_cgroup = NULL;
+static struct el *opt_env = NULL;
 static char *opt_pattern = NULL;
-static char *opt_pidfile = NULL;
 static char *opt_runstates = NULL;
 
 /* by default, all namespaces will be checked */
@@ -199,6 +199,7 @@ static int __attribute__ ((__noreturn__)) usage(int opt)
     fputs(_(" --nslist <ns,...>         list which namespaces will be considered for\n"
         "                           the --ns option.\n"
         "                           Available namespaces: ipc, mnt, net, pid, user, uts\n"), fp);
+    fputs(_("  --env <name=val,...>     match on environment variable\n"), fp);
     fputs(USAGE_SEPARATOR, fp);
     fputs(USAGE_HELP, fp);
     fputs(USAGE_VERSION, fp);
@@ -209,7 +210,7 @@ static int __attribute__ ((__noreturn__)) usage(int opt)
 
 static struct el *get_our_ancestors(void)
 {
-#define PIDS_GETINT(e) PIDS_VAL(EU_##e, s_int, stack, info)
+#define PIDS_GETINT(e) PIDS_VAL(EU_##e, s_int, stack)
     struct el *list = NULL;
     int i = 0;
     int size = 0;
@@ -220,7 +221,7 @@ static struct el *get_our_ancestors(void)
     while (!done) {
         struct pids_info *info = NULL;
 
-        if (procps_pids_new(&info, Items, 16) < 0)
+        if (procps_pids_new(&info, Items, ITEMS_COUNT) < 0)
             xerrx(EXIT_FATAL, _("Unable to create pid info structure"));
 
         if (i == size) {
@@ -340,40 +341,52 @@ static int has_fcntl(int fd)
     f.l_len = 0;
     return fcntl(fd,F_SETLK,&f)==-1 && (errno==EACCES || errno==EAGAIN);
 }
-
-static struct el *read_pidfile(void)
+/*
+ * Read the given filename for a PID and optionally
+ * check for a lock on the file.
+ * Returns NULL on failure of a pointer to struct el
+ * on success
+ *
+ * Note: pidfile only needs to start with a number and
+ * then have EOL/EOF or whitespace
+ */
+static struct el *read_pidfile(
+        const char *restrict pidfile,
+        const int check_lock)
 {
-    char buf[12];
-    int fd;
-    struct stat sbuf;
-    char *endp;
-    int n, pid;
-    struct el *list = NULL;
+    FILE *fp;
+    char pidbuf[256];
 
-    fd = open(opt_pidfile, O_RDONLY|O_NOCTTY|O_NONBLOCK);
-    if(fd<0)
-        goto just_ret;
-    if(fstat(fd,&sbuf) || !S_ISREG(sbuf.st_mode) || sbuf.st_size<1)
-        goto out;
-    /* type of lock, if any, is not standardized on Linux */
-    if(opt_lock && !has_flock(fd) && !has_fcntl(fd))
-        goto out;
-    memset(buf,'\0',sizeof buf);
-    n = read(fd,buf,sizeof buf-1);
-    if (n<1)
-        goto out;
-    pid = strtoul(buf,&endp,10);
-    if(endp<=buf || pid<1 )
-        goto out;
-    if(*endp && !isspace(*endp))
-        goto out;
-    list = xmalloc(2 * sizeof *list);
-    list[0].num = 1;
-    list[1].num = pid;
-out:
-    close(fd);
-just_ret:
-    return list;
+    if (strcmp(pidfile, "-") == 0)
+        fp = stdin;
+    else
+        if ((fp = fopen(pidfile, "r")) == NULL) {
+            xerr(EXIT_FAILURE, _("Unable to open pidfile"));
+            return NULL;
+        }
+    if (check_lock) {
+        int fd = fileno(fp);
+        if (fp < 0 || (!has_flock(fd) && !has_fcntl(fd))) {
+            fclose(fp);
+            xerr(EXIT_FAILURE, _("Locking check for pidfile failed"));
+            return NULL;
+        }
+    }
+    if (fgets(pidbuf, sizeof pidbuf, fp) != NULL) {
+        long pid;
+        char *end = NULL;
+
+        errno = 0;
+        pid = strtol(pidbuf, &end, 10);
+        if (errno == 0 && pidbuf != end && end != NULL && (*end == '\0' || isspace(*end))) {
+            struct el *list = NULL;
+            list = xmalloc(2 * sizeof *list);
+            list[0].num = 1;
+            list[1].num = pid;
+            return list;
+        }
+    }
+    return NULL;
 }
 
 static int conv_uid (const char *restrict name, struct el *restrict e)
@@ -485,7 +498,7 @@ static unsigned long long unhex (const char *restrict in)
     unsigned long long ret;
     char *rem;
     errno = 0;
-    ret = strtoull(in, &rem, 16);
+    ret = strtoull(in, &rem, ITEMS_COUNT);
     if (errno || *rem != '\0') {
         xwarnx(_("not a hex string: %s"), in);
         return 0;
@@ -558,6 +571,29 @@ static int match_cgroup_list(char **values,
                     return 1;
                 }
 			}
+        }
+    }
+    return 0;
+}
+
+static int match_env_list(
+        char **values,
+        const struct el *restrict list)
+{
+    int i,j;
+
+    if (list == NULL || values == NULL)
+        return 0;
+
+    for (i = list[0].num; i > 0; i--) {
+        for (j = 0; values[j] && values[j][0]; j++) {
+            if (NULL == strchr(list[i].str, '=')) {
+                if (strncmp(values[j], list[i].str, strlen(list[i].str)) == 0)
+                    return 1;
+            } else {
+                if (strcmp(values[j], list[i].str) == 0)
+                    return 1;
+            }
         }
     }
     return 0;
@@ -659,13 +695,13 @@ static bool is_long_match(const char *str)
 }
 static struct el * select_procs (int *num)
 {
-#define PIDS_GETINT(e) PIDS_VAL(EU_ ## e, s_int, stack, info)
-#define PIDS_GETUNT(e) PIDS_VAL(EU_ ## e, u_int, stack, info)
-#define PIDS_GETULL(e) PIDS_VAL(EU_ ## e, ull_int, stack, info)
-#define PIDS_GETSTR(e) PIDS_VAL(EU_ ## e, str, stack, info)
-#define PIDS_GETSCH(e) PIDS_VAL(EU_ ## e, s_ch, stack, info)
-#define PIDS_GETSTV(e) PIDS_VAL(EU_ ## e, strv, stack, info)
-#define PIDS_GETFLT(e) PIDS_VAL(EU_ ## e, real, stack, info)
+#define PIDS_GETINT(e) PIDS_VAL(EU_ ## e, s_int, stack)
+#define PIDS_GETUNT(e) PIDS_VAL(EU_ ## e, u_int, stack)
+#define PIDS_GETULL(e) PIDS_VAL(EU_ ## e, ull_int, stack)
+#define PIDS_GETSTR(e) PIDS_VAL(EU_ ## e, str, stack)
+#define PIDS_GETSCH(e) PIDS_VAL(EU_ ## e, s_ch, stack)
+#define PIDS_GETSTV(e) PIDS_VAL(EU_ ## e, strv, stack)
+#define PIDS_GETFLT(e) PIDS_VAL(EU_ ## e, real, stack)
     struct pids_info *info=NULL;
     struct procps_ns nsp;
     struct pids_stack *stack;
@@ -695,7 +731,7 @@ static struct el * select_procs (int *num)
               _("Error reading reference namespace information\n"));
     }
 
-    if (procps_pids_new(&info, Items, 16) < 0)
+    if (procps_pids_new(&info, Items, ITEMS_COUNT) < 0)
         xerrx(EXIT_FATAL,
               _("Unable to create pid info structure"));
     which = PIDS_FETCH_TASKS_ONLY;
@@ -737,6 +773,8 @@ static struct el * select_procs (int *num)
         else if (opt_runstates && ! strchr(opt_runstates, PIDS_GETSCH(STA)))
             match = 0;
         else if (opt_cgroup && ! match_cgroup_list (PIDS_GETSTV(CGROUP), opt_cgroup))
+            match = 0;
+        else if (opt_env && ! match_env_list(PIDS_GETSTV(ENVIRON), opt_env))
             match = 0;
         else if (require_handler && ! match_signal_handler (PIDS_GETSTR(SIGCATCH), opt_signal))
             match = 0;
@@ -847,12 +885,15 @@ static void parse_opts (int argc, char **argv)
     char opts[64] = "";
     int opt;
     int criteria_count = 0;
+    char *opt_pidfile = NULL;
+    int opt_lock = 0;
 
     enum {
         SIGNAL_OPTION = CHAR_MAX + 1,
         NS_OPTION,
         NSLIST_OPTION,
         CGROUP_OPTION,
+        ENV_OPTION,
     };
     static const struct option longopts[] = {
         {"signal", required_argument, NULL, SIGNAL_OPTION},
@@ -885,6 +926,7 @@ static void parse_opts (int argc, char **argv)
         {"nslist", required_argument, NULL, NSLIST_OPTION},
         {"queue", required_argument, NULL, 'q'},
         {"runstates", required_argument, NULL, 'r'},
+        {"env", required_argument, NULL, ENV_OPTION},
         {"help", no_argument, NULL, 'h'},
         {"version", no_argument, NULL, 'V'},
         {NULL, 0, NULL, 0}
@@ -1075,6 +1117,12 @@ static void parse_opts (int argc, char **argv)
                 usage ('?');
             ++criteria_count;
             break;
+        case ENV_OPTION:
+            opt_env = split_list(optarg, conv_str);
+            if (opt_env == NULL)
+                usage('?');
+            ++criteria_count;
+            break;
         case 'H':
             require_handler = true;
             ++criteria_count;
@@ -1092,7 +1140,7 @@ static void parse_opts (int argc, char **argv)
                      program_invocation_short_name);
 
     if(opt_pidfile){
-        opt_pid = read_pidfile();
+        opt_pid = read_pidfile(opt_pidfile, opt_lock);
         if(!opt_pid)
             xerrx(EXIT_FAILURE, _("pidfile not valid\n"
                          "Try `%s --help' for more information."),

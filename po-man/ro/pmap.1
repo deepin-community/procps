@@ -21,11 +21,11 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH PMAP 1 04.06.2020 procps\-ng "Comenzi utilizator"
+.TH PMAP 1 04.06.2020 procps\-ng 
 .SH NUME
 pmap \- raportează harta de memorie a unui proces
 .SH REZUMAT
-\fBpmap\fP [\fIopțiuni\fP] \fIpid\fP [...]
+\fBpmap\fP [\fIopțiune\fP .\|.\|.\&] \fIpid\fP .\|.\|.
 .SH DESCRIERE
 Comanda \fBpmap\fP raportează harta de memorie a unui proces sau procese.
 .SH OPȚIUNI
@@ -41,7 +41,7 @@ Nu afișează unele linii de antet sau de subsol.
 .TP 
 \fB\-A\fP, \fB\-\-range\fP \fIlimită_inferioară\fP,\fIlimită_superioară\fP
 Limitează rezultatele la intervalul dat de intervalul de adrese
-\fIlimită_inferioară\fP și \fIlimită_superioară\fP.  Observați că argumentele
+\fIlimită_inferioară\fP și \fIlimită_superioară\fP. Observați că argumentele
 \fIlimită_inferioară\fP și \fIlimită_superioară\fP sunt un singur șir separate
 prin virgulă.
 .TP 
@@ -53,7 +53,7 @@ modifică conform \fI/proc/PID/smaps\fP
 Afișează toate datele ce le furnizează nucleul
 .TP 
 \fB\-p\fP, \fB\-\-show\-path\fP
-Afișează calea completă către fișiere în coloana de asociere
+Afișează ruta completă către fișiere în coloana de asociere
 .TP 
 \fB\-c\fP, \fB\-\-read\-rc\fP
 Citește configurația implicită
@@ -75,7 +75,6 @@ Afișează informațiile despre versiune și iese.
 .SH "STARE DE IEȘIRE"
 .PP
 .RS
-.PD 0
 .TP 
 \fB0\fP
 Succes.
@@ -85,7 +84,6 @@ Eșec.
 .TP 
 \fB42\fP
 Nu s\-au găsit toate procesele solicitate.
-.PD
 .RE
 .SH "CONSULTAȚI ȘI"
 \fBps\fP(1), \fBpgrep\fP(1)
@@ -94,5 +92,5 @@ Nu este respectat niciun standard, dar \fBpmap\fP seamănă foarte mult cu o
 comandă SunOS.
 .SH "RAPORTAREA ERORILOR"
 Trimiteți rapoartele de eroare la
-.UR procps@freelists.org
-.UE
+.MT procps@freelists.org
+.ME .

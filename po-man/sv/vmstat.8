@@ -1,5 +1,5 @@
 .\"
-.\" Copyright (c) 2002-2023 Craig Small <csmall@dropbear.xyz>
+.\" Copyright (c) 2002-2024 Craig Small <csmall@dropbear.xyz>
 .\" Copyright (c) 2012-2023 Jim Warner <james.warner@comcast.net>
 .\" Copyright (c) 2011-2012 Sami Kerola <kerolasa@iki.fi>
 .\" Copyright (c) 1994      Henry Ware <al172@yfn.ysu.edu>
@@ -15,11 +15,11 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH VMSTAT 8 2023\-01\-18 procps\-ng Systemadministration
+.TH VMSTAT 8 2024\-07\-19 procps\-ng 
 .SH NAMN
 vmstat — Rapportera statistik över virtuellt minne
 .SH SYNOPSIS
-\fBvmstat\fP [flaggor] [\fIfördröjning\fP [\fIantal\fP]]
+\fBvmstat\fP [\fIoption\fP .\|.\|.\&] [\fIdelay\fP [\fIcount\fP]]
 .SH BESKRIVNING
 \fBvmstat\fP rapporterar information om processer, minne, sidväxling,
 block\-I/O, fällor, disk\- och cpu\-aktivitet.
@@ -67,9 +67,8 @@ Rapportera en del sammanfattande statistik om diskaktivitet.
 Detaljerad statistik om partitioner (2.5.70 eller senare krävs).
 .TP 
 \fB\-S\fP, \fB\-\-unit\fP \fItecken\fP
-Byter utmatning mellan 1000 (\fIk\fP), 1024 (\fIK\fP), 1000000 (\fIm\fP) eller
-1048576 (\fIM\fP) byte.  Observera att detta inte ändrar fälten för växling
-(vi/vo) eller block (bi/bu).
+Switches outputs between 1000 (\fIk\fP), 1024 (\fIK\fP), 1000000 (\fIm\fP), or
+1048576 (\fIM\fP)  bytes.  Note this does not change the block (bi/bo) fields.
 .TP 
 \fB\-t\fP, \fB\-\-timestamp\fP
 Lägg till en tidsstämpel till varje rad
@@ -87,7 +86,6 @@ Visa versionsinformation och avsluta.
 .TP 
 \fB\-h\fP, \fB\-\-help\fP
 Visa hjälp och avsluta.
-.PD
 .SH "FÄLTBESKRIVNING FÖR VM\-LÄGET"
 .SS Procs
 .nf
@@ -177,9 +175,6 @@ också påverka vad som är synligt.
 \fBfree\fP(1), \fBiostat\fP(1), \fBmpstat\fP(1), \fBps\fP(1), \fBsar\fP(1), \fBtop\fP(1),
 \fBslabinfo\fP(5)
 .SH "RAPPORTERA FEL"
-Skicka felrapporter till
-.UR procps@freelists.org
-.UE
-Skicka synpunkter på översättningen till
-.UR tp\-sv@listor.tp\-sv.se
-.UE
+Please send bug reports to
+.MT procps@freelists.org
+.ME .

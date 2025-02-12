@@ -2,7 +2,7 @@
  * output.c - ps output definitions
  *
  * Copyright © 2015-2023 Jim Warner <james.warner@comcast.net
- * Copyright © 2004-2023 Craig Small <csmall@dropbear.xyz>
+ * Copyright © 2004-2024 Craig Small <csmall@dropbear.xyz>
  * Copyright © 2011      Lukas Nykryn <lnykryn@redhat.com>
  * Copyright © 1999-2004 Albert Cahalan
  *
@@ -400,33 +400,52 @@ Modifications to the arguments are not shown.
 
 #define OUTBUF_SIZE_AT(endp) \
   (((endp) >= outbuf && (endp) < outbuf + OUTBUF_SIZE) ? (outbuf + OUTBUF_SIZE) - (endp) : 0)
+/*
+ * Both pr_args and pr_comm almost do the same thing, but CMDLINE or CMD is determined 
+ * by which function is called, then what flags are set (and they're different for
+ * each function). The printing part is identical
+ */
 
+static int pr_cmd_or_cmdline(
+        char *restrict const outbuf,
+        const proc_t *restrict const pp,
+        const bool use_cmdline)
+{
+    char *endp;
+    int rightward, fh;
+setREL4(CMDLINE,CMD,ENVIRON,STATE)
+    endp = outbuf;
+    rightward = max_rightward;
+    fh = forest_helper(outbuf);
+    endp += fh;
+    rightward -= fh;
+    if (use_cmdline) {
+        endp += escape_str(endp, rSv(CMDLINE, str, pp), OUTBUF_SIZE_AT(endp), &rightward);
+    } else {
+        endp += escape_str(endp, rSv(CMD, str, pp), OUTBUF_SIZE_AT(endp), &rightward);
+        if ( rSv(STATE, s_ch, pp) == 'Z') {
+            endp += escape_str(endp," <defunct>", OUTBUF_SIZE_AT(endp), &rightward);
+        }
+    }
+    if(bsd_e_option && rightward>1) {
+        char *e = rSv(ENVIRON, str, pp);
+        if (*e != '-' || *(e+1) != '\0') {
+            *endp++ = ' ';
+            rightward--;
+            escape_str(endp, e, OUTBUF_SIZE_AT(endp), &rightward);
+        }
+    }
+    return max_rightward-rightward;
+}
 /*
  * "args", "cmd", "command" are all the same:  long  unless  c
  * "comm", "ucmd", "ucomm"  are all the same:  short unless -f
  * ( determinations are made in display.c, we mostly deal with results ) */
 static int pr_args(char *restrict const outbuf, const proc_t *restrict const pp){
-  char *endp;
-  int rightward, fh;
-setREL3(CMDLINE,CMD,ENVIRON)
-  endp = outbuf;
-  rightward = max_rightward;
-  fh = forest_helper(outbuf);
-  endp += fh;
-  rightward -= fh;
-  if (!bsd_c_option)
-    endp += escape_str(endp, rSv(CMDLINE, str, pp), OUTBUF_SIZE_AT(endp), &rightward);
-  else
-    endp += escape_str(endp, rSv(CMD, str, pp), OUTBUF_SIZE_AT(endp), &rightward);
-  if(bsd_e_option && rightward>1) {
-    char *e = rSv(ENVIRON, str, pp);
-    if(*e != '-' || *(e+1) != '\0') {
-      *endp++ = ' ';
-      rightward--;
-      escape_str(endp, e, OUTBUF_SIZE_AT(endp), &rightward);
-    }
-  }
-  return max_rightward-rightward;
+    if (!bsd_c_option)
+        return pr_cmd_or_cmdline(outbuf, pp, true);
+    else
+        return pr_cmd_or_cmdline(outbuf, pp, false);
 }
 
 /*
@@ -434,27 +453,10 @@ setREL3(CMDLINE,CMD,ENVIRON)
  * "comm", "ucmd", "ucomm"  are all the same:  short unless -f
  * ( determinations are made in display.c, we mostly deal with results ) */
 static int pr_comm(char *restrict const outbuf, const proc_t *restrict const pp){
-  char *endp;
-  int rightward, fh;
-setREL3(CMD,CMDLINE,ENVIRON)
-  endp = outbuf;
-  rightward = max_rightward;
-  fh = forest_helper(outbuf);
-  endp += fh;
-  rightward -= fh;
-  if(unix_f_option)
-    endp += escape_str(endp, rSv(CMDLINE, str, pp), OUTBUF_SIZE_AT(endp), &rightward);
-  else
-    endp += escape_str(endp, rSv(CMD, str, pp), OUTBUF_SIZE_AT(endp), &rightward);
-  if(bsd_e_option && rightward>1) {
-    char *e = rSv(ENVIRON, str, pp);
-    if(*e != '-' || *(e+1) != '\0') {
-      *endp++ = ' ';
-      rightward--;
-      escape_str(endp, e, OUTBUF_SIZE_AT(endp), &rightward);
-    }
-  }
-  return max_rightward-rightward;
+    if (unix_f_option)
+        return pr_cmd_or_cmdline(outbuf, pp, true);
+    else
+        return pr_cmd_or_cmdline(outbuf, pp, false);
 }
 
 static int pr_cgname(char *restrict const outbuf,const proc_t *restrict const pp) {
@@ -523,30 +525,24 @@ setREL1(TIME_ELAPSED)
 
 /* "Processor utilisation for scheduling."  --- we use %cpu w/o fraction */
 static int pr_c(char *restrict const outbuf, const proc_t *restrict const pp){
-  unsigned long long total_time;   /* jiffies used by this process */
-  unsigned pcpu;                   /* scaled %cpu, 99 means 99% */
-  unsigned long long jiffies;      /* jiffies of process life */
-setREL4(TICS_ALL,TICS_ALL_C,TIME_ELAPSED,UTILIZATION)
-  pcpu = 0;
-  if(include_dead_children) total_time = rSv(TICS_ALL_C, ull_int, pp);
-  else total_time = rSv(TICS_ALL, ull_int, pp);
-  jiffies = rSv(TIME_ELAPSED, real, pp) * Hertz;
-  if(jiffies) pcpu = (total_time * 100ULL) / jiffies;
+  unsigned pcpu = 0;                   /* scaled %cpu, 99 means 99% */
+setREL2(UTILIZATION,UTILIZATION_C)
+  if (include_dead_children)
+    pcpu = rSv(UTILIZATION_C, real, pp);
+  else
+    pcpu = rSv(UTILIZATION, real, pp);
   if (pcpu > 99U) pcpu = 99U;
   return snprintf(outbuf, COLWID, "%2u", pcpu);
 }
 
 /* normal %CPU in ##.# format. */
 static int pr_pcpu(char *restrict const outbuf, const proc_t *restrict const pp){
-  unsigned long long total_time;   /* jiffies used by this process */
-  unsigned pcpu;                   /* scaled %cpu, 999 means 99.9% */
-  unsigned long long jiffies;      /* jiffies of process life */
-setREL4(TICS_ALL,TICS_ALL_C,TIME_ELAPSED,UTILIZATION)
-  pcpu = 0;
-  if(include_dead_children) total_time = rSv(TICS_ALL_C, ull_int, pp);
-  else total_time = rSv(TICS_ALL, ull_int, pp);
-  jiffies = rSv(TIME_ELAPSED, real, pp) * Hertz;
-  if(jiffies) pcpu = (total_time * 1000ULL) / jiffies;
+  unsigned pcpu = 0;               /* scaled %cpu, 999 means 99.9% */
+setREL2(UTILIZATION,UTILIZATION_C)
+  if (include_dead_children)
+    pcpu = rSv(UTILIZATION_C, real, pp) * 10ULL;
+  else
+    pcpu = rSv(UTILIZATION, real, pp) * 10ULL;
   if (pcpu > 999U)
     return snprintf(outbuf, COLWID, "%u", pcpu/10U);
   return snprintf(outbuf, COLWID, "%u.%u", pcpu/10U, pcpu%10U);
@@ -554,15 +550,12 @@ setREL4(TICS_ALL,TICS_ALL_C,TIME_ELAPSED,UTILIZATION)
 
 /* this is a "per-mill" format, like %cpu with no decimal point */
 static int pr_cp(char *restrict const outbuf, const proc_t *restrict const pp){
-  unsigned long long total_time;   /* jiffies used by this process */
-  unsigned pcpu;                   /* scaled %cpu, 999 means 99.9% */
-  unsigned long long jiffies;      /* jiffies of process life */
-setREL4(TICS_ALL,TICS_ALL_C,TIME_ELAPSED,UTILIZATION)
-  pcpu = 0;
-  if(include_dead_children) total_time = rSv(TICS_ALL_C, ull_int, pp);
-  else total_time = rSv(TICS_ALL, ull_int, pp);
-  jiffies = rSv(TIME_ELAPSED, real, pp) * Hertz;
-  if(jiffies) pcpu = (total_time * 1000ULL) / jiffies;
+  unsigned pcpu = 0;                /* scaled %cpu, 999 means 99.9% */
+setREL2(UTILIZATION,UTILIZATION_C)
+  if (include_dead_children)
+    pcpu = rSv(UTILIZATION_C, real, pp) * 10ULL;
+  else
+    pcpu = rSv(UTILIZATION, real, pp) * 10ULL;
   if (pcpu > 999U) pcpu = 999U;
   return snprintf(outbuf, COLWID, "%3u", pcpu);
 }
@@ -739,21 +732,8 @@ setREL1(OOM_SCORE)
 //                  WL=weightless; GN=gang-scheduled
 //                  see miser(1) for this; PRI has some letter codes too
 static int pr_class(char *restrict const outbuf, const proc_t *restrict const pp){
-setREL1(SCHED_CLASS)
-  switch(rSv(SCHED_CLASS, s_int, pp)){
-  case -1: return snprintf(outbuf, COLWID, "-");   // not reported
-  case  0: return snprintf(outbuf, COLWID, "TS");  // SCHED_OTHER SCHED_NORMAL
-  case  1: return snprintf(outbuf, COLWID, "FF");  // SCHED_FIFO
-  case  2: return snprintf(outbuf, COLWID, "RR");  // SCHED_RR
-  case  3: return snprintf(outbuf, COLWID, "B");   // SCHED_BATCH
-  case  4: return snprintf(outbuf, COLWID, "ISO"); // reserved for SCHED_ISO (Con Kolivas)
-  case  5: return snprintf(outbuf, COLWID, "IDL"); // SCHED_IDLE
-  case  6: return snprintf(outbuf, COLWID, "DLN"); // SCHED_DEADLINE
-  case  7: return snprintf(outbuf, COLWID, "#7");  //
-  case  8: return snprintf(outbuf, COLWID, "#8");  //
-  case  9: return snprintf(outbuf, COLWID, "#9");  //
-  default: return snprintf(outbuf, COLWID, "?");   // unknown value
-  }
+setREL1(SCHED_CLASSSTR)
+  return snprintf(outbuf, COLWID, "%s", rSv(SCHED_CLASSSTR, str, pp));
 }
 
 // Based on "type", FreeBSD would do:
@@ -891,6 +871,21 @@ static int pr_stackp(char *restrict const outbuf, const proc_t *restrict const p
 setREL1(ADDR_STACK_START)
     return snprintf(outbuf, COLWID, "%0*lx", (int)(2*sizeof(long)), rSv(ADDR_STACK_START, ul_int, pp));
 }
+
+#define OUTBUF_SIZE_AT(endp) \
+  (((endp) >= outbuf && (endp) < outbuf + OUTBUF_SIZE) ? (outbuf + OUTBUF_SIZE) - (endp) : 0)
+static int pr_environ(char *restrict const outbuf, const proc_t *restrict const pp){
+setREL1(ENVIRON)
+    char *endp = outbuf;
+    int rightward = max_rightward;
+    char *e = rSv(ENVIRON, str, pp);
+
+    if(e[0] != '-' || e[1] != '\0') {
+      escape_str(endp, e, OUTBUF_SIZE_AT(endp), &rightward);
+    }
+    return max_rightward-rightward;
+}
+#undef OUTBUF_SIZE_AT
 
 static int pr_esp(char *restrict const outbuf, const proc_t *restrict const pp){
 setREL1(ADDR_CURR_ESP)
@@ -1119,7 +1114,7 @@ static int help_pr_sig(char *restrict const outbuf, const char *restrict const s
   if (signal_names) {
     int rightward;
     rightward = max_rightward;
-    if ( (ret = print_signame(outbuf, sig, rightward)) > 0)
+    if ( (ret = procps_sigmask_names(outbuf, rightward, sig)) > 0)
         return ret;
   }
 
@@ -1158,9 +1153,27 @@ setREL1(SIGCATCH)
   return help_pr_sig(outbuf, rSv(SIGCATCH, str, pp));
 }
 
+static int pr_pcap(char *restrict const outbuf, const proc_t *restrict const pp){
+setREL1(CAPS_PERMITTED)
+  return snprintf(outbuf, COLWID, "%s", rSv(CAPS_PERMITTED, str, pp));
+}
+static int pr_pcaps(char *restrict const outbuf, const proc_t *restrict const pp){
+setREL1(CAPS_PERMITTED)
+  return procps_capmask_names(outbuf, COLWID, rSv(CAPS_PERMITTED, str, pp));
+}
 static int pr_uss(char *restrict const outbuf, const proc_t *restrict const pp){
 setREL1(SMAP_PRV_TOTAL)
   return snprintf(outbuf, COLWID, "%lu", rSv(SMAP_PRV_TOTAL, ul_int, pp));
+}
+
+static int pr_hugetblprv(char *restrict const outbuf, const proc_t *restrict const pp){
+setREL1(SMAP_HUGE_TLBPRV)
+  return snprintf(outbuf, COLWID, "%lu", rSv(SMAP_HUGE_TLBPRV, ul_int, pp));
+}
+
+static int pr_hugetblshr(char *restrict const outbuf, const proc_t *restrict const pp){
+setREL1(SMAP_HUGE_TLBSHR)
+  return snprintf(outbuf, COLWID, "%lu", rSv(SMAP_HUGE_TLBSHR, ul_int, pp));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1524,7 +1537,7 @@ setREL1(ID_TGID)
   return len;
 }
 
-/************************ Linux autogroups ******************************/
+/************************ Linux miscellaneous ***************************/
 static int pr_agid(char *restrict const outbuf, const proc_t *restrict const pp){
 setREL1(AUTOGRP_ID)
   return snprintf(outbuf, COLWID, "%d", rSv(AUTOGRP_ID, s_int, pp));
@@ -1532,6 +1545,14 @@ setREL1(AUTOGRP_ID)
 static int pr_agnice(char *restrict const outbuf, const proc_t *restrict const pp){
 setREL1(AUTOGRP_NICE)
   return snprintf(outbuf, COLWID, "%d", rSv(AUTOGRP_NICE, s_int, pp));
+}
+static int pr_docker(char *restrict const outbuf, const proc_t *restrict const pp){
+setREL1(DOCKER_ID)
+  return snprintf(outbuf, COLWID, "%s", rSv(DOCKER_ID, str, pp));
+}
+static int pr_fds(char *restrict const outbuf, const proc_t *restrict const pp){
+setREL1(OPEN_FILES)
+  return snprintf(outbuf, COLWID, "%d", rSv(OPEN_FILES, s_int, pp));
 }
 
 ////////////////////////////// Test code /////////////////////////////////
@@ -1663,8 +1684,8 @@ static const format_struct format_array[] = { /*
 {"cgname",    "CGNAME",  pr_cgname,        PIDS_CGNAME,             27,    LNX,  PO|UNLIMITED},
 {"cgroup",    "CGROUP",  pr_cgroup,        PIDS_CGROUP,             27,    LNX,  PO|UNLIMITED},
 {"cgroupns",  "CGROUPNS",pr_cgroupns,      PIDS_NS_CGROUP,          10,    LNX,  ET|RIGHT},
-{"class",     "CLS",     pr_class,         PIDS_SCHED_CLASS,         3,    XXX,  TO|LEFT},
-{"cls",       "CLS",     pr_class,         PIDS_SCHED_CLASS,         3,    HPU,  TO|RIGHT}, /*says HPUX or RT*/
+{"class",     "CLS",     pr_class,         PIDS_SCHED_CLASSSTR,      3,    XXX,  TO|LEFT},
+{"cls",       "CLS",     pr_class,         PIDS_SCHED_CLASSSTR,      3,    HPU,  TO|RIGHT}, /*says HPUX or RT*/
 {"cmaj_flt",  "-",       pr_nop,           PIDS_noop,                1,    LNX,  AN|RIGHT},
 {"cmd",       "CMD",     pr_args,          PIDS_CMDLINE,            27,    DEC,  PO|UNLIMITED}, /*ucomm*/
 {"cmin_flt",  "-",       pr_nop,           PIDS_noop,                1,    LNX,  AN|RIGHT},
@@ -1683,6 +1704,7 @@ static const format_struct format_array[] = { /*
 {"cutime",    "-",       pr_nop,           PIDS_TICS_USER_C,         1,    LNX,  AN|RIGHT},
 {"cuu",       "%CUU",    pr_utilization,   PIDS_UTILIZATION,         6,    XXX,  AN|RIGHT},
 {"cwd",       "CWD",     pr_nop,           PIDS_noop,                3,    LNX,  AN|LEFT},
+{"docker",    "DOCKER",  pr_docker,        PIDS_DOCKER_ID,          12,    LNX,  AN|LEFT},
 {"drs",       "DRS",     pr_drs,           PIDS_VSIZE_BYTES,         5,    LNX,  PO|RIGHT},
 {"dsiz",      "DSIZ",    pr_dsiz,          PIDS_VSIZE_BYTES,         4,    LNX,  PO|RIGHT},
 {"egid",      "EGID",    pr_egid,          PIDS_ID_EGID,             5,    LNX,  ET|RIGHT},
@@ -1690,7 +1712,7 @@ static const format_struct format_array[] = { /*
 {"eip",       "EIP",     pr_eip,           PIDS_ADDR_CURR_EIP, (int)(2*sizeof(long)), LNX, TO|RIGHT},
 {"emul",      "EMUL",    pr_nop,           PIDS_noop,               13,    BSD,  PO|LEFT},  /* "FreeBSD ELF32" and such */
 {"end_code",  "E_CODE",  pr_nop,           PIDS_ADDR_CODE_END, (int)(2*sizeof(long)), LNx, PO|RIGHT}, // sortable, but unprintable ??
-{"environ","ENVIRONMENT",pr_nop,           PIDS_noop,               11,    LNx,  PO|UNLIMITED},
+{"environ","ENVIRONMENT",pr_environ,       PIDS_noop,               31,    LNx,  PO|UNLIMITED},
 {"esp",       "ESP",     pr_esp,           PIDS_ADDR_CURR_ESP, (int)(2*sizeof(long)), LNX, TO|RIGHT},
 {"etime",     "ELAPSED", pr_etime,         PIDS_TIME_ELAPSED,       11,    U98,  ET|RIGHT}, /* was 7 wide */
 {"etimes",    "ELAPSED", pr_etimes,        PIDS_TIME_ELAPSED,        7,    BSD,  ET|RIGHT}, /* FreeBSD */
@@ -1698,6 +1720,7 @@ static const format_struct format_array[] = { /*
 {"euser",     "EUSER",   pr_euser,         PIDS_ID_EUSER,            8,    LNX,  ET|USER},
 {"exe",       "EXE",     pr_exe,           PIDS_EXE,                27,    LNX,  PO|UNLIMITED},
 {"f",         "F",       pr_flag,          PIDS_FLAGS,               1,    XXX,  ET|RIGHT}, /*flags*/
+{"fds",       "FDS",     pr_fds,           PIDS_OPEN_FILES,          3,    LNX,  PO|RIGHT},
 {"fgid",      "FGID",    pr_fgid,          PIDS_FLAGS,               5,    LNX,  ET|RIGHT},
 {"fgroup",    "FGROUP",  pr_fgroup,        PIDS_ID_FGROUP,           8,    LNX,  ET|USER},
 {"flag",      "F",       pr_flag,          PIDS_FLAGS,               1,    DEC,  ET|RIGHT},
@@ -1711,6 +1734,8 @@ static const format_struct format_array[] = { /*
 {"fuser",     "FUSER",   pr_fuser,         PIDS_ID_FUSER,            8,    LNX,  ET|USER},
 {"gid",       "GID",     pr_egid,          PIDS_ID_EGID,             5,    SUN,  ET|RIGHT},
 {"group",     "GROUP",   pr_egroup,        PIDS_ID_EGROUP,           8,    U98,  ET|USER},
+{"htprv",     "HTPRV",   pr_hugetblprv,    PIDS_SMAP_HUGE_TLBPRV,    5,    XXX,  PO|RIGHT},
+{"htshr",     "HTSHR",   pr_hugetblshr,    PIDS_SMAP_HUGE_TLBPRV,    5,    XXX,  PO|RIGHT},
 {"ignored",   "IGNORED", pr_sigignore,     PIDS_SIGIGNORE,           9,    BSD,  TO|SIGNAL},/*sigignore*/
 {"inblk",     "INBLK",   pr_nop,           PIDS_noop,                5,    BSD,  AN|RIGHT}, /*inblock*/
 {"inblock",   "INBLK",   pr_nop,           PIDS_noop,                5,    DEC,  AN|RIGHT}, /*inblk*/
@@ -1770,6 +1795,8 @@ static const format_struct format_array[] = { /*
 {"p_ru",      "P_RU",    pr_nop,           PIDS_noop,                6,    BSD,  AN|RIGHT},
 {"paddr",     "PADDR",   pr_nop,           PIDS_noop,                6,    BSD,  AN|RIGHT},
 {"pagein",    "PAGEIN",  pr_majflt,        PIDS_FLT_MAJ,             6,    XXX,  AN|RIGHT},
+{"pcap",      "PCAP",    pr_pcap,          PIDS_CAPS_PERMITTED,     16,    LNX,  TO|RIGHT}, /*permitted caps*/
+{"pcaps",     "PCAPS",   pr_pcaps,         PIDS_CAPS_PERMITTED,     16,    LNX,  TO|RIGHT}, /*permitted caps*/
 {"pcpu",      "%CPU",    pr_pcpu,          PIDS_UTILIZATION,         4,    U98,  ET|RIGHT}, /*%cpu*/
 {"pending",   "PENDING", pr_sig,           PIDS_SIGNALS,             9,    BSD,  ET|SIGNAL}, /*sig*/
 {"pgid",      "PGID",    pr_pgid,          PIDS_ID_PGRP,             5,    U98,  PO|PIDMAX|RIGHT},
@@ -1778,7 +1805,7 @@ static const format_struct format_array[] = { /*
 {"pidns",     "PIDNS",   pr_pidns,         PIDS_NS_PID,             10,    LNX,  ET|RIGHT},
 {"pmem",      "%MEM",    pr_pmem,          PIDS_VM_RSS,              4,    XXX,  PO|RIGHT}, /* %mem */
 {"poip",      "-",       pr_nop,           PIDS_noop,                1,    BSD,  AN|RIGHT},
-{"policy",    "POL",     pr_class,         PIDS_SCHED_CLASS,         3,    DEC,  TO|LEFT},
+{"policy",    "POL",     pr_class,         PIDS_SCHED_CLASSSTR,      3,    DEC,  TO|LEFT},
 {"ppid",      "PPID",    pr_ppid,          PIDS_ID_PPID,             5,    U98,  PO|PIDMAX|RIGHT},
 {"pri",       "PRI",     pr_pri,           PIDS_PRIORITY,            3,    XXX,  TO|RIGHT},
 {"pri_api",   "API",     pr_pri_api,       PIDS_PRIORITY,            3,    LNX,  TO|RIGHT},

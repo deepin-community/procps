@@ -149,6 +149,13 @@ endif
 
 dist_man_MANS += man/w.1
 src_w_SOURCES = src/w.c local/fileutils.c
+src_w_LDADD = $(LDADD)
+if WITH_SYSTEMD
+src_w_LDADD += @SYSTEMD_LIBS@
+endif
+if WITH_ELOGIND
+src_w_LDADD += @ELOGIND_LIBS@
+endif
 else
   EXTRA_DIST += man/w.1
 endif
@@ -169,14 +176,19 @@ dist_man_MANS += \
 	man/top.1
 if !CYGWIN
 bin_PROGRAMS += \
-	src/slabtop
+	src/slabtop \
+	src/hugetop
 dist_man_MANS += \
-	man/slabtop.1
-src_slabtop_SOURCES = src/slabtop.c local/strutils.c local/fileutils.c
+	man/slabtop.1 \
+	man/hugetop.1
+src_slabtop_SOURCES = src/slabtop.c local/strutils.c local/fileutils.c local/units.c
 src_slabtop_CFLAGS = @NCURSES_CFLAGS@
 src_slabtop_LDADD = $(LDADD) @NCURSES_LIBS@
+src_hugetop_SOURCES = src/hugetop.c local/strutils.c local/fileutils.c local/units.c
+src_hugetop_CFLAGS = @NCURSES_CFLAGS@
+src_hugetop_LDADD = $(LDADD) @NCURSES_LIBS@
 endif
-src_watch_SOURCES = src/watch.c local/strutils.c local/fileutils.c
+src_watch_SOURCES = src/watch.c local/strutils.c local/fileutils.c local/signals.c
 src_watch_CFLAGS = @NCURSES_CFLAGS@
 src_watch_LDADD = @NCURSES_LIBS@ $(CYGWINFLAGS)
 src_top_top_SOURCES = \
@@ -185,7 +197,8 @@ src_top_top_SOURCES = \
 	src/top/top_nls.h \
 	src/top/top_nls.c \
 	local/fileutils.c \
-	local/signals.c
+	local/signals.c \
+	local/strutils.c
 if CYGWIN
 src_top_top_SOURCES += local/strverscmp.c
 endif
@@ -215,12 +228,12 @@ else
 	man/snice.1
 endif
 
-src_free_SOURCES = src/free.c local/strutils.c local/fileutils.c
-src_pgrep_SOURCES = src/pgrep.c local/fileutils.c local/signals.c
-src_pkill_SOURCES = src/pgrep.c local/fileutils.c local/signals.c
+src_free_SOURCES = src/free.c local/strutils.c local/fileutils.c local/units.c
+src_pgrep_SOURCES = src/pgrep.c local/fileutils.c local/signals.c local/strutils.c
+src_pkill_SOURCES = src/pgrep.c local/fileutils.c local/signals.c local/strutils.c
 src_pmap_SOURCES = src/pmap.c local/fileutils.c
 if BUILD_PIDWAIT
-src_pidwait_SOURCES = src/pgrep.c local/fileutils.c local/signals.c
+src_pidwait_SOURCES = src/pgrep.c local/fileutils.c local/signals.c local/strutils.c
 endif
 if !CYGWIN
 src_pwdx_SOURCES = src/pwdx.c local/fileutils.c
@@ -237,8 +250,8 @@ src_vmstat_SOURCES = src/vmstat.c local/strutils.c local/fileutils.c
 
 
 # See http://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html
-LIBproc2_CURRENT=0
-LIBproc2_REVISION=2
+LIBproc2_CURRENT=1
+LIBproc2_REVISION=0
 LIBproc2_AGE=0
 
 library_libproc2_la_LIBADD = $(LIB_KPARTS)
@@ -257,6 +270,8 @@ library_libproc2_la_LDFLAGS = \
 	-Wl,--version-script=$(top_srcdir)/library/libproc2.sym
 
 library_libproc2_la_SOURCES = \
+	library/capname.c \
+        local/capnames.h \
 	library/devname.c \
 	library/include/devname.h \
 	library/diskstats.c \
@@ -278,6 +293,7 @@ library_libproc2_la_SOURCES = \
 	library/include/readproc.h \
 	library/slabinfo.c \
 	library/include/slabinfo.h \
+	library/signames.c \
 	library/stat.c \
 	library/include/stat.h \
 	library/sysinfo.c \
@@ -316,11 +332,11 @@ src_ps_pscommand_SOURCES =  \
 	src/ps/output.c \
 	src/ps/parser.c \
 	src/ps/select.c \
-	src/ps/signames.c \
 	src/ps/sortformat.c \
 	src/ps/stacktrace.c \
 	local/fileutils.c \
-	local/signals.c
+	local/signals.c \
+	local/strutils.c
 
 
 # Test programs required for dejagnu or standalone testing
@@ -344,6 +360,7 @@ src_tests_test_shm_LDADD = $(CYGWINFLAGS)
 
 check_PROGRAMS += \
 	library/tests/test_Itemtables \
+	library/tests/test_escape \
 	library/tests/test_pids \
 	library/tests/test_uptime \
 	library/tests/test_sysinfo \
@@ -393,6 +410,7 @@ check-lib: clean
 
 # Test programs not used by dejagnu but run directly
 TESTS = \
+	library/tests/test_escape \
 	library/tests/test_pids \
 	library/tests/test_uptime \
 	library/tests/test_sysinfo \
@@ -409,6 +427,41 @@ $(top_srcdir)/.version:
 	echo $(VERSION) > $@-t && mv $@-t $@
 dist-hook:
 	echo $(VERSION) > $(distdir)/.tarball-version
+
+# Generate capability names - if it needs updating
+define capnames_header
+/*
+ * capnames.h : Definition of Capability Names
+ *
+ * This is an auto-generated file, do not edit
+ */
+
+#ifndef PROCPS_CAPNAMES_H
+#define PROCPS_CAPNAMES_H
+
+static const char *cap_names[] = {
+endef
+define capnames_footer
+
+#endif /* CAPNAMES_H */
+endef
+export capnames_header
+export capnames_footer
+LNX_CAP_HEADER = /usr/include/linux/capability.h
+
+local/capnames.h: Makefile
+	@if [ -e $(LNX_CAP_HEADER) ] ; then \
+	  echo "$$capnames_header" > $@; \
+	  last_capname=`sed -n  -e  's/^#define\s*CAP_LAST_CAP\s*\([A-Z_]*\)$$/\1/p' $(LNX_CAP_HEADER)`; \
+	  capability_count=`sed -n  -e  "s/^#define\s*$$last_capname\s*\([0-9]*\)$$/\1/p" $(LNX_CAP_HEADER)`; \
+	  sed -n  -e  's/^#define\s*CAP_\([A-Z_]*\)\s*\([0-9]*\)$$/    [\2]  = \"\L\1\",/p'  $(LNX_CAP_HEADER) >> $@; \
+	  echo -e "};\n\n" >> $@; \
+	  echo "#define CAPABILITY_COUNT $$capability_count" >> $@;  \
+	  echo "$$capnames_footer" >> $@; \
+	  echo ""; \
+	else \
+	  echo "Header file $(LNX_CAP_HEADER) not found, cannot rebuild $@"; \
+	fi
 
 get-trans:
 	echo "Getting the latest translations from translationproject.org..."

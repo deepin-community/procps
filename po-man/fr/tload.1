@@ -14,11 +14,11 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH TLOAD 1 2020\-06\-04 procps\-ng "Commandes de l'utilisateur"
+.TH TLOAD 1 2020\-06\-04 procps\-ng 
 .SH NOM
 tload \- Représentation graphique de la charge moyenne du système
 .SH SYNOPSIS
-\fBtload\fP [\fIoptions\fP] [\fItty\fP]
+\fBtload\fP [\fIoption\fP .\|.\|.\&] [\fItty\fP]
 .SH DESCRIPTION
 \fBtload\fP affiche un graphe de la charge moyenne du système dans la console
 \fItty\fP (ou la console du processus de \fBtload\fP si aucune n'est précisée).
@@ -47,8 +47,15 @@ L'option \fB\-d\fP\fI délai\fP définit le paramètre de temps de la commande
 \fBalarm\fP(2)\ ; si \-d 0 est indiqué, l'alarme est désactivée, elle n'enverra
 jamais de signal \fBSIGALRM\fP bloquant ainsi la mise à jour de l'affichage.
 .SH AUTEURS
-Branko Lankester <\fIlankeste@fwi.uva.nl\fP>, David Engel
-<\fIdavid@ods.com\fP> et Michael K. Johnson
-<\fIjohnsonm@redhat.com\fP>.
+Branko Lankester,
+.MT david@\:ods.\:com
+David Engel
+.ME ,
+and
+.MT johnsonm@\:redhat.\:com
+Michael K. Johnson
+.ME .
 .SH BOGUES
-Signalez les bogues à <\fIprocps@freelists.org\fP>
+Please send bug reports to
+.MT procps@freelists.org
+.ME .

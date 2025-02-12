@@ -1,5 +1,5 @@
 .\"
-.\" Copyright (c) 2002-2023 Craig Small <csmall@dropbear.xyz>
+.\" Copyright (c) 2002-2024 Craig Small <csmall@dropbear.xyz>
 .\" Copyright (c) 2012-2023 Jim Warner <james.warner@comcast.net>
 .\" Copyright (c) 2011-2012 Sami Kerola <kerolasa@iki.fi>
 .\" Copyright (c) 1994      Henry Ware <al172@yfn.ysu.edu>
@@ -15,11 +15,11 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH VMSTAT 8 2023\-01\-18 procps\-ng "Administração do sistema"
+.TH VMSTAT 8 2024\-07\-19 procps\-ng 
 .SH NOME
 vmstat \- Relata estatísticas de memória virtual
 .SH SINOPSE
-\fBvmstat\fP [opções] [\fIatraso\fP [\fIcontagem\fP]]
+\fBvmstat\fP [\fIoption\fP .\|.\|.\&] [\fIdelay\fP [\fIcount\fP]]
 .SH DESCRIÇÃO
 \fBvmstat\fP relata informações sobre processos, memória, paginação, E/S de
 bloco, traps, discos e atividade de cpu.
@@ -70,8 +70,7 @@ Estatísticas detalhadas sobre partição (requer 2.5.70 ou superior).
 .TP 
 \fB\-S\fP, \fB\-\-unit\fP \fIcaractere\fP
 Switches outputs between 1000 (\fIk\fP), 1024 (\fIK\fP), 1000000 (\fIm\fP), or
-1048576 (\fIM\fP)  bytes.  Note this does not change the swap (si/so) or block
-(bi/bo)  fields.
+1048576 (\fIM\fP)  bytes.  Note this does not change the block (bi/bo) fields.
 .TP 
 \fB\-t\fP, \fB\-\-timestamp\fP
 Anexa o carimbo de tempo para cada linha.
@@ -89,7 +88,6 @@ Exibe informação da versão e sai.
 .TP 
 \fB\-h\fP, \fB\-\-help\fP
 Exibe a ajuda e sai.
-.PD
 .SH "DESCRIÇÃO DE CAMPOS PARA MODO DE VM"
 .SS Procs
 .nf
@@ -179,6 +177,6 @@ what is visible.
 \fBfree\fP(1), \fBiostat\fP(1), \fBmpstat\fP(1), \fBps\fP(1), \fBsar\fP(1), \fBtop\fP(1),
 \fBslabinfo\fP(5)
 .SH "RELATANDO ERROS"
-Por favor, envie relatórios de erros para
-.UR procps@freelists.org
-.UE
+Please send bug reports to
+.MT procps@freelists.org
+.ME .

@@ -1,5 +1,5 @@
 .\"
-.\" Copyright (c) 2011-2023 Craig Small <csmall@dropbear.xyz>
+.\" Copyright (c) 2011-2024 Craig Small <csmall@dropbear.xyz>
 .\" Copyright (c) 2011-2012 Sami Kerola <kerolasa@iki.fi>
 .\" Copyright (c) 2002-2006 Albert Cahalan
 .\"
@@ -14,33 +14,33 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH SKILL 1 19.08.2023 procps\-ng "Comenzi utilizator"
+.TH SKILL 1 01.08.2024 procps\-ng 
 .SH NUME
 skill, snice – trimite un semnal sau raportează starea procesului
 .SH REZUMAT
-\fBskill\fP [\fIsemnal\fP] [\fIopțiuni\fP] \fIexpresie\fP
-.br
-\fBsnice\fP [\fInouă_prioritate\fP] [\fIopțiuni\fP] \fIexpresie\fP
+\fBskill\fP [\fIsemnal\fP] [\fIopțiune\fP .\|.\|.\&] \fIexpresie\fP
+.P
+\fBsnice\fP [\fInouă_prioritate\fP] [\fIopțiune\fP .\|.\|.\&] \fIexpresie\fP
 .SH DESCRIERE
-Aceste instrumente sunt învechite și neportabile.  Sintaxa comenzii este
-prost definită.  Luați în considerare utilizarea comenzilor \fBkillall\fP,
+Aceste instrumente sunt învechite și neportabile. Sintaxa comenzii este
+prost definită. Luați în considerare utilizarea comenzilor \fBkillall\fP,
 \fBpkill\fP și \fBpgrep\fP.
 .PP
 Semnalul implicit pentru \fBskill\fP este \fITERM\fP. Folosiți opțiunile „\fB\-l\fP
-sau \fB\-L\fP pentru a lista semnalele disponibile.  Printre cele mai utile
-semnale, sunt: HUP, INT, KILL, STOP, CONT și 0.  Semnalele pot fi
-specificate în trei moduri: \fB\-9\fP, \fB\-SIGKILL\fP și \fB\-KILL\fP.
+sau \fB\-L\fP pentru a lista semnalele disponibile. Printre cele mai utile
+semnale, sunt: HUP, INT, KILL, STOP, CONT și 0. Semnalele pot fi specificate
+în trei moduri: \fB\-9\fP, \fB\-SIGKILL\fP și \fB\-KILL\fP.
 .PP
-Prioritatea implicită pentru \fBsnice\fP este +4.  Numerele de prioritate
-variază de la +20 (cel mai lent) la \-20 (cel mai rapid).  Numerele cu
+Prioritatea implicită pentru \fBsnice\fP este +4. Numerele de prioritate
+variază de la +20 (cel mai lent) la \-20 (cel mai rapid). Numerele cu
 prioritate negativă sunt limitate la utilizatorii administrativi.
 .SH OPȚIUNI
 .TP 
 \fB\-f\fP, \fB\-\-fast\fP
-Modul rapid.  Această opțiune nu a fost implementată.
+Modul rapid. Această opțiune nu a fost implementată.
 .TP 
 \fB\-i\fP, \fB\-\-interactive\fP
-Utilizare interactivă.  Vi se va solicita să aprobați fiecare acțiune.
+Utilizare interactivă. Vi se va solicita să aprobați fiecare acțiune.
 .TP 
 \fB\-l\fP, \fB\-\-list\fP
 Listează toate numele semnalelor.
@@ -58,41 +58,39 @@ Informații detaliate; explică ce se face.
 \fB\-w\fP, \fB\-\-warnings\fP
 Activează avertismentele. Această opțiune nu a fost implementată.
 .TP 
-\fB\-h\fP, \fB\-\-help\fP
+\fB\-h\fP,\fB\ \-\-help\fP
 Afișează acest mesaj de ajutor.
 .TP 
-\fB\-V\fP, \fB\-\-version\fP
+\fB\-V\fP,\fB\ \-\-version\fP
 Afișați informațiile despre versiune.
-.PD
 .SH "OPȚIUNI DE SELECTARE A PROCESULUI"
-Criteriile de selecție pot fi: terminal, user, pid, command.  Opțiunile de
+Criteriile de selecție pot fi: terminal, user, pid, command. Opțiunile de
 mai jos pot fi utilizate pentru a asigura o interpretare corectă.
 .TP 
-\fB\-t\fP, \fB\-\-tty\fP \fItty\fP
+\fB\-t\fP\fI\ tty\fP,\ \fB\-\-tty\fP\fI\ tty\fP
 Următoarea expresie este un terminal (tty sau pty).
 .TP 
-\fB\-u\fP, \fB\-\-user\fP \fIutilizator\fP
+\fB\-u\fP\fI\ utilizator\fP,\ \fB\-\-user\fP\fI\ utilizator\fP
 Următoarea expresie este un nume de utilizator.
 .TP 
-\fB\-p\fP, \fB\-\-pid\fP \fIpid\fP
+\fB\-p\fP\fI\ pid\fP,\ \fB\-\-pid\fP\fI\ pid\fP
 Următoarea expresie este un număr de identificare a procesului.
 .TP 
-\fB\-c\fP, \fB\-\-command\fP \fIcomanda\fP
+\fB\-c\fP\fI\ comanda\fP,\ \fB\-\-command\fP\fI\ comanda\fP
 Următoarea expresie este un nume de comandă.
 .TP 
-\fB\-\-ns\fP \fIpid\fP
+\fB\-\-ns\fP\fI\ pid\fP
 Potrivește procesele care aparțin aceluiași spațiu de nume ca pid.
 .TP 
-\fB\-\-nslist \fP\fIns\/\fP,\,\fI...\/\fP
+\fB\-\-nslist\fP\fI\ ns\fP,\fI.\|.\|.\fP
 listează spațiile de nume care vor fi luate în considerare pentru opțiunea
-\fB\-\-ns\fP.  Spațiile de nume disponibile, sunt: ipc, mnt, net, pid, user, uts.
-.PD
+\fB\-\-ns\fP. Spațiile de nume disponibile, sunt: ipc, mnt, net, pid, user, uts.
 .SH SEMNALE
 Comportamentul semnalelor este explicat în pagina de manual \fBsignal\fP(7).
 .SH EXEMPLE
 .TP 
 \fBsnice \-c seti \-c crack +7\fP
-+Încetinește comenzile \fBseti\fP și \fBcrack\fP.
+Încetinește comenzile \fBseti\fP și \fBcrack\fP.
 .TP 
 \fBskill \-KILL \-t /dev/pts/*\fP
 Omoară sesiunile de utilizator pe dispozitivele PTY.
@@ -112,5 +110,5 @@ a scris «skill» și «snice»
 în 1999 pentru a înlocui versiunile care nu erau libere.
 .SH "RAPORTAREA ERORILOR"
 Trimiteți rapoartele de eroare la
-.UR procps@freelists.org
-.UE
+.MT procps@freelists.org
+.ME .

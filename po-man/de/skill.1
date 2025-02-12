@@ -1,5 +1,5 @@
 .\"
-.\" Copyright (c) 2011-2023 Craig Small <csmall@dropbear.xyz>
+.\" Copyright (c) 2011-2024 Craig Small <csmall@dropbear.xyz>
 .\" Copyright (c) 2011-2012 Sami Kerola <kerolasa@iki.fi>
 .\" Copyright (c) 2002-2006 Albert Cahalan
 .\"
@@ -14,13 +14,13 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH SKILL 1 "19. August 2023" procps\-ng "Dienstprogramme für Benutzer"
+.TH SKILL 1 "1. August 2024" procps\-ng 
 .SH BEZEICHNUNG
 skill, snice \- ein Signal senden oder den Prozessstatus ermitteln
 .SH ÜBERSICHT
-\fBskill\fP [\fISignal\fP] [\fIOptionen\fP] \fIAusdruck\fP
-.br
-\fBsnice\fP [\fIneue Priorität\fP] [\fIOptionen\fP] \fIAusdruck\fP
+\fBskill\fP [\fISignal\-Option\fP] [\fIweitere Option\fP .\|.\|.\&] \fIAusdruck\fP
+.P
+\fBsnice\fP [\fIneue Priorität\fP] [\fIOption …\fP] \fIAusdruck\fP
 .SH BESCHREIBUNG
 Diese Dienstprogramme sind veraltet und nicht portabel. Die Befehlssyntax
 ist unzureichend dokumentiert. Bitte verwenden Sie stattdessen die Befehle
@@ -59,36 +59,34 @@ Ausführlicher Modus, es wird erklärt, was geschieht.
 \fB\-w\fP,\fB\ \-\-warnings\fP
 aktiviert Warnungen. Diese Option wurde nicht implementiert.
 .TP 
-\fB\-h\fP, \fB\-\-help\fP
+\fB\-h\fP,\fB\ \-\-help\fP
 zeigt einen Hilfetext an und beendet das Programm.
 .TP 
-\fB\-V\fP, \fB\-\-version\fP
-Versionsinformationen anzeigen.
-.PD
+\fB\-V\fP,\fB\ \-\-version\fP
+zeigt Versionsinformationen an.
 .SH "OPTIONEN ZUR PROZESSAUSWAHL"
 Auswahlkriterien können sein: terminal, user, pid, command. Die
 nachfolgenden Optionen können verwendet werden, um eine korrekte
 Interpretation zu gewährleisten.
 .TP 
-\fB\-t\fP, \fB\-\-tty\fP \fITTY\fP
+\fB\-t\fP\fI\ tty\fP,\ \fB\-\-tty\fP\fI\ TTY\fP
 Der nächste Ausdruck ist ein Terminal (tty oder pty).
 .TP 
-\fB\-u\fP, \fB\-\-user\fP \fIBenutzer\fP
+\fB\-u\fP\fI\ Benutzer\fP,\ \fB\-\-user\fP\fI\ Benutzer\fP
 Der nächste Ausdruck ist ein Benutzername.
 .TP 
-\fB\-p\fP, \fB\-\-pid\fP \fIPID\fP
+\fB\-p\fP\fI\ PID\fP,\ \fB\-\-pid\fP\fI\ PID\fP
 Der nächste Ausdruck ist eine Prozesskennung (ID).
 .TP 
-\fB\-c\fP, \fB\-\-command\fP \fIBEFEHL\fP
+\fB\-c\fP\fI\ Befehl\fP,\ \fB\-\-command\fP\fI\ Befehl\fP
 Der nächste Ausdruck ist ein Befehlsname.
 .TP 
-\fB\-\-ns \fP\fIProzesskennung\fP
+\fB\-\-ns\fP\fI\ PID\fP
 sucht nach Prozessen, die zum gleichen Namensraum wie \fIPID\fP gehören.
 .TP 
-\fB\-\-nslist \fP\fINamensraum\/\fP,\,\fI…\/\fP
+\fB\-\-nslist\fP\fI\ Namensraum\fP,\fI.\|.\|.\fP
 listet die Namensräume auf, die in der Option \fB\-\-ns\fP berücksichtigt
 werden. Verfügbare Namensräume: ipc, mnt, net, pid, user, uts.
-.PD
 .SH SIGNALE
 Das Verhalten der Signale ist in der Handbuchseite zu \fBsignal\fP(7)
 beschrieben.
@@ -116,4 +114,4 @@ schrieb \fBskill\fP und
 .SH "FEHLER MELDEN"
 Bitte schicken Sie Fehlermeldungen (auf Englisch) an
 .MT procps@freelists.org
-.ME
+.ME .

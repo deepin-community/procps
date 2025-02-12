@@ -1,5 +1,5 @@
 .\"
-.\" Copyright (c) 2004-2023 Craig Small <csmall@dropbear.xyz>
+.\" Copyright (c) 2004-2024 Craig Small <csmall@dropbear.xyz>
 .\" Copyright (c) 2011-2023 Jim Warner <james.warner@comcast.net>
 .\" Copyright (c) 2011-2012 Sami Kerola <kerolasa@iki.fi>
 .\" Copyright (c) 1998-2003 Albert Cahalan
@@ -15,41 +15,33 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH PS 1 "19. August 2023" procps\-ng "Dienstprogramme für Benutzer"
+.TH PS 1 "17. September 2024" procps\-ng 
 .\"
 .\" Ragged-right text.
 .na
 .\" Disable hyphenation.
 .nh
-.\"
-.\" ColSize is used for the format spec table.
-.\" It's the left margin, minus the right, minus
-.\" the space needed for the 1st two columns.
-.\" Making it messy: inches, ens, points, scaled points...
-.\"
-.nr ColSize ((\n[.l] - \n[.i]) / 1n - 29)
-.\"
 .SH BEZEICHNUNG
-ps \- einen Schnappschuss der aktuellen Prozesse darstellen.
+ps \- einen Schnappschuss der aktuellen Prozesse darstellen
 .SH ÜBERSICHT
-\fBps\fP [\,\fIOptionen\/\fP]
+\fBps\fP [\fIOption\fP .\|.\|.]
 .SH BESCHREIBUNG
 \fBps\fP zeigt Informationen zu einer Auswahl aktiver Prozesse an. Falls Sie
 eine wiederholte Aktualisierung der Auswahl und der angezeigten
 Informationen benötigen, verwenden Sie stattdessen \fBtop\fP.
 .P
-Diese Version von \fBps\fP akzeptiert verschiedene Arten von Optionen:
-.IP
-.PD 0
-.IP 1 4
-UNIX\-Optionen, die gruppiert sein können und denen ein Bindestrich
+Diese Version von \fBps\fP akzeptiert verschiedene Arten von Optionen.
+.TP  4n
+\[bu]
+Unix\-Optionen, die gruppiert sein können und denen ein Bindestrich
 vorangestellt werden darf.
-.IP 2 4
+.TP 
+\[bu]
 BSD\-Optionen, die gruppiert sein können und denen kein Bindestrich
 vorangestellt werden muss.
-.IP 3 4
+.TP 
+\[bu]
 Lange GNU\-Optionen, denen zwei Bindestriche vorangestellt werden müssen.
-.PD
 .PP
 Optionen verschiedener Typen können beliebig gemischt werden, was aber auch
 Konflikte hervorrufen kann. Es gibt einige gleichbedeutende Optionen, die
@@ -191,7 +183,6 @@ ausgewählt. Alternativ könnte dies so beschrieben werden, dass diese Option
 \fBps\fP veranlasst, alle Prozesse aufzulisten, deren Besitzer Sie selbst sind
 (gleiche EUID wie \fBps\fP), oder alle Prozesse aufzulisten, wenn dies zusammen
 mit der Option \fBa\fP verwendet wird.
-.PD
 .SH "PROZESSAUSWAHL NACH LISTE"
 Diese Optionen akzeptieren ein einzelnes Argument in der Form einer durch
 Leerräume oder Kommata getrennten Liste. Dies kann mehrmals angegeben
@@ -200,11 +191,11 @@ werden. Beispiel: \fBps\ \-p\ "1\ 2"\ \-p\ 3,4\fP
 \fI123\fP
 ist gleichbedeutend mit \fB\-\-pid\ \fP\fI123\fP.
 .TP 
-\+\fI123\fP
++\fI123\fP
 ist gleichbedeutend mit \fB\-\-sid\ \fP\fI123\fP.
 .TP 
 \-\fI123\fP
-Select by process group ID (PGID).
+Auswahl nach Prozessgruppenkennung (PGID).
 .TP 
 \fB\-C\fP\fI\ Befehlsliste\fP
 wählt nach Befehlsnamen aus. Dadurch werden die Prozesse ausgewählt, deren
@@ -316,7 +307,7 @@ Benutzer, der den Prozess erstellt hat, siehe \fIgetuid\fP(2).
 wählt nach effektiver Benutzerkennung (EUID) oder Name aus. Dadurch werden
 die Prozesse ausgewählt, deren effektiver Benutzername oder \-kennung in der
 \fIBenutzerliste\fP aufgeführt ist.
-
+.P
 Die effektiver Benutzerkennung beschreibt den Benutzer, dessen
 Dateizugriffsrechte vom Prozess genutzt werden (siehe
 \fIgeteuid\fP(2)). Gleichbedeutend mit \fBU\fP und \fB\-\-user\fP.
@@ -328,7 +319,6 @@ wählt nach realer Benutzerkennung (RUID) oder Name aus. Gleichbedeutend mit
 \fB\-\-user\fP\fI\ Benutzerliste\fP
 wählt nach effektiver Benutzerkennung (EUID) oder Name aus. Gleichbedeutend
 mit \fB\-u\fP und \fBU\fP.
-.PD
 .SH "STEUERUNG DES AUSGABEFORMATS"
 Diese Optionen werden dazu verwendet, die von \fBps\fP angezeigten
 Informationen auszuwählen. Die Ausgabe kann je nach
@@ -342,7 +332,7 @@ zeigt das Format des Sicherheitskontexts an (für SELinux).
 .TP 
 \fB\-f\fP
 zeigt eine Auflistung im Vollformat an. Diese Option kann mit vielen anderen
-Optionen im UNIX\-Stil kombiniert werden, um zusätzliche Spalten
+Optionen im Unix\-Stil kombiniert werden, um zusätzliche Spalten
 hinzuzufügen. Außerdem bewirkt die Option, dass die Befehlsargumente
 ausgegeben werden. Wenn Sie die Option zusammen mit \fB\-L\fP verwenden, werden
 die Spalten NLWP (Anzahl der Threads) und LWP (Threadkennung)
@@ -404,11 +394,11 @@ je nach Prozessausführungsumgebung; die Ausgabe kann in einer Spalte namens
 »X,\:comm=Y« oder in zwei Spalten namens »X« und »Y« erfolgen. Im Zweifel
 sollten Sie die Option \fB\-o\fP mehrmals verwenden. Mit der Umgebungsvariable
 \fBPS_FORMAT\fP können Sie eine Vorgabe nach Ihrem Wunsch festlegen; DefSysV
-und DefBSD sind Makros, die Sie zur Wahl der standardmäßigen UNIX\- oder
+und DefBSD sind Makros, die Sie zur Wahl der standardmäßigen Unix\- oder
 BSD\-Spalten verwenden können.
 .TP 
 \fB\-P\fP
-Add a column showing \fBpsr\fP.
+Fügt eine \fBpsr\fP\-Spalte hinzu.
 .TP 
 \fBs\fP
 zeigt im Signalformat an.
@@ -429,7 +419,6 @@ kann nur zusammen mit \fB\-l\fP verwendet werden.
 \fBZ\fP
 fügt eine Spalte mit sicherheitsrelevanten Daten hinzu. Gleichbedeutend mit
 \fB\-M\fP (für SELinux).
-.PD
 .SH AUSGABE\-MODIFIKATOREN
 .TP 
 \fBc\fP
@@ -452,11 +441,11 @@ legt die Bildschirmbreite fest.
 fügt einige Daten toter Kindprozesse hinzu (als Summe mit den
 Elternprozessen).
 .TP 
-.TP 
 \fB\-D\fP\fI\ Format\fP
-Set the date format of the \fBlstart\fP field to \fIformat\fP. This format is
-parsed by \fBstrftime\fP(3)  and should be a maximum of 24 characters to not
-mis\-align columns.
+setzt das Datumsformat des \fBlstart\fP\-Feldes auf das angegebene
+\fIFormat\fP. Dieses Format wird von \fBstrftime\fP(3) ausgewertet und sollte
+nicht mehr als 24 Zeichen umfassen, um die korrekte Spaltenausrichtung zu
+gewährleisten.
 .TP 
 \fB\-\-date\-format\fP\fI\ Format\fP
 ist gleichbedeutend mit \fB\-D\fP.
@@ -569,7 +558,6 @@ Breite auf unbegrenzt zu setzen.
 .TP 
 \fB\-\-width\fP\fI\ n\fP
 legt die Bildschirmbreite fest.
-.PD
 .SH THREAD\-ANZEIGE
 .TP 
 \fBH\fP
@@ -635,7 +623,7 @@ Benutzername gekürzt. Mit den Formatierungsoptionen \fB\-o\fP und \fB\-O\fP kö
 Sie die Breite anpassen.
 .PP
 Von Befehlszeilenoptionen wie \fBps \-aux\fP wird abgeraten, da sie zwei
-Standards vermischen. Entsprechend den POSIX\- und UNIX\-Standards bewirkt der
+Standards vermischen. Entsprechend den POSIX\- und Unix\-Standards bewirkt der
 vorstehende Befehl die Anzeige aller Prozesse mit einem TTY (im Allgemeinen
 die Befehle, die Benutzer ausführen) und zusätzlich aller Prozesse, die
 einem Benutzer namens \fIx\fP gehören. Existiert dieser Benutzer nicht, wird
@@ -645,14 +633,11 @@ Die Summe dieser Werte wird in der Spalte »F« angezeigt, die durch den
 Ausgabebezeichner \fBflags\fP bereitgestellt wird:
 .PP
 .RS 8
-.PD 0
-.TP  5
-1
-mit fork() erstellt, aber nicht ausgeführt
-.TP 
-4
-Superuser\-Privilegien verwendet
-.PD
+.TS
+R4 L.
+1	mit fork() erstellt, aber nicht ausgeführt
+4	Superuser\-Privilegien verwendet
+.TE
 .RE
 .SH PROZESSZUSTANDSCODES
 Dies sind die verschiedenen Werte, welche die Ausgabebezeichner \fBs\fP,
@@ -660,62 +645,41 @@ Dies sind die verschiedenen Werte, welche die Ausgabebezeichner \fBs\fP,
 eines Prozesses zu beschreiben:
 .PP
 .RS 8
-.PD 0
-.TP  5
-D
-Nicht unterbrechbarer Schlafzustand (üblicherweise E/A)
-.TP 
-I
-Kernel\-Thread im Leerlauf
-.TP 
-R
-Laufend oder lauffähig (in der Ausführungswarteschlange)
-.TP 
-S
+.TS
+R4 L.
+D	Nicht unterbrechbarer Schlafzustand (üblicherweise E/A)
+I	Kernel\-Thread im Leerlauf
+R	Laufend oder lauffähig (in der Ausführungswarteschlange)
+S	T{
 Unterbrechbarer Schlafzustand (auf den Abschluss eines Ereignisses wartend)
-.TP 
-T
-Durch Jobsteuersignal gestoppt
-.TP 
-t
-Durch Debugger während der Verfolgung gestoppt
-.TP 
-W
-Paging (ungültig seit Kernel 2.6.xx)
-.TP 
-X
-Tot (sollte niemals angezeigt werden)
-.TP 
-Z
-Defunktionaler (»Zombie«\-) Prozess, beendet, aber durch seinen Elternprozess
-nicht aufgeräumt
-.PD
+T}
+T	Durch Jobsteuersignal gestoppt
+t	Durch Debugger während der Verfolgung gestoppt
+W	Paging (ungültig seit Linux 2.6)
+X	Tot (sollte niemals angezeigt werden)
+Z	T{
+Defunktionaler (»Zombie«\-) Prozess, beendet, aber durch seinen Elternprozess nicht aufgeräumt
+T}
+.TE
 .RE
 .PP
 Für BSD\-Formate und bei Verwendung des Schlüsselworts \fBstat\fP können
 zusätzliche Zeichen angezeigt werden:
 .PP
 .RS 8
-.PD 0
-.TP  5
-<
-Hohe Priorität (nicht »nice« zu anderen Benutzern)
-.TP 
-N
-Niedrige Priorität (»nice« zu anderen Benutzern)
-.TP 
-L
+.TS
+R4 L.
+<	Hohe Priorität (nicht »nice« zu anderen Benutzern)
+N	Niedrige Priorität (»nice« zu anderen Benutzern)
+L	T{
 Hat im Speicher gesperrte Seiten (für Echtzeit\- und benutzerdefinierte E/A)
-.TP 
-s
-Ist ein Sitzungsleiter
-.TP 
-l
+T}
+s	Ist ein Sitzungsleiter
+l	T{
 Ist multi\-threaded (mittels CLONE_THREAD, wie es NPTL\-Pthreads tun)
-.TP 
-+
-Ist in der Vordergrund\-Prozessgruppe
-.PD
+T}
++	Ist in der Vordergrund\-Prozessgruppe
+.TE
 .RE
 .SH "VERALTETE SORTIERSCHLÜSSEL"
 Diese Schlüssel werden von der BSD\-Option \fBO\fP verwendet (wenn diese zur
@@ -748,7 +712,7 @@ p	pid	Prozesskennung
 P	ppid	Kennung des Elternprozesses
 r	rss	Hauptspeicherbelegung
 R	resident	Seiten in der Hauptspeicherbelegung
-s	size	Speichergröße in Kilobyte
+s	size	Speichergröße in Kibibyte
 S	share	Menge der gemeinsam genutzten Seiten
 t	tty	Die Gerätenummer des steuernden TTY
 T	start_time	Zeit, zu der der Prozess gestartet wurde
@@ -761,7 +725,7 @@ y	priority	Scheduling\-Priorität des Kernels
 .SH AIX\-FORMATDESKRIPTOREN
 Diese Version von \fBps\fP unterstützt AIX\-Formatdeskriptoren, die ähnlich den
 Formatierungscodes von \fIprintf\fP(1) und \fIprintf\fP(3) funktionieren. Die
-normale, standardmäßige Ausgabe kann folgendermaßen erzeugt werden: \fBps \-eo "%p %y %x %c"\fP. Die \fBNORMAL\fP\-Codes sind im nächsten Abschnitt beschrieben.
+\fBNORMAL\fP\-Codes sind im nächsten Abschnitt beschrieben.
 .TS
 l l l.
 \fBCODE\fP	\fBNORMAL\fP	\fBKOPFZEILE\fP
@@ -797,20 +761,12 @@ enthalten: \fBargs\fP, \fBcmd\fP, \fBcomm\fP, \fBcommand\fP, \fBfname\fP, \fBucm
 \fBucomm\fP, \fBlstart\fP, \fBbsdstart\fP, \fBstart\fP.
 .PP
 Einige Schlüsselwörter könnten nicht für die Sortierung verfügbar sein.
-
-.\" #######################################################################
-.\" lB1 lB1 lB1 lB1 s s s
-.\" lB1 l1  l1  l1  s s s.
-.\"
-.\" lB1 lB1 lBw(5.5i)
-.\" lB1 l1  l.
-.\"
+.PP
 .TS
-expand;
-l1B l1B lBw(\n[ColSize]n)
-l1B l1  l.
-CODE	HEADER	BESCHREIBUNG
-
+Lb Lb Lbx
+Lb Lb L  .
+Code	Header	Beschreibung
+_
 %cpu	%CPU	T{
 CPU\-Nutzung des Prozesses im Format »##.#«. Gegenwärtig ist es die CPU\-Zeit dividiert durch die Zeit, die der Prozess bisher läuft (CPU\-Zeit/Echtzeit\-Verhältnis), ausgedrückt als Prozentwert. Wenn Sie nicht gerade Glück haben, wird dieser Wert nicht auf 100% aufsummieren (alias \fBpcpu\fP).
 T}
@@ -829,8 +785,25 @@ The autogroup nice value which affects scheduling of all processes in that group
 T}
 
 args	BEFEHL	T{
-Befehl mit allen seinen Argumenten als Zeichenkette. Modifikationen der  Argumente können angezeigt werden. Die Ausgabe in dieser Spalte darf Leerräume enthalten. Ein als <defunct> markierter Prozess ist teilweise tot und wartet darauf, von seinem Elternprozess endgültig zerstört zu werden. Gelegentlich sind die Argumente des Prozesses nicht verfügbar. Falls die passiert, gibt \fBps\fP stattdessen den Namen der ausführbaren Datei in Klammern aus (alias \fBcmd\fP, \fBcommand\fP). Siehe auch das Formatschlüsselwort \fBcomm\fP sowie die Optionen \fB\-f\fP und \fBc\fP.
-.br
+A command with all its arguments as a string.
+Modifications to the arguments may be shown.
+The output in this column may contain spaces.
+A process marked \[lq]<defunct>\[rq] is partly dead,
+waiting to be fully destroyed by its parent.
+Sometimes the process arguments will be unavailable;
+when this happens,
+\fBps\fP
+instead reports the executable name in brackets.
+(alias
+\fBcmd\fP, \fBcommand\fP).
+See also the
+\fBcomm\fP
+format keyword, the
+\fB\-f\fP
+option, and the
+\fBc\fP
+option.
+.sp \n[PD]u
 Wenn dies als Letztes angegeben wird, dann wird die letzte Spalte bis zum Rand des Bildschirms verbreitert. Falls \fBps\fP die Bildschirmbreite nicht ermitteln kann, wenn die Ausgabe beispielsweise in eine Datei oder an einen anderen Befehl weitergeleitet wird, ist die Ausgabebreite nicht definiert (sie könnte 80, unbegrenzt, durch die Variable \fBTERM\fP bestimmt usw. sein). Die Umgebungsvariable \fBCOLUMNS\fP oder die Option \fB\-\-cols\fP können dazu verwendet werden, in diesem Fall die Breite genau festzulegen. Die Optionen \fBw\fP oder \fB\-w\fP können auch zur Anpassung der Breite verwendet werden.
 T}
 
@@ -869,7 +842,7 @@ T}
 
 class	CLS	T{
 Scheduling\-Klasse des Prozesses (alias \fBpolicy\fP, \fBcls\fP). Mögliche Werte des Feldes sind:
-.sp 1
+.sp \n[PD]u
 .in +9n
 \-	nicht berichtet
 .br
@@ -893,7 +866,7 @@ T}
 
 cls	CLS	T{
 Scheduling\-Klasse des Prozesses (alias \fBpolicy\fP, \fBcls\fP). Mögliche Werte des Feldes sind:
-.sp 1
+.sp \n[PD]u
 .in +9n
 \-	nicht berichtet
 .br
@@ -931,7 +904,7 @@ format keyword, the
 option, and the
 \fBc\fP
 option.
-.br
+.sp \n[PD]u
 Wenn dies als Letztes angegeben wird, dann wird die letzte Spalte bis zum Rand des Bildschirms verbreitert. Falls \fBps\fP die Bildschirmbreite nicht ermitteln kann, wenn die Ausgabe beispielsweise in eine Datei oder an einen anderen Befehl weitergeleitet wird, ist die Ausgabebreite nicht definiert (sie könnte 80, unbegrenzt, durch die Variable \fBTERM\fP bestimmt usw. sein). Die Umgebungsvariable \fBCOLUMNS\fP oder die Option \fB\-\-cols\fP können dazu verwendet werden, in diesem Fall die Breite genau festzulegen. Die Optionen \fBw\fP oder \fB\-w\fP können auch zur Anpassung der Breite verwendet werden.
 T}
 
@@ -952,34 +925,27 @@ Kumulative CPU\-Zeit in Sekunden (alias \fBtimes\fP).
 T}
 
 cuc	%CUC	T{
-The CPU utilization of a process, including dead children, in an extended "##.###" format.
-(see also
-\fB%cpu\fP,
-\fBc\fP,
-\fBcp\fP,
-\fBcuu\fP,
-\fBpcpu\fP).
+Die CPU\-Nutzung eines Prozesses, einschließlich toter Kindprozesse, in einem erweiterten »##.###«\-Format. Siehe auch \fB%cpu\fP, \fBc\fP, \fBcp\fP, \fBcuu\fP, \fBpcpu\fP).
 T}
 
 cuu	%CUU	T{
-The CPU utilization of a process in an extended "##.###" format.
-(see also
-\fB%cpu\fP,
-\fBc\fP,
-\fBcp\fP,
-\fBcuc\fP,
-\fBpcpu\fP).
+Die CPU\-Nutzung eines Prozesses in einem erweiterten »##.###«\-Format. Siehe auch \fB%cpu\fP, \fBc\fP, \fBcp\fP, \fBcuc\fP, \fBpcpu\fP).
+T}
+
+docker	DOCKER	T{
+Der abgekürzte Kennung des Docker\-Containers, in dem die Task läuft. Falls ein Prozess
+nicht innerhalb eines Containers läuft, wird ein Bindestrich (»\-«) angezeigt.
 T}
 
 drs	DRS	T{
-data resident set size, the amount of private memory \fIreserved\fP by a process.
-It is also known as DATA. Such memory may not yet be mapped to
+data resident set size,
+the amount of private memory \fIreserved\fP by a process.
+It is also known as DATA.
+Such memory may not yet be mapped to
 \fBrss\fP
-but will always be included
-included in the
+but will always be included in the
 \fBvsz\fP
 amount.
-
 T}
 
 egid	EGID	T{
@@ -991,12 +957,14 @@ Effektive Gruppenkennung des Prozesses. Dies wird die Gruppenkennung in Textform
 T}
 
 eip	EIP	T{
-instruction pointer. As of kernel 4.9.xx will be zeroed out unless task is
+instruction pointer.
+As of kernel 4.9.xx will be zeroed out unless task is
 exiting or being core dumped.
 T}
 
 esp	ESP	T{
-stack pointer. As of kernel 4.9.xx will be zeroed out unless task is
+stack pointer.
+As of kernel 4.9.xx will be zeroed out unless task is
 exiting or being core dumped.
 T}
 
@@ -1008,6 +976,9 @@ etimes	ELAPSED	T{
 Vergangene Zeit, seit der Prozess gestartet wurde, in Sekunden.
 T}
 
+environ	ENVIRON	T{
+Umgebungsvariablen für den Prozess.
+T}
 euid	EUID	T{
 Effektive Benutzerkennung (alias
 \fBuid\fP).
@@ -1025,6 +996,10 @@ T}
 
 f	F	T{
 Dem Prozess zugehörige Schalter, siehe den Abschnitt \fBPROZESSSCHALTER\fP (alias \fBflag\fP, \fBflags\fP).
+T}
+
+fds	FDS	T{
+Gesamtzahl der offenen Dateideskriptoren.
 T}
 
 fgid	FGID	T{
@@ -1063,6 +1038,16 @@ group	GROUP	T{
 Siehe \fBegroup\fP (alias \fBegroup\fP).
 T}
 
+htprv	HTPRV	T{
+The amount of private memory backed by hugetlbfs page which is not counted in the \fBrss\fP
+or \fBpss\fP format options.
+T}
+
+htshr	HTSHR	T{
+The amount of shared memory backed by hugetlbfs page which is not counted in the \fBrss\fP
+or \fBpss\fP format options.
+T}
+
 ignored	IGNORED	T{
 Maske der ignorierten Signale, siehe \fIsignal\fP(7). Entsprechend der Feldbreite wird eine 32\- oder 64\-Bit\-Maske in hexadezimalem Format angezeigt, außer wenn die Option \fB\-\-signames\fP verwendet wird (alias \fBsig_ignore\fP, \fBsigignore\fP).
 T}
@@ -1077,7 +1062,8 @@ Sicherheitslabel, das am häufigsten für SELinux\-Kontextdaten verwendet wird. 
 T}
 
 lstart	STARTED	T{
-time the command started. This will be in the form "DDD mmm HH:MM:SS YYY"
+time the command started.
+This will be in the form "DDD mmm HH:MM:SS YYY"
 unless changed by the \fB\-D\fP option.
 T}
 
@@ -1147,18 +1133,28 @@ Adresse der Kernelfunktion, in der der Prozess schläft (verwenden Sie
 T}
 
 oom	OOM	T{
-Out of Memory Score. The value, ranging from 0 to +1000, used to select
+Out of Memory Score.
+The value, ranging from 0 to +1000, used to select
 task(s) to kill when memory is exhausted.
 T}
 
 oomadj	OOMADJ	T{
-Out of Memory Adjustment Factor. The value is added to the current out of
+Out of Memory Adjustment Factor.
+The value is added to the current out of
 memory score which is then used to determine which task to kill when memory
 is exhausted.
 T}
 
 ouid	OWNER	T{
 zeigt den Unix\-Benutzer\-Bezeichner des Eigentümers der Sitzung eines Prozesses an, falls Unterstützung für Systemd verfügbar ist.
+T}
+
+pcap	PCAP	T{
+Erlaubte Capabilities des Prozesses, dargestellt als hexadezimale Bitmaske. Siehe \fIcapabilities\fP(7).
+T}
+
+pcaps	PCAPS	T{
+Erlaubte Capabilities des Prozesses, dargestellt als Zeichenkette aus Capability\-Namen. Siehe \fIcapabilities\fP(7).
 T}
 
 pcpu	%CPU	T{
@@ -1192,7 +1188,7 @@ T}
 
 policy	POL	T{
 Scheduling\-Klasse des Prozesses (alias \fBclass\fP, \fBcls\fP). Mögliche Werte sind:
-.sp 1
+.sp \n[PD]u
 .in +9n
 \-	nicht berichtet
 .br
@@ -1227,12 +1223,14 @@ Prozessor, auf dem der Prozess zuletzt ausgeführt wurde.
 T}
 
 pss	PSS	T{
-Proportional share size, the non\-swapped physical memory, with shared memory
-proportionally accounted to all tasks mapping it.
+Proportional share size,
+the non\-swapped physical memory,
+with shared memory proportionally accounted to all tasks mapping it.
 T}
 
 rbytes	RBYTES	T{
-Number of bytes which this process really did cause to be fetched from the storage layer.
+Number of bytes which this process really did cause to be fetched from the
+storage layer.
 T}
 
 rchars	RCHARS	T{
@@ -1248,13 +1246,12 @@ Realer Gruppenname. Dies wird die Gruppenkennung in Textform, falls diese ermitt
 T}
 
 rops	ROPS	T{
-Number of read I/O operationsâthat is, system calls such as
+Number of read I/O operations\[em]that is, system calls such as
 \fBread\fP(2) and \fBpread\fP(2).
 T}
 
 rss	RSS	T{
-Hauptspeicherbelegung; der nicht ausgelagerte physische Speicher, den eine
-Task (in Kilobyte) verwendet (alias \fBrssize\fP, \fBrsz\fP).
+Hauptspeicherbelegung; der nicht ausgelagerte physische Speicher, den eine Task (in Kibibyte) verwendet (alias \fBrssize\fP, \fBrsz\fP).
 T}
 
 rssize	RSS	T{
@@ -1502,15 +1499,16 @@ Number of cancelled write bytes.
 T}
 
 wchan	WCHAN	T{
-name of the kernel function in which the process is sleeping.
+Name der Kernel\-Funktion, in welcher der Prozess schläft.
 T}
 
 wchars	WCHARS	T{
-Number of bytes which this task has caused, or shall cause to be written to disk.
+Number of bytes which this task has caused,
+or shall cause to be written to disk.
 T}
 
 wops	WOPS	T{
-Number of write I/O operationsâthat is, system calls such as
+Number of write I/O operations\[em]that is, system calls such as
 \fBwrite\fP(2) and \fBpwrite\fP(2).
 T}
 
@@ -1601,24 +1599,27 @@ The fields \fBbsdstart\fP and \fBstart\fP will only show the abbreviated month
 name in English. The fields \fBlstart\fP and \fBstime\fP will show the abbreviated
 month name in the configured locale but may exceed the column width due to
 the different lengths for abbreviated month and day names across languages.
-.PP
 .SH "SIEHE AUCH"
-\fBpgrep\fP(1), \fBpstree\fP(1), \fBtop\fP(1), \fBstrftime\fP(3), \fBproc\fP(5).
+\fBpgrep\fP(1), \fBpstree\fP(1), \fBtop\fP(1), \fBstrftime\fP(3), \fBproc\fP(5),
+\fBcapabilities\fP(7).
+
 .SH STANDARDS
-Diese Version von \fBps\fP ist konform zu:
-.PP
-.PD 0
-.IP 1 4
+Diese Version von \fBps\fP ist konform zu den folgenden Standards.
+.TP  4n
+\[bu]
 Version 2 der Single Unix Specification
-.IP 2 4
+.TP  4n
+\[bu]
 The Open Group Technical Standard Base Specifications, Ausgabe\ 6
-.IP 3 4
+.TP  4n
+\[bu]
 IEEE Std 1003.1, Ausgabe\ 2004
-.IP 4 4
+.TP  4n
+\[bu]
 X/Open System Interfaces Extension [UP\ XSI]
-.IP 5 4
+.TP  4n
+\[bu]
 ISO/IEC 9945:2003
-.PD
 .SH AUTOR
 \fBps\fP wurde ursprünglich von
 .MT lankeste@\:fwi.\:uva.\:nl

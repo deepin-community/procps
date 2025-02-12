@@ -21,11 +21,11 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH PMAP 1 2020\-06\-04 procps\-ng "Commandes de l'utilisateur"
+.TH PMAP 1 2020\-06\-04 procps\-ng 
 .SH NOM
 pmap \- Afficher l'empreinte mémoire d'un processus
 .SH SYNOPSIS
-\fBpmap\fP [\fIoptions\fP] \fIPID\fP [...]
+\fBpmap\fP [\fIoption\fP .\|.\|.\&] \fIpid\fP .\|.\|.
 .SH DESCRIPTION
 La commande \fBpmap\fP affiche l'empreinte mémoire d'un ou plusieurs processus.
 .SH OPTIONS
@@ -75,7 +75,6 @@ Afficher la version du logiciel et quitter.
 .SH "CODES DE RETOUR"
 .PP
 .RS
-.PD 0
 .TP 
 \fB0\fP
 Réussite.
@@ -85,7 +84,6 @@ Réussite.
 .TP 
 \fB42\fP
 Les processus demandés n'ont pas tous été trouvés.
-.PD
 .RE
 .SH "VOIR AUSSI"
 \fBps\fP(1), \fBpgrep\fP(1)
@@ -93,4 +91,6 @@ Les processus demandés n'ont pas tous été trouvés.
 Aucune norme n'est respectée mais \fBpmap\fP ressemble fortement à une commande
 SunOS.
 .SH BOGUES
-Signalez les bogues à <\fIprocps@freelists.org\fP>
+Please send bug reports to
+.MT procps@freelists.org
+.ME .

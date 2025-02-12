@@ -1,6 +1,6 @@
 /* top.h - Header file:         show Linux processes */
 /*
- * Copyright © 2002-2023 Jim Warner <james.warner@comcast.net
+ * Copyright © 2002-2024 Jim Warner <james.warner@comcast.net
  *
  * This file may be used subject to the terms and conditions of the
  * GNU Library General Public License Version 2, or any later version
@@ -42,7 +42,6 @@
 //#define INSP_SAVEBUF            /* preserve 'Insp_buf' contents via a file */
 //#define INSP_SLIDE_1            /* when scrolling left/right, don't move 8 */
 //#define MEMGRAPH_OLD            /* don't use 'available' when graphing Mem */
-//#define NLS_INCLUDED            /* provides for excluding from translation */
 //#define NLS_VALIDATE            /* ensure the integrity of four nls tables */
 //#define OFF_SCROLLBK            /* disable tty emulators scrollback buffer */
 //#define OFF_STDERROR            /* disable our stderr buffering (redirect) */
@@ -168,6 +167,7 @@ char *strcasestr(const char *haystack, const char *needle);
 #define kbd_ESC    '\033'
 #define kbd_SPACE  ' '
 #define kbd_ENTER  '\n'
+#define kbd_TAB    '\t'
 #define kbd_UP     129
 #define kbd_DOWN   130
 #define kbd_LEFT   131
@@ -180,9 +180,9 @@ char *strcasestr(const char *haystack, const char *needle);
 #define kbd_INS    138
 #define kbd_DEL    139
 #define kbd_BTAB   140
+#define kbd_CtrlA  '\001'
 #define kbd_CtrlE  '\005'
 #define kbd_CtrlG  '\007'
-#define kbd_CtrlI  '\011'
 #define kbd_CtrlK  '\013'
 #define kbd_CtrlL  '\014'
 #define kbd_CtrlN  '\016'
@@ -226,6 +226,8 @@ enum pflag {
    EU_AGI, EU_AGN,
    EU_TM3, EU_TM4, EU_CUU, EU_CUC,
    EU_NS7, EU_NS8,
+   EU_CLS, EU_DKR,
+   EU_FDS,
 #ifdef USE_X_COLHDR
    // not really pflags, used with tbl indexing
    EU_MAXPFLGS
@@ -302,11 +304,11 @@ typedef          long long SIC_t;
 #else
 #define DEF_WINFLGS ( View_LOADAV | View_STATES | View_MEMORY | Show_CMDLIN \
    | Show_COLORS | Show_FOREST | Show_HIROWS | Show_IDLEPS | Show_JRNUMS | Show_TASKON \
-   | Qsrt_NORMAL )
-#define DEF_GRAPHS2  1, 2
+   | Show_HIBOLD | Qsrt_NORMAL )
+#define DEF_GRAPHS2  2, 2
 #define DEF_SCALES2  SK_Gb, SK_Mb
-#define ALT_WINFLGS (DEF_WINFLGS | Show_HIBOLD) & ~Show_FOREST
-#define ALT_GRAPHS2  2, 0
+#define ALT_WINFLGS DEF_WINFLGS & ~Show_FOREST
+#define ALT_GRAPHS2  1, 1
 #endif
 
         /* These are used to direct wins_reflag */
@@ -332,7 +334,8 @@ typedef struct RCW_t {  // the 'window' portion of an rcfile
           summclr,                // a colors 'number' used for summ info
           msgsclr,                //             "           in msgs/pmts
           headclr,                //             "           in cols head
-          taskclr;                //             "           in task rows
+          taskclr,                //             "           in task data
+          task_xy;                //             "           for task x/y
    char   winname [WINNAMSIZ];    // name for the window, user changeable
    FLG_t  fieldscur [PFLAGSSIZ];  // the fields for display & their order
 } RCW_t;
@@ -534,7 +537,7 @@ typedef struct WIN_t {
 #define RCF_XFORMED_ID  'k'
         // this next guy is incremented when columns change
         // ( to prevent older top versions from accessing )
-#define RCF_VERSION_ID  'k'
+#define RCF_VERSION_ID  'm'
 
 #define FLD_OFFSET  ( (int)'%' )
 #define FLD_ROWMAX  20
@@ -593,16 +596,16 @@ typedef struct WIN_t {
 #define DEF_RCFILE { \
    RCF_VERSION_ID, 0, 1, DEF_DELAY, 0, { \
    { EU_CPU, DEF_WINFLGS, 0, DEF_GRAPHS2, 1, 0, 0, \
-      COLOR_RED, COLOR_RED, COLOR_YELLOW, COLOR_RED, \
+      COLOR_RED, COLOR_RED, COLOR_YELLOW, -1, COLOR_RED, \
       "Def", DEF_FIELDS }, \
-   { EU_PID, ALT_WINFLGS, 0, ALT_GRAPHS2, 0, 0, 0, \
-      COLOR_CYAN, COLOR_CYAN, COLOR_WHITE, COLOR_CYAN, \
+   { EU_PID, ALT_WINFLGS, 0, ALT_GRAPHS2, 1, 0, 0, \
+      COLOR_CYAN, COLOR_CYAN, COLOR_WHITE, -1, COLOR_CYAN, \
       "Job", JOB_FIELDS }, \
-   { EU_MEM, ALT_WINFLGS, 0, ALT_GRAPHS2, 0, 0, 0, \
-      COLOR_MAGENTA, COLOR_MAGENTA, COLOR_BLUE, COLOR_MAGENTA, \
+   { EU_MEM, ALT_WINFLGS, 0, ALT_GRAPHS2, 1, 0, 0, \
+      COLOR_MAGENTA, COLOR_MAGENTA, COLOR_BLUE, -1, COLOR_MAGENTA, \
       "Mem", MEM_FIELDS }, \
-   { EU_UEN, ALT_WINFLGS, 0, ALT_GRAPHS2, 0, 0, 0, \
-      COLOR_YELLOW, COLOR_YELLOW, COLOR_GREEN, COLOR_YELLOW, \
+   { EU_UEN, ALT_WINFLGS, 0, ALT_GRAPHS2, 1, 0, 0, \
+      COLOR_YELLOW, COLOR_YELLOW, COLOR_GREEN, -1, COLOR_YELLOW, \
       "Usr", USR_FIELDS } \
    }, 0, DEF_SCALES2, 0, 0 }
 
@@ -726,8 +729,9 @@ typedef struct WIN_t {
 /*------  Startup routines  ----------------------------------------------*/
 //atic void          before (char *me);
 //atic int           cfg_xform (WIN_t *q, char *flds, const char *defs);
-//atic int           config_insp (FILE *fp, char *buf, size_t size);
-//atic int           config_osel (FILE *fp, char *buf, size_t size);
+//atic void          config_insp (FILE *fp, char *buf, size_t size);
+//atic void          config_osel (FILE *fp, char *buf, size_t size);
+//atic int           config_wins (FILE *fp, char *buf, int wix);
 //atic const char   *configs_file (FILE *fp, const char *name, float *delay);
 //atic int           configs_path (const char *const fmts, ...);
 //atic void          configs_reads (void);
@@ -764,6 +768,7 @@ typedef struct WIN_t {
 //atic void          other_filters (int ch);
 //atic void          write_rcfile (void);
 /*------  Interactive Input Secondary support (do_key helpers)  ----------*/
+//atic void          keys_bottom (int ch);
 //atic void          keys_global (int ch);
 //atic void          keys_summary (int ch);
 //atic void          keys_task (int ch);

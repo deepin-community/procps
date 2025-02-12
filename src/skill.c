@@ -108,10 +108,10 @@ static int parse_namespaces(char *optarg)
     while (1) {
         if (strchr(ptr, ',') == NULL) {
             len = -1;
-            tmp = strdup(ptr);
+            tmp = xstrdup(ptr);
         } else {
             len = strchr(ptr, ',') - ptr;
-            tmp = strndup(ptr, len);
+            tmp = xstrndup(ptr, len);
         }
 
         id = procps_ns_get_id(tmp);
@@ -170,8 +170,8 @@ static int match_ns(const int pid)
     return found;
 }
 
-#define PIDS_GETINT(e) PIDS_VAL(EU_ ## e, s_int, stack, Pids_info)
-#define PIDS_GETSTR(e) PIDS_VAL(EU_ ## e, str, stack, Pids_info)
+#define PIDS_GETINT(e) PIDS_VAL(EU_ ## e, s_int, stack)
+#define PIDS_GETSTR(e) PIDS_VAL(EU_ ## e, str, stack)
 
 static int ask_user(struct pids_stack *stack)
 {
@@ -274,9 +274,9 @@ static void show_lists(void)
 
 static void scan_procs(struct run_time_conf_t *run_time)
 {
- #define PIDS_GETINT(e) PIDS_VAL(EU_ ## e, s_int, reap->stacks[i], Pids_info)
- #define PIDS_GETUNT(e) PIDS_VAL(EU_ ## e, u_int, reap->stacks[i], Pids_info)
- #define PIDS_GETSTR(e) PIDS_VAL(EU_ ## e, str, reap->stacks[i], Pids_info)
+ #define PIDS_GETINT(e) PIDS_VAL(EU_ ## e, s_int, reap->stacks[i])
+ #define PIDS_GETUNT(e) PIDS_VAL(EU_ ## e, u_int, reap->stacks[i])
+ #define PIDS_GETSTR(e) PIDS_VAL(EU_ ## e, str, reap->stacks[i])
     struct pids_fetch *reap;
     int i, total_procs;
 
@@ -343,7 +343,7 @@ static void __attribute__ ((__noreturn__)) skillsnice_usage(FILE * out)
     fputs(_(" --ns <pid>               match the processes that belong to the same\n"
         "                          namespace as <pid>\n"), out);
     fputs(_(" --nslist <ns,...>        list which namespaces will be considered for\n"
-        "                          the --ns option; available namespaces are\n:"
+        "                          the --ns option; available namespaces are:\n"
             "                          ipc, mnt, net, pid, user, uts\n"), out);
 
     fputs(USAGE_SEPARATOR, out);

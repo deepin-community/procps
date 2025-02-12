@@ -1,6 +1,6 @@
 .\"
-.\" Copyright (c) 2004-2023 Craig Small <csmall@dropbear.xyz>
-.\" Copyright (c) 2013-2023 Jim Warner <james.warner@comcast.net>
+.\" Copyright (c) 2004-2024 Craig Small <csmall@dropbear.xyz>
+.\" Copyright (c) 2013-2024 Jim Warner <james.warner@comcast.net>
 .\" Copyright (c) 2011-2012 Sami Kerola <kerolasa@iki.fi>
 .\" Copyright (c) 2002-2004 Albert Cahalan
 .\" Copyright (c) 2000      Kjetil Torgrim Homme
@@ -15,16 +15,16 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH PGREP 1 "16. Januar 2023" procps\-ng "Dienstprogramme für Benutzer"
+.TH PGREP 1 "5. Februar 2024" procps\-ng 
 .SH BEZEICHNUNG
 pgrep, pkill, pidwait \- Prozesse finden oder ein Signal auf Basis des Namens
 oder anderer Attribute senden oder auf Prozesse warten
 .SH ÜBERSICHT
-\fBpgrep\fP [Optionen] Muster
-.br
-\fBpkill\fP [Optionen] Muster
-.br
-\fBpidwait\fP [Optionen] Muster
+\fBpgrep\fP [\fIOption\fP .\|.\|.\&] \fIMuster\fP
+.P
+\fBpkill\fP [\fIOption\fP .\|.\|.\&] \fIMuster\fP
+.P
+\fBpidwait\fP [\fIOption\fP .\|.\|.\&] \fIMuster\fP
 .SH BESCHREIBUNG
 \fBpgrep\fP durchsucht die gegenwärtig laufenden Prozesse und listet die
 Prozesskennungen (IDs), welche den Auswahlkriterien entsprechen, in der
@@ -33,7 +33,7 @@ erforderlich. Beispielsweise listet
 .IP
 $ pgrep \-u root sshd
 .PP
-nur die Prozesse auf, deren Name \fBsshd\fP lautet UND \fBroot\fP
+nur die Prozesse auf, deren Name \fBsshd\fP enthält UND die \fBroot\fP
 gehören. Andererseits listet
 .IP
 $ pgrep \-u root,daemon
@@ -57,7 +57,6 @@ Option verwendet werden. Sie ist allerdings dann wirkungslos, wenn sie nicht
 zusammen mit \fB\-\-require\-handler\fP verwendet wird, um nur Prozesse
 anzuzeigen, für die bei einem bestimmten Signal ein Userspace\-Signalhandler
 vorhanden ist.
-
 .TP 
 \fB\-c\fP, \fB\-\-count\fP
 unterdrückt normale Ausgaben und gibt stattdessen die Anzahl der passenden
@@ -72,7 +71,7 @@ legt die in der Ausgabe als Trenner für die Prozesskennungen zu verwendende
 Zeichenkette fest. Vorgabe ist ein Zeilenumbruch (gilt nur für \fBpgrep\fP).
 .TP 
 \fB\-e\fP, \fB\-\-echo\fP
-zeigt Name und Prozesskennung des zu killenden Prozesses an (nur für
+zeigt Name und Prozesskennung des abzuwürgenden Prozesses an (nur für
 \fBpkill\fP).
 .TP 
 \fB\-f\fP, \fB\-\-full\fP
@@ -116,7 +115,7 @@ aufgelistet ist.
 .TP 
 \fB\-s\fP, \fB\-\-session\fP \fISitzungskennung\fP, …
 sucht nur nach passenden Prozessen, die in den Prozess\-Sitzungskennungen
-aufgelistet ist. Die Sitzungskennung 0 wird in die eigene Prozessgruppe von
+aufgelistet sind. Die Sitzungskennung 0 wird in die eigene Prozessgruppe von
 \fBpgrep\fP, \fBpkill\fP oder \fBpidwait\fP übersetzt.
 .TP 
 \fB\-t\fP, \fB\-\-terminal\fP \fITerminal\fP, …
@@ -147,7 +146,8 @@ sucht nur nach passenden Prozessen, deren Namen (oder Befehlszeilen, falls
 .TP 
 \fB\-F\fP, \fB\-\-pidfile\fP \fIDatei\fP
 liest die \fIProzesskennungen\fP aus einer \fIDatei\fP. Diese Option ist eher für
-\fBpkill\fP oder \fBpidwait\fP als für \fBpgrep\fP sinnvoll.
+\fBpkill\fP oder \fBpidwait\fP als für \fBpgrep\fP sinnvoll. Um aus der
+Standardeingabe (\fISTDIN\fP) zu lesen, geben Sie »\-« als Dateinamen an.
 .TP 
 \fB\-L\fP, \fB\-\-logpidfile\fP
 schlägt fehl, wenn die PID\-Datei (siehe \fB\-F\fP) nicht gesperrt ist.
@@ -165,7 +165,13 @@ sucht nur nach Prozessen, für die für das zu sendende Signal ein
 Userspace\-Signalhandler vorhanden ist.
 .TP 
 \fB\-\-cgroup \fP\fIName\fP\fB,…\fP
-Match on provided control group (cgroup) v2 name. See \fBcgroups\fP(8)
+sucht nach den v2\-Namen der angegebenen Kontrollgruppen (cgroup). Siehe
+\fBcgroups\fP(8).
+.TP 
+\fB\-\-env \fP\fIName\fP[\fI=Wert\fP],.\|.\|.
+sucht nur nach Prozessen, die über die angegebenen Umgebungsvariablen
+verfügen. Falls der Parameter \fI=Wert\fP nicht angegeben ist, wird nur nach
+dem Variablennamen gesucht.
 .TP 
 \fB\-\-ns \fP\fIProzesskennung\fP
 sucht nach passenden Prozessen, die zu den gleichen Namensräumen gehören. Um
@@ -173,7 +179,7 @@ Prozesse anderer Benutzer zu finden, sind Root\-Rechte erforderlich. In
 \fB\-\-nslist\fP finden Sie Informationen, wie Sie die Übereinstimmungen im
 Zusammenhang mit Namensräumen begrenzen können.
 .TP 
-\fB\-\-nslist \fP\fIName\fP\fB, …\fP
+\fB\-\-nslist \fP\fIName\fP\fB,.\|.\|.\fP
 sucht nur in den angegebenen Namensräumen nach Übereinstimmungen. Verfügbare
 Namensräume: ipc, mnt, net, pid, user, uts.
 .TP 
@@ -189,7 +195,6 @@ zeigt Versionsinformationen an und beendet das Programm.
 .TP 
 \fB\-h\fP, \fB\-\-help\fP
 zeigt eine Hilfe an und beendet das Programm.
-.PD
 .SH OPERANDEN
 .TP 
 \fIMuster\fP
@@ -211,24 +216,26 @@ $ ps \-fp $(pgrep \-d, \-x xterm)
 Beispiel 4: Den Nice\-Wert für alle \fBchrome\fP\-Prozesse erhöhen:
 .IP
 $ renice +4 $(pgrep chrome)
+.PP
+Beispiel 5: Auf das Beenden eines Prozesses mit einer bekannten PID warten:
+.IP
+$ echo ${PID} | pidwait \-F \-
 .SH EXIT\-STATUS
-.PD 0
 .TP 
-0
+\fB0\fP
 Einer oder mehrere Prozesse entsprechen dem Kriterium. Für \fBpkill\fP und
 \fBpidwait\fP muss auch ein Signal erfolgreich an einen oder mehrere Prozesse
 gesendet oder auf sie gewartet worden sein.
 .TP 
-1
+\fB1\fP
 Es wurden keine passenden Prozesse gefunden oder an keine von ihnen konnte
 ein Signal gesendet werden.
 .TP 
-2
+\fB2\fP
 Syntaxfehler in der Befehlszeile.
 .TP 
-3
+\fB3\fP
 Schwerwiegender Fehler: Speicher ausgeschöpft usw.
-.PD
 .SH ANMERKUNGEN
 Der für die Suche verwendete Prozessname ist auf die 15 Zeichen in der
 Ausgabe von /proc/\fIProzesskennung\fP/stat beschränkt. Verwenden Sie die
@@ -254,10 +261,10 @@ Bereits beendete Prozesse werden gemeldet.
 \fBps\fP(1), \fBregex\fP(7), \fBsignal\fP(7), \fBsigqueue\fP(3), \fBkillall\fP(1),
 \fBskill\fP(1), \fBkill\fP(1), \fBkill\fP(2), \fBcgroups\fP(8)
 .SH AUTOR
-.UR kjetilho@ifi.uio.no
+.MT kjetilho@ifi.uio.no
 Kjetil Torgrim Homme
-.UE
+.ME
 .SH "FEHLER MELDEN"
 Bitte schicken Sie Fehlermeldungen (auf Englisch) an
 .MT procps@freelists.org
-.ME
+.ME .

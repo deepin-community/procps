@@ -1,6 +1,6 @@
 .\"
 .\" Copyright (c) 2016-2023 Jim Warner <james.warner@comcast.net>
-.\" Copyright (c) 2019-2023 Craig Small <csmall@dropbear.xyz>
+.\" Copyright (c) 2019-2024 Craig Small <csmall@dropbear.xyz>
 .\" Copyright (c) 2011-2012 Sami Kerola <kerolasa@iki.fi>
 .\" Copyright (c) 1999      George Staikos <staikos@0wned.org>
 .\"
@@ -15,76 +15,62 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH SYSCTL.CONF 5 "15 вересня 2021 року" procps\-ng "Формати файлів"
+.TH SYSCTL.CONF 5 "24 жовтня 2024 року" procps\-ng 
 .SH НАЗВА
-sysctl.conf — файл попереднього завантаження або налаштувань sysctl.
+sysctl.conf \- параметри налаштовування ядра Linux
 .SH ОПИС
-\fBsysctl.conf\fP — простий файл, що містить значення sysctl, які слід
-прочитати і встановити за допомогою \fBsysctl\fP. Синтаксис є простим:
+\fBsysctl.conf\fP є набором файлів налаштувань, у яких містяться параметри
+налаштовування ядра Linux, які буде прочитано і встановлено \fBsysctl\fP(8).
+.PP
+На цій сторінці підручника описано файли налаштувань для \fBsysctl\fP з
+\fIprocps\fP. Якщо ви користуєтеся \fBsystemd\-sysctl\fP(8), зверніться до
+підручника з \fBsysctl.d\fP(5) і зауважте, що та програма не використовуватиме
+файл \fI\%/etc/\:\%sysctl\:\%.conf\fP.
+.SS "Формат налаштувань"
+Кожен рядок у файлі, який читає \fBsysctl\fP \fIprocps\fP, описує параметр ядра у
+наведеному нижче форматі.
+.P
 .RS
-.sp
-.nf
-.ne 7
-# коментар
-; коментар
-
+.EX
 ключ = значення
-.fi
+.EE
 .RE
-.PP
-Зауважте, що порожні рядки буде проігноровано так само, як пробіли перед і
-після ключа або значення, хоча самі значення можуть містити пробіли. Рядки,
-що починаються із символу \fI#\fP або \fI;\fP вважатимуться коментарями і
-ігноруватимуться.
-
-Якщо рядок починається з одинарного \-, будь\-які невдалі спроби встановити
-значення буде проігноровано.
-
-.SH ЗАУВАЖЕННЯ
-Оскільки файл \fB/etc/sysctl.conf\fP використовується для перевизначення
-типових значень параметрів ядра, у цьому файлі попередньо визначається лише
-незначна кількість параметрів. Щоб ознайомитися зі списком усіх можливих
-параметрів, скористайтеся командою \fI/sbin/sysctl\ \-a\fP або підручником із
-\fBsysctl\fP(8). Опис окремих параметрів можна знайти у документації до ядра
-системи.
-
-Максимальною довжиною рядка значення є 4096 символів через обмеження на
-записи \fI/proc\fP у ядрі Linux.
-.SH ПРИКЛАД
-.RS
-.sp
-.nf
-.ne 7
-# Зразок sysctl.conf
-#
-  kernel.domainname = example.com
-; тут є пробіл, який буде записано до sysctl!
-  kernel.modprobe = /sbin/mod probe
-.fi
-.RE
-.PP
+.P
+Порожні рядки та рядки, які починаються з \[lq]\fB#\fP\[rq] або \[lq]\fB;\fP\[rq],
+буде проігноровано.
+.P
+Якщо рядок починається з одинарного символу \[lq]\fB\-\fP\[rq], помилку при
+спробі встановлення значення буде проігноровано.
 .SH ФАЙЛИ
-\fI/etc/sysctl.d/*.conf\fP
-.br
-\fI/run/sysctl.d/*.conf\fP
-.br
-\fI/usr/local/lib/sysctl.d/*.conf\fP
-.br
-\fI/usr/lib/sysctl.d/*.conf\fP
-.br
-\fI/lib/sysctl.d/*.conf\fP
-.br
-\fI/etc/sysctl.conf\fP
-
-Шляхи, де зазвичай зберігаються файли попереднього завантаження
-\fBsysctl\fP. Див. також параметр \fBsysctl\fP \fI\-\-system\fP.
+\fBsysctl\fP з \fIprocps\fP , якщо програму запущено з параметром \fB\%\-\-system\fP,
+читає файли з каталогів у вказаному нижче порядку.
+.P
+.RS
+.TP 
+\fI/etc/sysctl.d/\fP*\fI.conf\fP
+.TQ
+\fI/run/sysctl.d/\fP*\fI.conf\fP
+.TQ
+\fI/usr/local/lib/sysctl.d/\fP*\fI.conf\fP
+.TQ
+\fI/usr/lib/sysctl.d/\fP*\fI.conf\fP
+.TQ
+\fI/lib/sysctl.d/\fP*\fI.conf\fP
+.RE
+.P
+Нарешті, \fBsysctl\fP \fIprocps\fP читає \fI\%/etc/\:\%sysctl\:\%.conf\fP. Цей файл
+не буде використано \fBsystemd\-sysctl\fP, тобто деякі параметри ядра не буде
+встановлено залежно від реалізації \fBsysctl\fP, яку встановлено.
+.SH ВАДИ
+Максимальною підтримуваною довжиною рядка \fIзначення»\fP є 4096 символів через
+обмеження на записи \fI/proc\fP у ядрі Linux.
+.SH ПРИКЛАДИ
+.EX
+#
+#
+kernel.domainname = example.com
+; Значення, що містить пробіл буде записано до sysctl.
+kernel.modprobe = /sbin/mod probe
+.EE
 .SH "ТАКОЖ ПЕРЕГЛЯНЬТЕ"
-\fBsysctl\fP(8)
-.SH АВТОР
-.UR staikos@0wned.org
-George Staikos
-.UE
-.SH "Як надіслати звіт про вади"
-Про вади, будь ласка, повідомляйте на адресу
-.UR procps@freelists.org
-.UE
+\fBsysctl.d\fP(5), \fBsysctl\fP(8), \fBsystemd\-sysctl\fP(8)

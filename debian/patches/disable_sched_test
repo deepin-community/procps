@@ -6,29 +6,34 @@ Description: Disable ps sched test
 Author: Craig Small <csmall@debian.org>
 Origin: Debian
 Bug-Debian: https://bugs.debian.org/798438
-Last-Update: 2016-10-03
+Forwarded: no
+Last-Update: 2024-10-15
 ---
 This patch header follows DEP-3: http://dep.debian.net/deps/dep3/
 --- a/testsuite/ps.test/ps_sched_batch.exp
 +++ b/testsuite/ps.test/ps_sched_batch.exp
-@@ -1,11 +1,12 @@
+@@ -1,13 +1,14 @@
  #
  # check the ps SCHED_BATCH scheduler policy output
  #
 -set ps "${topdir}src/ps/pscommand"
--set schedbatch "${topdir}testsuite/test-schedbatch"
 -
--spawn $schedbatch 18
+-set nice_val 18
+-make_schedbatch_proc $nice_val
 -
 -set test "ps SCHED_BATCH scheduler"
--spawn $ps --no-header -o comm,cls,nice -a
--expect_pass "$test" "(?n)^test-schedbatch\\s+B\\s+18\\r?\$"
+-spawn $ps --no-header -o comm,cls,nice -ax
+-expect_pass "$test" "(?n)^test-schedbatch\\s+B\\s+$nice_val\\r?\$"
+-
+-kill_schedbatch_proc
 +#set ps "${topdir}src/ps/pscommand"
-+#set schedbatch "${topdir}testsuite/test-schedbatch"
 +#
-+#spawn $schedbatch 18
++#set nice_val 18
++#make_schedbatch_proc $nice_val
 +#
 +#set test "ps SCHED_BATCH scheduler"
-+#spawn $ps --no-header -o comm,cls,nice -a
-+#expect_pass "$test" "(?n)^test-schedbatch\\s+B\\s+18\\r?\$"
++#spawn $ps --no-header -o comm,cls,nice -ax
++#expect_pass "$test" "(?n)^test-schedbatch\\s+B\\s+$nice_val\\r?\$"
++#
++#kill_schedbatch_proc
 +untested "ps SCHED_BATCH scheduler"

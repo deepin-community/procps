@@ -1,7 +1,7 @@
 /*
  * stat.c - cpu/numa related definitions for libproc2
  *
- * Copyright © 2015-2023 Jim Warner <james.warner@comcast.net>
+ * Copyright © 2015-2024 Jim Warner <james.warner@comcast.net>
  * Copyright © 2015-2023 Craig Small <csmall@dropbear.xyz>
  *
  * This library is free software; you can redistribute it and/or
@@ -48,7 +48,7 @@
 
 /* ------------------------------------------------------------------------- +
    this provision just does what its name sugggests - it will create several |
-   E-Core cpus for testing that STAT_TIC_ID_CORE & STAT_TIC_TYPE_CORE stuff! |*/
+   E-Core cpus for testing that STAT_TIC_ID_CORE & STAT_TIC_TYPE_CORE stuff! | */
 // #define PRETEND_E_CORES //----------------------------------------------- |
 // ------------------------------------------------------------------------- +
 
@@ -182,9 +182,10 @@ struct stat_info {
 #define SYS_set(e,t,x) setDECL(e) { \
     (void)T; R->result. t = S->new. x; }
 // delta assignment
+// ( thanks to 'stat_derive_unique', this macro no longer needs to )
+// ( protect against a negative value when a cpu is brought online )
 #define TICsetH(e,t,x) setDECL(e) { \
-    (void)S; R->result. t = ( T->new. x - T->old. x ); \
-    if (R->result. t < 0) R->result. t = 0; }
+    (void)S; R->result. t = ( T->new. x - T->old. x ); }
 #define SYSsetH(e,t,x) setDECL(e) { \
     (void)T; R->result. t = ( S->new. x - S->old. x ); }
 
@@ -478,8 +479,8 @@ static void stat_cores_check (
     core = info->cores;
     while (core) {
         core->type = P_CORE;
-        if (core->thread_1 > ECORE_BEGIN
-        || (core->thread_2 > ECORE_BEGIN))
+        if (core->thread_1 >= ECORE_BEGIN
+        || (core->thread_2 >= ECORE_BEGIN))
             core->type = E_CORE;
         core = core->next;
     }
@@ -555,6 +556,9 @@ wrap_up:
 static inline void stat_derive_unique (
         struct hist_tic *this)
 {
+    unsigned long long *new, *old;
+    int i;
+
     /* note: we calculate these derived values in a manner consistent with
              the calculations for cgroup accounting, as nearly as possible
        ( see linux sources: ./kernel/cgroup/rstat.c, root_cgroup_cputime ) */
@@ -568,21 +572,27 @@ static inline void stat_derive_unique (
     this->new.xidl
         = this->new.idle
         + this->new.iowait;
+    /* note: we exclude guest tics from xtot since ...
+             'user' already includes 'guest'
+             'nice' already includes 'gnice'
+       ( see linux sources: ./kernel/sched/cputime.c, kcpustat_cpu_fetch ) */
     this->new.xtot
-        = this->new.xusr + this->new.xsys + this->new.xidl
-        + this->new.stolen
-        + this->new.guest
-        + this->new.gnice;
+        = this->new.xusr
+        + this->new.xsys
+        + this->new.xidl
+        + this->new.stolen;
     this->new.xbsy
         = this->new.xtot - this->new.xidl;
 
-    // don't distort deltas when cpus are taken offline or brought online
-    if (this->new.xusr < this->old.xusr
-    || (this->new.xsys < this->old.xsys)
-    || (this->new.xidl < this->old.xidl)
-    || (this->new.xbsy < this->old.xbsy)
-    || (this->new.xtot < this->old.xtot))
-        memcpy(&this->old, &this->new, sizeof(struct stat_jifs));
+    // don't distort results when cpus are brought back online
+    new = (unsigned long long *)&this->new;
+    old = (unsigned long long *)&this->old;
+    for (i = 0; i < sizeof(struct stat_jifs) / sizeof(unsigned long long); i++) {
+        if (*(new++) < *(old++)) {
+            memcpy(&this->old, &this->new, sizeof(struct stat_jifs));
+            break;
+        }
+    }
 } // end: stat_derive_unique
 
 
@@ -695,7 +705,7 @@ static int stat_make_numa_hist (
             nod_ptr->new.xtot += cpu_ptr->new.xtot;  nod_ptr->old.xtot += cpu_ptr->old.xtot;
 
             cpu_ptr->numa_node = nod_ptr->numa_node = node;
-            nod_ptr->count++; ;
+            nod_ptr->count++;
         }
     }
     info->nodes.hist.n_inuse = info->nodes.total;
@@ -722,8 +732,10 @@ static int stat_read_failed (
     if (!info->stat_fp
     && (!(info->stat_fp = fopen(STAT_FILE, "r"))))
         return 1;
-    fflush(info->stat_fp);
-    rewind(info->stat_fp);
+    else {
+        fflush(info->stat_fp);
+        rewind(info->stat_fp);
+    }
 
  #define maxSIZ    info->stat_buf_size
  #define curSIZ  ( maxSIZ - tot_read )
@@ -1419,7 +1431,6 @@ PROCPS_EXPORT struct stat_result *xtra_stat_val (
         int relative_enum,
         const char *typestr,
         const struct stat_stack *stack,
-        struct stat_info *info,
         const char *file,
         int lineno)
 {
@@ -1439,5 +1450,4 @@ PROCPS_EXPORT struct stat_result *xtra_stat_val (
         fprintf(stderr, "%s line %d: was %s, expected %s\n", file, lineno, typestr, str);
     }
     return &stack->head[relative_enum];
-    (void)info;
 } // end: xtra_stat_val

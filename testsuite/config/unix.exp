@@ -131,7 +131,15 @@ proc expect_table_dsc { test match_header match_item } {
         }
         default {
             if { $found_item == 0 } {
-                fail "$test (items)"
+                fail "$test (items ${found_item})"
+            } else {
+                pass $test
+            }
+            return
+        }
+        eof {
+            if { $found_item == 0 } {
+                fail "$test (items eof)"
             } else {
                 pass $test
             }
@@ -214,6 +222,35 @@ proc kill_testshm_proc { } {
     global testshmproc_pid
 
     kill_process $testshmproc_pid
+}
+
+proc make_schedbatch_proc { nice_val } {
+    global schedbatch_proc_pid topdir
+    set schedbatch_path "${topdir}testsuite/test-schedbatch"
+
+    set schedbatch_proc_pid [ spawn $schedbatch_path $nice_val ]
+}
+
+proc kill_schedbatch_proc { } {
+    global schedbatch_proc_pid
+    kill_process $schedbatch_proc_pid
+}
+
+
+proc make_zombie_proc { } {
+    global zombie_ppid zombie_pid topdir
+
+    set zombie_realpath "${topdir}testsuite/test-zombie"
+    set zombie_ppid [ spawn $zombie_realpath ]
+    set zombie_pid ""
+    expect {
+        -re "Zombie pid: (\[0-9\]+)" { set zombie_pid $expect_out(1,string) }
+    }
+}
+
+proc kill_zombie_proc { } {
+    global zombie_ppid
+    kill_process $zombie_ppid
 }
 
 proc kill_testproc { } {

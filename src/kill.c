@@ -1,7 +1,7 @@
 /*
  * kill.c - send a signal to process
  *
- * Copyright © 1995-2023 Craig Small <csmall@dropbear.xyz>
+ * Copyright © 1995-2024 Craig Small <csmall@dropbear.xyz>
  * Copyright © 1998-2002 Albert Cahalan
  *
  * This library is free software; you can redistribute it and/or
@@ -104,14 +104,10 @@ int main(int argc, char **argv)
                 sig_option = argv[optind];
             }
             if (sig_option) {
-                char *s;
-                s = strtosig(sig_option);
+                const char *s = strtosig(sig_option);
                 if (s)
-                    printf("%s\n", s);
-                else
-                    xwarnx(_("unknown signal name %s"),
-                          sig_option);
-                free(s);
+                    puts(s);
+                else xwarnx(_("unknown signal name %s"), sig_option);
             } else {
                 unix_print_signals();
             }
@@ -138,7 +134,7 @@ int main(int argc, char **argv)
             } else {
                 /* Special case for signal digit negative
                  * PIDs */
-		pid = (long)('0' - optopt);
+                pid = strtol_or_err(argv[optind], _("failed to parse argument"));
 		if (!execute_kill((pid_t) pid, signo, use_sigqueue, sigval))
 		    exitvalue = EXIT_FAILURE;
                 exit(exitvalue);

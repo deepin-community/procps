@@ -1,5 +1,5 @@
 .\"
-.\" Copyright (c) 2004-2023 Craig Small <csmall@dropbear.xyz>
+.\" Copyright (c) 2004-2024 Craig Small <csmall@dropbear.xyz>
 .\" Copyright (c) 2011-2023 Jim Warner <james.warner@comcast.net>
 .\" Copyright (c) 2011-2012 Sami Kerola <kerolasa@iki.fi>
 .\" Copyright (c) 1998-2003 Albert Cahalan
@@ -15,41 +15,32 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH PS 1 2023\-08\-19 procps\-ng "Commandes de l'utilisateur"
+.TH PS 1 2024\-09\-17 procps\-ng 
 .\"
 .\" Ragged-right text.
 .na
 .\" Disable hyphenation.
 .nh
-.\"
-.\" ColSize is used for the format spec table.
-.\" It's the left margin, minus the right, minus
-.\" the space needed for the 1st two columns.
-.\" Making it messy: inches, ens, points, scaled points...
-.\"
-.nr ColSize ((\n[.l] - \n[.i]) / 1n - 29)
-.\"
 .SH NOM
 ps \- Présenter un cliché instantané des processus en cours
 .SH SYNOPSIS
-\fBps\fP [\,\fIoptions\/\fP]
+\fBps\fP [\fIoption\fP .\|.\|.]
 .SH DESCRIPTION
 \fBps\fP displays information about a selection of the active processes.  If
 you want a repetitive update of the selection and the displayed information,
 use \fBtop\fP instead.
 .P
-Cette version de \fBps\fP accepte plusieurs types d'options\ :
-.IP
-.PD 0
-.IP 1 4
-les options UNIX qui peuvent être regroupées et qui doivent être précédées
-d'un tiret\ ;
-.IP 2 4
+This version of \fBps\fP accepts several kinds of options.
+.TP  4n
+\[bu]
+Unix options, which may be grouped and must be preceded by a dash.
+.TP 
+\[bu]
 les options BSD qui peuvent être regroupées et qui ne doivent pas être
-utilisées avec un tiret\ ;
-.IP 3 4
+utilisées avec un tiret ;
+.TP 
+\[bu]
 les options GNU de forme longue qui doivent être précédées de deux tirets.
-.PD
 .PP
 Les options de différents types peuvent être mélangées, mais des conflits
 peuvent apparaître. Certaines options sont synonymes (fonctionnellement
@@ -63,16 +54,16 @@ même terminal que l'appelant. Il affiche l'identifiant de processus
 au format [JJ\-]HH:MM:SS (time=TIME) et le nom de l'exécutable (ucmd=CMD). La
 sortie n'est pas ordonnée par défaut.
 .P
-L'utilisation d'options «\ à la BSD\ » ajoutera l'état du processus
+L'utilisation d'options « à la BSD » ajoutera l'état du processus
 (stat=STAT) à l'affichage par défaut et montrera les arguments de commande
 (args=COMMAND) au lieu du nom de l'exécutable. La variable d'environnement
-\fBPS_FORMAT\fP permet de modifier ce comportement. L'utilisation d'options «\ à
-la BSD\ » modifiera également la sélection de processus pour inclure les
-processus d'autres terminaux (TTY) vous appartenant\ ; autrement dit, il
+\fBPS_FORMAT\fP permet de modifier ce comportement. L'utilisation d'options « à
+la BSD » modifiera également la sélection de processus pour inclure les
+processus d'autres terminaux (TTY) vous appartenant ; autrement dit, il
 s'agit de la sélection de tous les processus, filtrés pour exclure les
 processus appartenant aux autres utilisateurs ou en dehors d'un
 terminal. Ces effets ne sont pas pris en compte pour les options décrites
-ci\-dessous comme «\ identiques\ », donc \fB\-M\fP sera considérée identique à \fBZ\fP
+ci\-dessous comme « identiques », donc \fB\-M\fP sera considérée identique à \fBZ\fP
 et ainsi de suite.
 .P
 Aux exceptions près décrites ci\-dessous, les options de sélection de
@@ -82,7 +73,7 @@ afficher. Un processus sera donc montré s'il satisfait n'importe quel
 critère de sélection donné.
 .SH EXEMPLES
 .TP  3
-Pour voir tous les processus du système en utilisant la syntaxe traditionnelle\ :
+Pour voir tous les processus du système en utilisant la syntaxe traditionnelle :
 \fBps\ \-e\fP
 .br
 \fBps\ \-ef\fP
@@ -91,50 +82,50 @@ Pour voir tous les processus du système en utilisant la syntaxe traditionnelle\
 .br
 \fBps\ \-ely\fP
 .TP 
-Pour voir tous les processus du système en utilisant la syntaxe BSD\ :
+Pour voir tous les processus du système en utilisant la syntaxe BSD :
 \fBps\ ax\fP
 .br
 \fBps\ axu\fP
 .TP 
-Pour afficher une arborescence des processus\ :
+Pour afficher une arborescence des processus :
 \fBps\ \-ejH\fP
 .br
 \fBps\ axjf\fP
 .TP 
-Pour obtenir des renseignements sur les processus légers («\ threads\ »)\ :
+Pour obtenir des renseignements sur les processus légers (« threads ») :
 \fBps\ \-eLf\fP
 .br
 \fBps\ axms\fP
 .TP 
-Pour obtenir des renseignements de sécurité\ :
+Pour obtenir des renseignements de sécurité :
 \fBps\ \-eo euser,ruser,suser,fuser,f,comm,label\fP
 .br
 \fBps\ axZ\fP
 .br
 \fBps\ \-eM\fP
 .TP 
-Pour voir tous les processus exécutés en tant que superutilisateur (identifiant réel et effectif) au format utilisateur\ :
+Pour voir tous les processus exécutés en tant que superutilisateur (identifiant réel et effectif) au format utilisateur :
 \fBps\ \-U\ root\ \-u\ root\ u\fP
 .TP 
-Pour voir tous les processus avec un format défini par l'utilisateur\ :
+Pour voir tous les processus avec un format défini par l'utilisateur :
 \fBps\ \-eo\ pid,tid,class,rtprio,ni,pri,psr,pcpu,stat,wchan:14,comm\fP
 .br
 \fBps\ axo\ stat,euid,ruid,tty,tpgid,sess,pgrp,ppid,pid,pcpu,comm\fP
 .br
 \fBps\ \-Ao\ pid,tt,user,fname,tmout,f,wchan\fP
 .TP 
-N'afficher que le PID de syslogd\ :
+N'afficher que le PID de syslogd :
 \fBps\ \-C\ syslogd\ \-o\ pid=\fP
 .TP 
-Afficher uniquement le nom du PID\ 42\ :
+Afficher uniquement le nom du PID 42 :
 \fBps\ \-q\ 42\ \-o\ comm=\fP
 .SH "SÉLECTION SIMPLE DES PROCESSUS"
 .TP 
 \fBa\fP
-Lever la restriction «\ seulement vous\ » du style BSD, qui est imposée sur
-l'ensemble des processus si des options «\ à la BSD\ » (sans «\ \-\ ») sont
-utilisées ou si la personnalité de \fBps\fP est configurée «\ à la
-BSD\ ». L'ensemble des processus sélectionnés de cette façon est ajouté à
+Lever la restriction « seulement vous » du style BSD, qui est imposée sur
+l'ensemble des processus si des options « à la BSD » (sans « \- ») sont
+utilisées ou si la personnalité de \fBps\fP est configurée « à la
+BSD ». L'ensemble des processus sélectionnés de cette façon est ajouté à
 l'ensemble des processus sélectionnés autrement. Autrement dit, cette option
 conduit \fBps\fP à énumérer tous les processus avec un terminal (tty) ou
 énumérer tous les processus lorsqu'elle est utilisée avec l'option \fBx\fP.
@@ -179,24 +170,23 @@ Sélectionner tous les processus associés à ce terminal. Identique à l'option
 Restreindre la sélection aux processus en cours d'exécution.
 .TP 
 \fBx\fP
-Lever la restriction «\ doit avoir un terminal\ » du style BSD, qui est
-imposée sur l'ensemble des processus si des options «\ à la BSD\ » (sans
-«\ \-\ ») sont utilisées ou si la personnalité de \fBps\fP est configurée «\ à la
-BSD\ ». L'ensemble des processus sélectionnés de cette façon est ajouté à
+Lever la restriction « doit avoir un terminal » du style BSD, qui est
+imposée sur l'ensemble des processus si des options « à la BSD » (sans
+« \- ») sont utilisées ou si la personnalité de \fBps\fP est configurée « à la
+BSD ». L'ensemble des processus sélectionnés de cette façon est ajouté à
 l'ensemble des processus sélectionnés autrement. Autrement dit, cette option
 conduit \fBps\fP à énumérer tous les processus vous appartenant (même EUID que
 \fBps\fP) ou énumérer tous les processus lorsqu'elle est utilisée avec l'option
 \fBa\fP.
-.PD
 .SH "SÉLECTION DES PROCESSUS PAR UNE LISTE"
 Ces options acceptent un unique paramètre sous forme de liste séparée par
 des blancs ou des virgules. Elles peuvent être utilisées plusieurs fois. Par
-exemple\ : \fBps\ \-p\ "1\ 2"\ \-p\ 3,4\fP.
+exemple : \fBps\ \-p\ "1\ 2"\ \-p\ 3,4\fP.
 .TP 
 \fI123\fP
 Identique à \fB\-\-pid\ \fP\fI123\fP.
 .TP 
-\+\fI123\fP
++\fI123\fP
 Identical to \fB\-\-sid\ \fP\fI123\fP.
 .TP 
 \fB\-\fP\fI123\fP
@@ -204,11 +194,11 @@ Select by process group ID (PGID).
 .TP 
 \fB\-C\fP\fI\ liste_commandes\fP
 Sélectionner par nom de commande. Cela sélectionne les processus dont le nom
-d'exécutable figure dans \fIliste_commandes\fP. REMARQUE\ : le nom de la
+d'exécutable figure dans \fIliste_commandes\fP. REMARQUE : le nom de la
 commande n'est pas le même que le nom sur la ligne de commande. Les
 anciennes versions de \fBprocps\fP et du noyau réduisaient ce nom de commande à
-15\ caractères. Cette limite n'existe plus. Si vous faisiez une recherche sur
-15\ caractères seulement, il se peut que votre recherche ne donne plus de
+15 caractères. Cette limite n'existe plus. Si vous faisiez une recherche sur
+15 caractères seulement, il se peut que votre recherche ne donne plus de
 résultats.
 .TP 
 \fB\-G\fP\fI\ liste_groupes\fP
@@ -285,8 +275,8 @@ plus propre que l'utilisation de \fBt\fP avec une \fIliste_ttys\fP vide.
 \fB\-t\fP\fI\ liste_ttys\fP
 Sélectionner par tty. Cela sélectionne les processus associés aux terminaux
 donnés dans \fIliste_ttys\fP. Les terminaux (ttys, ou écrans pour sortie texte)
-peuvent être indiqués sous différentes formes\ : /dev/ttyS1, ttyS1, S1. Un
-simple «\ \-\ » permet de sélectionner les processus qui ne sont pas attachés à
+peuvent être indiqués sous différentes formes : /dev/ttyS1, ttyS1, S1. Un
+simple « \- » permet de sélectionner les processus qui ne sont pas attachés à
 un terminal.
 .TP 
 \fB\-\-tty\fP\fI\ liste_ttys\fP
@@ -309,7 +299,7 @@ processus, consultez \fBgetuid\fP(2).
 Sélectionner par identifiant d'utilisateur effectif (EUID) ou nom. Cela
 sélectionne les processus dont le nom ou l'identifiant d'utilisateur
 effectif est dans \fIliste_utilisateurs\fP.
-
+.P
 L'EUID identifie l'utilisateur dont les droits d'accès au fichier sont
 utilisés par le processus, consultez \fBgeteuid\fP(2). Identique à \fBU\fP et
 \fB\-\-user\fP.
@@ -320,8 +310,7 @@ Sélectionner par identifiant d'utilisateur réel (RUID) ou nom. Identique à
 .TP 
 \fB\-\-user\fP\fI\ liste_utilisateurs\fP
 Sélectionner par identifiant d'utilisateur effectif (EUID) ou nom. Identique
-à \fB\-u\fP et\ \fBU\fP.
-.PD
+à \fB\-u\fP et \fBU\fP.
 .SH "CONTRÔLE DU FORMAT DE SORTIE"
 Ces options sont utilisées pour choisir les renseignements affichés par
 \fBps\fP. La sortie peut changer en fonction de la personnalité.
@@ -333,13 +322,11 @@ Montrer des renseignements d'ordonnanceur différents pour l'option \fB\-l\fP.
 Afficher au format du contexte de sécurité (pour SELinux).
 .TP 
 \fB\-f\fP
-Faire une liste au format complet. Cette option peut être combinée aux
-nombreuses autres options «\ à la UNIX\ » pour ajouter des colonnes
-supplémentaires. Cela conduit également à afficher les paramètres de la
-commande. Lorsqu'elle est utilisée avec \fB\-L\fP, les colonnes NLWP (nombre de
-processus légers) et LWP (identifiant de processus léger) seront
-ajoutées. Consultez l'option \fBc\fP et les mots\-clés de format \fBargs\fP et
-\fBcomm\fP.
+Do full\-format listing.  This option can be combined with many other
+Unix\-style options to add additional columns.  It also causes the command
+arguments to be printed.  When used with \fB\-L\fP, the NLWP (number of threads)
+and LWP (thread ID) columns will be added.  See the \fBc\fP option, the format
+keyword \fBargs\fP, and the format keyword \fBcomm\fP.
 .TP 
 \fB\-F\fP
 Format complet étendu. Consultez l'option \fB\-f\fP, implicite avec \fB\-F\fP.
@@ -364,39 +351,35 @@ Afficher une colonne de données de sécurité. Identique à \fBZ\fP (pour
 SELinux).
 .TP 
 \fBO\fP\fI\ format\fP
-\fBo\fP préchargé (surchargé). L'option BSD \fBO\fP peut se comporter comme \fB\-O\fP
-(format de sortie défini par l'utilisateur avec quelques champs communs
-prédéfinis) ou être utilisée pour indiquer un ordre de tri. Les paramètres
-sont utilisés pour déterminer le comportement de cette option. Pour
-s'assurer que le comportement voulu soit obtenu (tri ou formatage), indiquer
-cette option d'une autre façon (par exemple avec \fB\-O\fP ou
-\fB\-\-sort\fP). Identique à \fB\-O\fP quand utilisée comme option de formatage, avec
-la personnalité BSD.
+is preloaded \fBo\fP (overloaded).  The BSD \fBO\fP option can act like \fB\-O\fP
+(user\-defined output format with some common fields predefined) or can be
+used to specify sort order.  Heuristics are used to determine the behavior
+of this option.  To ensure that the desired behavior is obtained (sorting or
+formatting), specify the option in some other way (e.g., with \fB\-O\fP or
+\fB\-\-sort\fP).  When used as a formatting option, it is identical to \fB\-O\fP,
+with the BSD personality.
 .TP 
 \fB\-O\fP\fI\ format\fP
 Comme \fB\-o\fP, mais préchargé avec quelques colonnes par défaut. Identique à
-\fB\-o\ pid,\fP\fIformat\fP\fB,state,tname,time,command\fP ou
-\fB\-o\ pid,\fP\fIformat\fP\fB,tname,time,cmd\fP, consultez \fB\-o\fP ci\-dessous.
+\fB\-o pid,\fP\fIformat\fP\fB,state,tname,time,command\fP ou
+\fB\-o pid,\fP\fIformat\fP\fB,tname,time,cmd\fP, consultez \fB\-o\fP ci\-dessous.
 .TP 
 \fBo\fP\fI\ format\fP
 Indiquer un format défini par l'utilisateur. Identique à \fB\-o\fP et
 \fB\-\-format\fP.
 .TP 
 \fB\-o\fP\fI\ format\fP
-Format défini par l'utilisateur. \fIformat\fP est un paramètre unique sous
-forme de liste séparée par des blancs ou des virgules, qui permet d'indiquer
-des colonnes de sorties individuelles. Les mots\-clés reconnus sont décrits
-ci\-dessous dans la section \fBINDICATEURS DE FORMAT STANDARDS\fP. Les en\-têtes
-peuvent êtres renommés (\fBps\ \-o\ pid,ruser=RealUser\ \-o\ comm=Command\fP) si
-besoin. Si tous les en\-têtes de colonnes sont vides (\fBps\ \-o\ pid=\ \-o\ comm=\fP), la ligne d'en\-têtes ne sera pas affichée. La largeur de colonne
-augmentera si de larges en\-têtes l'exigent\ ; ce peut être utilisé pour
-élargir des colonnes comme WCHAN (\fBps\ \-o\ pid,wchan=WIDE\-WCHAN\-COLUMN\ \-o\ comm\fP). Un contrôle explicite de la largeur (\fBps\ opid,wchan:42,cmd\fP) est
-également possible. Le comportement de \fBps\ \-o\ pid=X,comm=Y\fP change avec
-les personnalités\ ; la sortie peut être une colonne appelée «\ X,comm=Y\ » ou
-deux colonnes appelées «\ X\ » et «\ Y\ ». Utilisez plusieurs options \fB\-o\fP pour
-dissiper les doutes. Utilisez la variable d'environnement \fBPS_FORMAT\fP pour
-indiquer une valeur par défaut\ ; DefSysV et DefBSD sont des macros qui
-peuvent être utilisées pour choisir les colonnes UNIX ou BSD par défaut.
+User\-defined format.  \fIformat\fP is a single argument in the form of a
+blank\-separated or comma\-separated list, which offers a way to specify
+individual output columns.  The recognized keywords are described in the
+\fBSTANDARD FORMAT SPECIFIERS\fP section below.  Headers may be renamed (\fBps \-o pid,\:ruser=RealUser \-o comm=Command\fP)  as desired.  If all column
+headers are empty (\fBps \-o pid= \-o comm=\fP)  then the header line will not be
+output.  Column width will increase as needed for wide headers; this may be
+used to widen up columns such as WCHAN (\fBps \-o pid,\:wchan=\:WIDE\-\:WCHAN\-\:COLUMN \-o comm\fP).  Explicit width control (\fBps opid,\:wchan:42,\:cmd\fP)  is offered too.  The behavior of \fBps \-o pid=X,\:comm=Y\fP varies with personality; output may be one column named
+"X,\:comm=Y" or two columns named "X" and "Y".  Use multiple \fB\-o\fP options
+when in doubt.  Use the \fBPS_FORMAT\fP environment variable to specify a
+default as desired; DefSysV and DefBSD are macros that may be used to choose
+the default Unix or BSD columns.
 .TP 
 \fB\-P\fP
 Add a column showing \fBpsr\fP.
@@ -414,21 +397,20 @@ Afficher au format de mémoire virtuelle.
 Format de registre.
 .TP 
 \fB\-y\fP
-Ne pas montrer d'indicateurs\ ; montrer \fBrss\fP au lieu de \fBaddr\fP. Cette
-option ne peut être utilisée qu'avec\ \fB\-l\fP.
+Ne pas montrer d'indicateurs ; montrer \fBrss\fP au lieu de \fBaddr\fP. Cette
+option ne peut être utilisée qu'avec \fB\-l\fP.
 .TP 
 \fBZ\fP
 Afficher une colonne de données de sécurité. Identique à \fB\-M\fP (pour
 SELinux).
-.PD
 .SH "MODIFICATEURS DE SORTIE"
 .TP 
 \fBc\fP
 Montrer les vrais noms de commande. Cela vient du nom de fichier exécutable,
 plutôt que de la valeur \fIargv\fP. Les paramètres de la commande et leurs
 modifications éventuelles ne sont donc pas montrés. Cette option transforme
-en fait le mot\-clé de format \fBargs\fP en \fBcomm\fP\ ; c'est pratique pour
-l'option de format \fB\-f\fP et avec toutes les options de format «\ à la BSD\ »,
+en fait le mot\-clé de format \fBargs\fP en \fBcomm\fP ; c'est pratique pour
+l'option de format \fB\-f\fP et avec toutes les options de format « à la BSD »,
 qui entraînent normalement toutes un affichage des paramètres de la
 commande. Consultez l'option \fB\-f\fP et les mots\-clés de format \fBargs\fP et
 \fBcomm\fP.
@@ -443,9 +425,8 @@ Configurer la largeur de l'écran.
 Inclure des données sur les processus enfants tués (comme une somme avec le
 parent).
 .TP 
-.TP 
 \fB\-D\fP\fI\ format\fP
-Set the date format of the \fBlstart\fP field to \fIformat\fP. This format is
+Set the date format of the \fBlstart\fP field to \fIformat\fP.  This format is
 parsed by \fBstrftime\fP(3)  and should be a maximum of 24 characters to not
 mis\-align columns.
 .TP 
@@ -480,13 +461,11 @@ Montrer la hiérarchie des processus (arborescence).
 Répéter les lignes d'en\-tête, une par page de sortie.
 .TP 
 \fBk\fP\fI\ spec\fP
-Indiquer l'ordre de tri. La syntaxe de tri est [\fB+\fP|\fB\-\fP]\fIclé\/.RB [,[ + | \- ].clé IR [,...]].\fP. Choisissez une \fIclé\fP multicaractère de la section
-\fBINDICATEURS DE FORMAT STANDARDS\fP. Le «\ +\ » est facultatif puisque l'ordre
-numérique ou lexicographique est croissant par défaut. Identique à
-\fB\-\-sort\fP.
+Specify sorting order.  Sorting syntax is [\fB+\fP|\fB\-\fP]\fIkey\/.RB [,[ + | \- ].IR key [,.\|.\|.]].\fP Choose a multi\-letter key from the \fBSTANDARD FORMAT SPECIFIERS\fP section.  The "+" is optional since default direction is
+increasing numerical or lexicographic order.  Identical to \fB\-\-sort\fP.
 .RS 8
 .IP
-Exemples\ :
+Exemples :
 .br
 \fBps jaxkuid,\-ppid,+pid\fP
 .br
@@ -506,22 +485,20 @@ Ne pas afficher d'en\-tête du tout. \fB\-\-no\-heading\fP est un alias pour cet
 option.
 .TP 
 \fBO\fP\fI\ order\fP
-Ordre de tri (surchargé). L'option BSD \fBO\fP peut se comporter comme \fB\-O\fP
-(format de sortie défini par l'utilisateur avec quelques champs communs
-prédéfinis) ou peut être utilisée pour indiquer un ordre de tri. Les
-paramètres sont utilisés pour déterminer le comportement de cette
-option. Pour s'assurer que le comportement voulu soit obtenu (tri ou
-formatage), indiquer cette option d'une autre façon (par exemple avec \fB\-O\fP
-ou \fB\-\-sort\fP).
+Sorting order (overloaded).  The BSD \fBO\fP option can act like \fB\-O\fP
+(user\-defined output format with some common fields predefined) or can be
+used to specify sort order.  Heuristics are used to determine the behavior
+of this option.  To ensure that the desired behavior is obtained (sorting or
+formatting), specify the option in some other way (e.g., with \fB\-O\fP or
+\fB\-\-sort\fP).
 .IP
-Pour trier, la syntaxe de l'option BSD obsolète est
-«\ \fBO\fP[\fB+\fP|\fB\-\fP]\fIk1\fP[,[\fB+\fP|\fB\-\fP]\fIk2\fP[,...]]\ ». L'ordre de la liste de
-processus est effectué en fonction de l'ordre multiniveau indiqué par la
-suite de clés courtes à une lettre \fIk1\fP, \fIk2\fP, etc., décrites ci\-dessous
-dans la section \fBCLÉS DE TRI OBSOLÈTES\fP. Le «\ +\ » actuellement facultatif
-réitère simplement l'ordre par défaut d'une clé, mais permet également de
-distinguer un \fBO\fP de tri d'un \fBO\fP de formatage. Le «\ \-\ » inverse
-uniquement l'ordre de la clé qu'il précède.
+For sorting, obsolete BSD \fBO\fP option syntax is
+\fBO\fP[\fB+\fP|\fB\-\fP]\fIk1\fP[,[\fB+\fP|\fB\-\fP]\fIk2\fP[,.\|.\|.]].  It orders the processes
+listing according to the multilevel sort specified by the sequence of
+one\-letter short keys \fIk1\fP,\fIk2\fP, .\|.\|." described in the \fBOBSOLETE SORT KEYS\fP section below.  The\ "+" is currently optional, merely re\-iterating
+the default direction on a key, but may help to distinguish an \fBO\fP sort
+from an \fBO\fP format.  The "\-" reverses direction only on the key it
+precedes.
 .TP 
 \fB\-\-rows\fP\fI\ n\fP
 Configurer la hauteur de l'écran.
@@ -533,11 +510,11 @@ système où les processus parents engendrent des processus enfants de courte
 durée de vie pour faire leur travail.
 .TP 
 \fB\-\-sort\fP\fI\ spec\fP
-Indiquer l'ordre de tri. La syntaxe de tri est
-«\ [\fB+\fP|\fB\-\fP]\fIclé\fP[,[\fB+\fP|\fB\-\fP]\fIclé\fP[,...]]\ ». Choisir une \fIclé\fP
-multicaractère de la section \fBINDICATEURS DE FORMAT STANDARDS\fP. Le «\ +\ »
-est facultatif puisque l'ordre numérique ou lexicographique est croissant
-par défaut. Identique à \fBk\fP. Par exemple\ : \fBps\ jax\ \-\-sort=uid,\-ppid,+pid\fP.
+Specify sorting order.  Sorting syntax is
+[\fI+\fP|\fI\-\fP]\fIkey\fP[,[\fB+\fP|\fB\-\fP]\fIkey\fP[,.\|.\|.]].  Choose a multi\-letter key
+from the \fBSTANDARD FORMAT SPECIFIERS\fP section.  The "+" is optional since
+default direction is increasing numerical or lexicographic order.  Identical
+to \fBk\fP.  For example: \fBps jax \-\-sort=\:uid,\:\-ppid,\:+pid\fP
 .TP 
 \fB\-\-signames\fP
 Show signal masks using abbreviated signal names and expands the collumn.
@@ -552,8 +529,7 @@ Sortie large. Utilisez cette option deux fois pour une largeur illimitée.
 .TP 
 \fB\-\-width\fP\fI\ n\fP
 Configurer la largeur de l'écran.
-.PD
-.SH "AFFICHAGE DE PROCESSUS LÉGERS («\ THREAD\ »)"
+.SH "AFFICHAGE DE PROCESSUS LÉGERS (« THREAD »)"
 .TP 
 \fBH\fP
 Montrer les processus légers comme s'ils étaient des processus.
@@ -605,10 +581,10 @@ Les champs SIZE et RSS ne comptent pas certaines parties d'un processus
 comme les tables de pages, la pile du noyau, la structure thread_info, et la
 structure task_struct. Cela représente au moins 20\ Kio de mémoire toujours
 résidente. SIZE est la taille virtuelle du processus
-(code\ +\ données\ +\ pile).
+(code + données + pile).
 .PP
 Les processus marqués <defunct> sont les processus tués (appelés
-«\ zombies\ ») qui restent parce que leur parent ne les a pas détruits
+« zombies ») qui restent parce que leur parent ne les a pas détruits
 proprement. Ces processus seront détruits par \fBinit\fP(8) si le processus
 parent se termine.
 .PP
@@ -617,100 +593,78 @@ column, the username will be truncated.  See the \fB\-o\fP and \fB\-O\fP formatt
 options to customize length.
 .PP
 Commands options such as \fBps \-aux\fP are not recommended as it is a confusion
-of two different standards.  According to the POSIX and UNIX standards, the
+of two different standards.  According to the POSIX and Unix standards, the
 above command asks to display all processes with a TTY (generally the
 commands users are running) plus all processes owned by a user named \fIx\fP.
 If that user doesn't exist, then \fBps\fP will assume you really meant "\fBps\fP
 \fIaux\fP".
 .SH "INDICATEURS DE PROCESSUS"
-La somme de ces valeurs est affichée dans la colonne «\ F\ », fournie par
-l'indicateur de sortie \fBflags\fP\ :
+La somme de ces valeurs est affichée dans la colonne « F », fournie par
+l'indicateur de sortie \fBflags\fP :
 .PP
 .RS 8
-.PD 0
-.TP  5
-1
-engendré mais pas exécuté\ ;
-.TP 
-4
-a utilisé des privilèges de superutilisateur\ ;
-.PD
+.TS
+R4 L.
+1	engendré mais pas exécuté ;
+4	a utilisé des privilèges de superutilisateur ;
+.TE
 .RE
 .SH "CODES D'ÉTAT DE PROCESSUS"
 Voici les différentes valeurs que les indicateurs de sortie \fBs\fP, \fBstat\fP et
-\fBstate\fP (en\-tête «\ STAT\ » ou «\ S\ ») afficheront pour décrire l'état d'un
-processus\ :
+\fBstate\fP (en\-tête « STAT » ou « S ») afficheront pour décrire l'état d'un
+processus :
 .PP
 .RS 8
-.PD 0
-.TP  5
-D
-en sommeil non interruptible (normalement entrées et sorties)\ ;
-.TP 
-I
-fil inactif du noyau\ ;
-.TP 
-R
-s'exécutant ou pouvant s'exécuter (dans la file d'exécution)\ ;
-.TP 
-S
-en sommeil interruptible (en attente d'un événement pour finir)\ ;
-.TP 
-T
-arrêté par le signal de contrôle de la tâche\ ;
-.TP 
-t
-arrêté par le débogueur lors du traçage\ ;
-.TP 
-W
-pagination (non valable depuis le noyau\ 2.6.xx)\ ;
-.TP 
-X
-tué (ne devrait jamais être vu)\ ;
-.TP 
-Z
-processus zombie (<defunct>), terminé mais pas détruit par son
-parent.
-.PD
+.TS
+R4 L.
+D	uninterruptible sleep (usually I/O)
+I	idle kernel thread
+R	s'exécutant ou pouvant s'exécuter (dans la file d'exécution) ;
+S	T{
+interruptible sleep
+(waiting for an event to complete)
+T}
+T	arrêté par le signal de contrôle de la tâche ;
+t	arrêté par le débogueur lors du traçage ;
+W	paging (not valid since Linux 2.6)
+X	tué (ne devrait jamais être vu) ;
+Z	T{
+defunct (\[lq]zombie\[rq]) process,
+terminated but not reaped by its parent
+T}
+.TE
 .RE
 .PP
 Pour les formats BSD et quand le mot\-clé \fBstat\fP est utilisé, les caractères
-supplémentaires suivants peuvent être affichés\ :
+supplémentaires suivants peuvent être affichés :
 .PP
 .RS 8
-.PD 0
-.TP  5
-<
-haute priorité (non poli pour les autres utilisateurs)\ ;
-.TP 
-N
-basse priorité (poli pour les autres utilisateurs)\ ;
-.TP 
-L
-avec ses pages verrouillées en mémoire (pour temps réel et entrées et
-sorties personnalisées)\ ;
-.TP 
-s
-meneur de session\ ;
-.TP 
-l
-possède plusieurs processus légers («\ multi\-thread\ », utilisant CLONE_THREAD
-comme NPTL pthreads le fait)\ ;
-.TP 
-+
-dans le groupe de processus au premier plan.
-.PD
+.TS
+R4 L.
+<	haute priorité (non poli pour les autres utilisateurs) ;
+N	basse priorité (poli pour les autres utilisateurs) ;
+L	T{
+has pages locked into memory
+(for real\-time and custom I/O)
+T}
+s	meneur de session ;
+l	T{
+is multi\-threaded
+(using CLONE_THREAD,
+like NPTL pthreads do)
+T}
++	dans le groupe de processus au premier plan.
+.TE
 .RE
 .SH "CLÉS DE TRI OBSOLÈTES"
-Ces clés sont utilisées par l'option BSD \fBO\fP (quand elle est utilisée pour
-trier). L'option GNU \fB\-\-sort\fP n'utilise pas ces clés, mais celles décrites
-ci\-dessous dans la section \fBINDICATEURS DE FORMAT STANDARDS\fP. Remarquez que
-les valeurs utilisées pour le tri sont les valeurs internes que \fBps\fP
-utilise et non les valeurs «\ trafiquées\ » utilisées dans certains champs de
-format de sortie (par exemple trier sur tty ordonnera par numéro de
-périphérique, pas en fonction du nom de terminal affiché). Envoyer la sortie
-de \fBps\fP dans un tube («\ pipe\ ») vers la commande \fBsort\fP(1) permet
-d'obtenir un tri selon les valeurs trafiquées.
+These keys are used by the BSD \fBO\fP option (when it is used for sorting).
+The GNU \fB\-\-sort\fP option doesn't use these keys, but the specifiers
+described below in the \fBSTANDARD FORMAT SPECIFIERS\fP section.  Note that the
+values used in sorting are the internal values \fBps\fP uses and not the
+"cooked" values used in some of the output format fields (e.g., sorting on
+tty will sort into device number, not according to the terminal name
+displayed).  Pipe \fBps\fP output into the \fBsort\fP(1)  command if you want to
+sort the cooked values.
 .TS
 l l lw(3i).
 \fBCLÉ\fP	\fBLONGUE\fP	\fBDESCRIPTION\fP
@@ -731,7 +685,7 @@ p	pid	identifiant de processus (PID)
 P	ppid	PID du processus parent
 r	rss	taille de mémoire résidente
 R	resident	pages résidentes
-s	size	taille mémoire en kilooctets
+s	size	memory size in kibibytes
 S	share	nombre de pages partagées
 t	tty	numéro de périphérique du tty contrôlant 
 T	start_time	heure de démarrage du processus
@@ -742,10 +696,9 @@ y	priority	priorité d'ordonnancement du noyau
 .\"K	stime	system time (conflict, system vs. start time)
 .TE
 .SH "DESCRIPTEURS DE FORMAT AIX"
-Ce \fBps\fP prend en charge les descripteurs de format AIX, qui fonctionnent un
-peu comme les codes de formatage de \fBprintf\fP(1) et \fBprintf\fP(3). Par
-exemple, la sortie normale par défaut peut être produite ainsi\ : \fBps\ \-eo\ "%p\ %y\ %x\ %c"\fP.  Les codes \fBSTANDARD\fP sont décrits dans la section
-suivante.
+This \fBps\fP supports AIX format descriptors, which work somewhat like the
+formatting codes of \fIprintf\fP(1)  and \fIprintf\fP(3).  The \fBNORMAL\fP codes are
+described in the next section.
 .TS
 l l l.
 \fBCODE\fP	\fBSTANDARD\fP	\fBEN\-TÊTE\fP
@@ -768,32 +721,24 @@ l l l.
 .SH "INDICATEURS DE FORMAT STANDARDS"
 Voici les différents mots\-clés pouvant être utilisés pour contrôler le
 format de sortie (par exemple avec l'option \fB\-o\fP) ou pour trier les
-processus sélectionnés avec l'option «\ à la GNU\ » \fB\-\-sort\fP.
+processus sélectionnés avec l'option « à la GNU » \fB\-\-sort\fP.
 .PP
-Par exemple\ : \fBps\ \-eo\ pid,user,args\ \-\-sort\ user\fP
+Par exemple : \fBps\ \-eo\ pid,user,args\ \-\-sort\ user\fP
 .PP
 Cette version de \fBps\fP essaye de reconnaître la plupart des mots\-clés
 utilisés avec les autres implémentations de \fBps\fP.
 .PP
 Les indicateurs suivants de format définis par l'utilisateur peuvent
-contenir des espaces\ : \fBargs\fP, \fBcmd\fP, \fBcomm\fP, \fBcommand\fP, \fBfname\fP,
+contenir des espaces : \fBargs\fP, \fBcmd\fP, \fBcomm\fP, \fBcommand\fP, \fBfname\fP,
 \fBucmd\fP, \fBucomm\fP, \fBlstart\fP, \fBbsdstart\fP, \fBstart\fP.
 .PP
 Certains mots\-clés peuvent être indisponibles pour le tri.
-
-.\" #######################################################################
-.\" lB1 lB1 lB1 lB1 s s s
-.\" lB1 l1  l1  l1  s s s.
-.\"
-.\" lB1 lB1 lBw(5.5i)
-.\" lB1 l1  l.
-.\"
+.PP
 .TS
-expand;
-l1B l1B lBw(\n[ColSize]n)
-l1B l1  l.
-\fBCODE\fP	\fBEN\-TÊTE\fP	DESCRIPTION
-
+Lb Lb Lbx
+Lb Lb L  .
+Code	Header	Description
+_
 %cpu	%CPU	T{
 Utilisation CPU du processus exprimée avec un chiffre après la virgule.
 Actuellement, il s'agit du temps passé à fonctionner divisé par le temps de
@@ -818,12 +763,16 @@ The autogroup nice value which affects scheduling of all processes in that group
 T}
 
 args	COMMAND	T{
-command with all its arguments as a string. Modifications to the arguments
-may be shown.  The output in this column may contain spaces.  A process
-marked <defunct> is partly dead, waiting to be fully destroyed by its parent.
-Sometimes the process args will be unavailable; when this happens,
+A command with all its arguments as a string.
+Modifications to the arguments may be shown.
+The output in this column may contain spaces.
+A process marked \[lq]<defunct>\[rq] is partly dead,
+waiting to be fully destroyed by its parent.
+Sometimes the process arguments will be unavailable;
+when this happens,
 \fBps\fP
-will instead print the executable name in brackets.  (alias
+instead reports the executable name in brackets.
+(alias
 \fBcmd\fP, \fBcommand\fP).
 See also the
 \fBcomm\fP
@@ -832,25 +781,30 @@ format keyword, the
 option, and the
 \fBc\fP
 option.
-.br
-Lorsque indiquée en dernier, cette colonne sera élargie jusqu'aux bords de l'affichage. Si
+.sp \n[PD]u
+When specified last,
+this column will extend to the edge of the display.
+If
 \fBps\fP
-ne peut pas déterminer la largeur de l'affichage, comme quand la sortie est renvoyée
-(dans un tube, «\ pipe\ ») vers un fichier ou une autre commande,
-la largeur de sortie n'est pas définie
-(elle peut être de 80\ caractères,
-illimitée, déterminée par la variable
-\fBTERM\fP,\ etc.)
-La variable d'environnement
+can not determine the display width,
+as when output is redirected (piped) into a file or another command,
+the output width is undefined
+(it may be 80,
+unlimited,
+determined by the
+\fBTERM\fP
+variable,
+and so on).
+The
 \fBCOLUMNS\fP
-ou l'option
+environment variable or
 \fB\-\-cols\fP
-permettent de déterminer avec exactitude la largeur dans ce cas.
-Les options
+option may be used to exactly determine the width in this case.
+The
 \fBw\fP
-ou
+or
 \fB\-w\fP
-peuvent également être utilisées pour adapter la largeur.
+option may be also be used to adjust width.
 T}
 
 blocked	BLOCKED	T{
@@ -877,8 +831,10 @@ plus de 999\ minutes de temps CPU.
 T}
 
 c	C	T{
-Utilisation du processeur. C'est pour l'instant la partie entière
-du pourcentage d'utilisation par rapport au temps de vie du processus (consultez
+processor utilization.
+Currently, this is the integer value of the percent
+usage over the lifetime of the process.
+(see
 \fB%cpu\fP).
 T}
 
@@ -908,7 +864,7 @@ class	CLS	T{
 Classe d’ordonnancement du processus (alias
 \fBpolicy\fP,\fBcls\fP).
 Les valeurs possibles du champ sont\ :
-.sp 1
+.sp \n[PD]u
 .in +9n
 \-	non signalé
 .br
@@ -934,7 +890,7 @@ cls	CLS	T{
 Classe d’ordonnancement du processus (alias
 \fBpolicy\fP,\fBcls\fP).
 Les valeurs possibles du champ sont\ :
-.sp 1
+.sp \n[PD]u
 .in +9n
 \-	non signalé
 .br
@@ -975,7 +931,7 @@ format keyword, the
 option, and the
 \fBc\fP
 option.
-.br
+.sp \n[PD]u
 Lorsque indiquée en dernier, cette colonne sera élargie jusqu'aux bords de l'affichage. Si
 \fBps\fP
 ne peut pas déterminer la largeur de l'affichage, comme quand la sortie est renvoyée
@@ -1017,7 +973,8 @@ Temps CPU cumulé en secondes (alias
 T}
 
 cuc	%CUC	T{
-The CPU utilization of a process, including dead children, in an extended "##.###" format.
+The CPU utilization of a process, including dead children,
+in an extended "##.###" format.
 (see also
 \fB%cpu\fP,
 \fBc\fP,
@@ -1036,15 +993,20 @@ The CPU utilization of a process in an extended "##.###" format.
 \fBpcpu\fP).
 T}
 
+docker	DOCKER	T{
+The abbreviated id of the docker container within which a task is running.
+If a process is not running inside a container, a dash ('\-') will be shown.
+T}
+
 drs	DRS	T{
-data resident set size, the amount of private memory \fIreserved\fP by a process.
-It is also known as DATA. Such memory may not yet be mapped to
+data resident set size,
+the amount of private memory \fIreserved\fP by a process.
+It is also known as DATA.
+Such memory may not yet be mapped to
 \fBrss\fP
-but will always be included
-included in the
+but will always be included in the
 \fBvsz\fP
 amount.
-
 T}
 
 egid	EGID	T{
@@ -1062,12 +1024,14 @@ sinon (alias
 T}
 
 eip	EIP	T{
-instruction pointer. As of kernel 4.9.xx will be zeroed out unless task is
+instruction pointer.
+As of kernel 4.9.xx will be zeroed out unless task is
 exiting or being core dumped.
 T}
 
 esp	ESP	T{
-stack pointer. As of kernel 4.9.xx will be zeroed out unless task is
+stack pointer.
+As of kernel 4.9.xx will be zeroed out unless task is
 exiting or being core dumped.
 T}
 
@@ -1080,6 +1044,9 @@ etimes	ELAPSED	T{
 Temps écoulé depuis que le processus a été démarré, en seconde.
 T}
 
+environ	ENVIRON	T{
+environment variables for the process.
+T}
 euid	EUID	T{
 Identifiant utilisateur effectif (EUID) (alias
 \fBuid\fP).
@@ -1097,7 +1064,8 @@ pour forcer la représentation décimale (alias
 T}
 
 exe	EXE	T{
-path to the executable. Useful if path cannot be printed via
+path to the executable.
+Useful if path cannot be printed via
 \fBcmd\fP, \fBcomm\fP
 or
 \fBargs\fP
@@ -1109,6 +1077,10 @@ Indicateur associé au processus, consultez la section
 \fBINDICATEURS DE PROCESSUS\fP
 (alias
 \fBflag\fP, \fBflags\fP).
+T}
+
+fds	FDS	T{
+total open file descriptors.
 T}
 
 fgid	FGID	T{
@@ -1168,6 +1140,16 @@ Consultez
 \fBegroup\fP).
 T}
 
+htprv	HTPRV	T{
+The amount of private memory backed by hugetlbfs page which is not counted in the \fBrss\fP
+or \fBpss\fP format options.
+T}
+
+htshr	HTSHR	T{
+The amount of shared memory backed by hugetlbfs page which is not counted in the \fBrss\fP
+or \fBpss\fP format options.
+T}
+
 ignored	IGNORED	T{
 mask of the ignored signals, see
 \fIsignal\fP(7).
@@ -1191,7 +1173,8 @@ trouvé sur les systèmes de haute sécurité.
 T}
 
 lstart	STARTED	T{
-time the command started. This will be in the form "DDD mmm HH:MM:SS YYY"
+time the command started.
+This will be in the form "DDD mmm HH:MM:SS YYY"
 unless changed by the \fB\-D\fP option.
 T}
 
@@ -1215,7 +1198,7 @@ T}
 
 lxc	LXC	T{
 Le nom du conteneur lxc dans lequel une tâche est en cours.
-Si un processus n'est pas en cours dans un conteneur, un tiret («\ \-\ ») sera affiché.
+Si un processus n'est pas en cours dans un conteneur, un tiret (« \- ») sera affiché.
 T}
 
 machine	MACHINE	T{
@@ -1274,12 +1257,14 @@ if you want the kernel function name).
 T}
 
 oom	OOM	T{
-Out of Memory Score. The value, ranging from 0 to +1000, used to select
+Out of Memory Score.
+The value, ranging from 0 to +1000, used to select
 task(s) to kill when memory is exhausted.
 T}
 
 oomadj	OOMADJ	T{
-Out of Memory Adjustment Factor. The value is added to the current out of
+Out of Memory Adjustment Factor.
+The value is added to the current out of
 memory score which is then used to determine which task to kill when memory
 is exhausted.
 T}
@@ -1287,6 +1272,18 @@ T}
 ouid	OWNER	T{
 Identifiant utilisateur UNIX du propriétaire de la session d'un processus
 si la prise en charge de systemd a été incluse.
+T}
+
+pcap	PCAP	T{
+Permitted Capabilites of the process, displayed as a hexadecimal bitmask.
+See
+\fIcapabilities\fP(7).
+T}
+
+pcaps	PCAPS	T{
+Permitted Capabilites of the process, displayed as a string of capability
+names.  See
+\fIcapabilities\fP(7).
 T}
 
 pcpu	%CPU	T{
@@ -1297,16 +1294,20 @@ Consultez
 T}
 
 pending	PENDING	T{
-mask of the pending signals. See
+mask of the pending signals.
+See
 \fIsignal\fP(7).
 Signals pending on the process are distinct from signals pending on
-individual threads.  Use the
+individual threads.
+Use the
 \fBm\fP
 option or the
 \fB\-m\fP
-option to see both.  According to the width of the field, a 32 or 64 bits
-mask in hexadecimal
-format is displayed, unless the \fB\-\-signames\fP option is used.  (alias
+option to see both.
+According to the width of the field, a 32 or 64 bits mask in hexadecimal
+format is displayed,
+unless the \fB\-\-signames\fP option is used.
+(alias
 \fBsig\fP).
 T}
 
@@ -1346,7 +1347,7 @@ policy	POL	T{
 Classe d’ordonnancement du processus (alias
 \fBclass\fP,\fB\ cls\fP).
 Les valeurs possibles sont\ :
-.sp 1
+.sp \n[PD]u
 .in +9n
 \-	non signalé
 .br
@@ -1381,12 +1382,14 @@ processor that process last executed on.
 T}
 
 pss	PSS	T{
-Proportional share size, the non\-swapped physical memory, with shared memory
-proportionally accounted to all tasks mapping it.
+Proportional share size,
+the non\-swapped physical memory,
+with shared memory proportionally accounted to all tasks mapping it.
 T}
 
 rbytes	RBYTES	T{
-Number of bytes which this process really did cause to be fetched from the storage layer.
+Number of bytes which this process really did cause to be fetched from the
+storage layer.
 T}
 
 rchars	RCHARS	T{
@@ -1403,14 +1406,13 @@ que la largeur du champ le permet, sous forme d'entier décimal sinon.
 T}
 
 rops	ROPS	T{
-Number of read I/O operationsâthat is, system calls such as
+Number of read I/O operations\[em]that is, system calls such as
 \fBread\fP(2) and \fBpread\fP(2).
 T}
 
 rss	RSS	T{
-Taille de mémoire résidente («\ resident set size\ » ou RSS),
-la mémoire physique non transférée vers l'espace d'échange (swap)
-qu'une tâche a utilisée (en kilooctets) (alias
+resident set size, the non\-swapped physical memory that a task has used (in
+kibibytes).  (alias
 \fBrssize\fP, \fBrsz\fP).
 T}
 
@@ -1533,7 +1535,7 @@ d'échange («\ swap\ »). Ce nombre est très approximatif\ !
 T}
 
 slice	SLICE	T{
-Unité «\ slice\ » à laquelle appartient le processus
+Unité « slice » à laquelle appartient le processus
 si la prise en charge de systemd a été incluse.
 T}
 
@@ -1583,7 +1585,8 @@ Consultez
 T}
 
 stime	STIME	T{
-see \fBstart_time\fP. (alias \fBstart_time\fP).
+see \fBstart_time\fP.
+(alias \fBstart_time\fP).
 T}
 
 suid	SUID	T{
@@ -1686,7 +1689,8 @@ auquel le processus est connecté, ou \-1 si le processus n'est pas connecté
 T}
 
 trs	TRS	T{
-Taille du texte en mémoire résidente, la quantité de mémoire physique consacrée au code exécutable.
+Taille du texte en mémoire résidente,
+la quantité de mémoire physique consacrée au code exécutable.
 T}
 
 tt	TT	T{
@@ -1730,7 +1734,7 @@ Consultez
 T}
 
 unit	UNIT	T{
-Afficher l'unité «\ slice\ » à laquelle appartient le processus,
+Afficher l'unité « slice » à laquelle appartient le processus,
 si la prise en charge de systemd est incluse.
 T}
 
@@ -1759,7 +1763,7 @@ See
 T}
 
 uunit	UUNIT	T{
-Afficher l'unité «\ slice\ » à laquelle appartient le processus,
+Afficher l'unité « slice » à laquelle appartient le processus,
 si la prise en charge de systemd est incluse.
 T}
 
@@ -1791,17 +1795,18 @@ name of the kernel function in which the process is sleeping.
 T}
 
 wchars	WCHARS	T{
-Number of bytes which this task has caused, or shall cause to be written to disk.
+Number of bytes which this task has caused,
+or shall cause to be written to disk.
 T}
 
 wops	WOPS	T{
-Number of write I/O operationsâthat is, system calls such as
+Number of write I/O operations\[em]that is, system calls such as
 \fBwrite\fP(2) and \fBpwrite\fP(2).
 T}
 
 .TE
 .SH "VARIABLES D'ENVIRONNEMENT"
-Les variables d'environnement suivantes peuvent affecter \fBps\fP\ :
+Les variables d'environnement suivantes peuvent affecter \fBps\fP :
 .TP  3
 \fBCOLUMNS\fP
 Remplacer la largeur par défaut de l'affichage.
@@ -1810,12 +1815,12 @@ Remplacer la largeur par défaut de l'affichage.
 Remplacer la hauteur par défaut de l'affichage.
 .TP 
 \fBPS_PERSONALITY\fP
-Configurer parmi posix, old, linux, bsd, sun, digital, etc. (consultez
-ci\-dessous la section \fBPERSONNALITÉ\fP).
+Set to one of posix, old, linux, bsd, sun, digital.\|.\|.\& (see section
+\fBPERSONALITY\fP below).
 .TP 
 \fBCMD_ENV\fP
-Configurer parmi posix, old, linux, bsd, sun, digital, etc. (consultez
-ci\-dessous la section \fBPERSONNALITÉ\fP).
+Set to one of posix, old, linux, bsd, sun, digital.\|.\|.\& (see section
+\fBPERSONALITY\fP below).
 .TP 
 \fBI_WANT_A_BROKEN_PS\fP
 Forcer l'interprétation obsolète de la ligne de commande.
@@ -1837,13 +1842,13 @@ format du même type que celle utilisée pour l'option \fB\-o\fP. Les valeurs
 \fBDefSysV\fP et \fBDefBSD\fP sont particulièrement utiles.
 .TP 
 \fBPOSIXLY_CORRECT\fP
-Ne pas chercher d'excuse pour ignorer les mauvaises «\ fonctionnalités\ ».
+Ne pas chercher d'excuse pour ignorer les mauvaises « fonctionnalités ».
 .TP 
 \fBPOSIX2\fP
-Agir comme \fBPOSIXLY_CORRECT\fP une fois configuré à «\ on\ ».
+Agir comme \fBPOSIXLY_CORRECT\fP une fois configuré à « on ».
 .TP 
 \fBUNIX95\fP
-Ne pas chercher d'excuse pour ignorer les mauvaises «\ fonctionnalités\ ».
+Ne pas chercher d'excuse pour ignorer les mauvaises « fonctionnalités ».
 .TP 
 \fB_XPG\fP
 Annuler le comportement non standard \fBCMD_ENV\fP=\fIirix\fP.
@@ -1886,51 +1891,57 @@ The fields \fBbsdstart\fP and \fBstart\fP will only show the abbreviated month
 name in English. The fields \fBlstart\fP and \fBstime\fP will show the abbreviated
 month name in the configured locale but may exceed the column width due to
 the different lengths for abbreviated month and day names across languages.
-.PP
 .SH "VOIR AUSSI"
-\fBpgrep\fP(1), \fBpstree\fP(1), \fBtop\fP(1), \fBstrftime\fP(3), \fBproc\fP(5).
+\fBpgrep\fP(1), \fBpstree\fP(1), \fBtop\fP(1), \fBstrftime\fP(3), \fBproc\fP(5),
+\fBcapabilities\fP(7).
+
 .SH STANDARDS
-Ce \fBps\fP est conforme à\ :
-.PP
-.PD 0
-.IP 1 4
-la Single UNIX Specification version\ 2\ ;
-.IP 2 4
-les Open Group Technical Standard Base Specifications, version\ 6\ ;
-.IP 3 4
-l'IEEE Std 1003.1, édition\ 2004\ ;
-.IP 4 4
-la X/Open System Interfaces Extension [UP XSI]\ ;
-.IP 5 4
+This \fBps\fP conforms to the following standards.
+.TP  4n
+\[bu]
+la Single UNIX Specification version 2 ;
+.TP  4n
+\[bu]
+les Open Group Technical Standard Base Specifications, version 6 ;
+.TP  4n
+\[bu]
+l'IEEE Std 1003.1, édition 2004 ;
+.TP  4n
+\[bu]
+la X/Open System Interfaces Extension [UP XSI] ;
+.TP  4n
+\[bu]
 l'ISO/IEC 9945:2003.
-.PD
 .SH AUTEUR
-\fBps\fP was originally written by
+\fBps\fP a été initialement écrit par
 .MT lankeste@\:fwi.\:uva.\:nl
 Branko
 Lankester
 .ME .
 .MT johnsonm@\:redhat.\:com
-Michael K. Johnson
+Michael K.\& Johnson
 .ME
-re\-wrote it significantly to use the proc filesystem, changing a few things
-in the process.
+l'a réécrit profondeur pour utiliser le système de fichiers proc,
+modifiant quelques détails au passage.
 .MT mjshield@\:nyx.\:cs.\:du.\:edu
 Michael Shields
 .ME
-added the pid\-list feature.
+a ajouté la fonctionnalité de liste de PID.
 .MT cblake@\:bbn.\:com
 Charles Blake
 .ME
-added multi\-level sorting, the dirent\-style library, the device
-name\-to\-number mmaped database, the approximate binary search directly on
-System.map, and many code and documentation cleanups.  David Mossberger\-Tang
-wrote the generic BFD support for psupdate.
+a ajouté le tri multiniveau, la
+bibliothèque « à la dirent », la base de données de correspondance entre
+numéro de périphérique et nom, la recherche approximative binaire
+directement dans System.map, et beaucoup d'autres nettoyages de code et de
+documentation. David Mossberger\-Tang a écrit la prise en charge BFD pour
+psupdate.
 .MT albert@\:users.\:sf.\:net
 Albert Cahalan
 .ME
-rewrote ps for full Unix98
-and BSD support, along with some ugly hacks for obsolete and foreign syntax.
+a réécrit
+\fBps\fP pour prendre en charge complètement Unix98 et BSD, ainsi que certains
+bidouillages pour les syntaxes obsolètes et étrangères.
 .PP
 Signalez les bogues à
 .MT procps@\:freelists.\:org

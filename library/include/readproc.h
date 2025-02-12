@@ -73,6 +73,9 @@ typedef struct proc_t {
         sigignore[18],  // status          mask of ignored signals
         sigcatch[18],   // status          mask of caught  signals
         _sigpnd[18];    // status          mask of PER TASK pending signals
+    char
+        // Capabilities
+        capprm[18];     // status          Permitted Capabilities
     unsigned long
         start_code,     // stat            address of beginning of code segment
         end_code,       // stat            address of end of code segment
@@ -190,12 +193,15 @@ typedef struct proc_t {
         *sd_unit,       // n/a             systemd system unit id
         *sd_uunit;      // n/a             systemd user unit id
     char
+        *dockerid,      // n/a             docker container id, abbreviated
+        *dockerid_64,   // n/a             docker container id, full
         *lxcname,       // n/a             lxc container name
         *exe;           // exe             executable path + name
     int
         luid,           // loginuid        user id at login
         autogrp_id,     // autogroup       autogroup number (id)
-        autogrp_nice;   // autogroup       autogroup nice value
+        autogrp_nice,   // autogroup       autogroup nice value
+        fds;            // fd              number of open files
 } proc_t;
 
 // PROCTAB: data structure holding the persistent information readproc needs
@@ -274,12 +280,17 @@ typedef struct PROCTAB {
 
 // and let's put new flags here ...
 #define PROC_FILLAUTOGRP     0x01000000 // fill in proc_t autogroup stuff
+#define PROC_FILL_DOCKER     0x02000000 // fill in proc_t dockerid, if possible
+#define PROC_FILL_FDS        0x04000000 // fill in proc_t fds
 
 // it helps to give app code a few spare bits
 #define PROC_SPARE_1         0x10000000
 #define PROC_SPARE_2         0x20000000
 #define PROC_SPARE_3         0x40000000
 #define PROC_SPARE_4         0x80000000
+
+/* available PROC bits ...   0x.8......
+   ( when this one is used, we'll need a 'flags2' addition to PROCTAB ) */
 
 // Function definitions
 // Initialize a PROCTAB structure holding needed call-to-call persistent data
@@ -299,5 +310,10 @@ proc_t *readeither(PROCTAB *__restrict const PT, proc_t *__restrict x);
 int look_up_our_self(void);
 void closeproc(PROCTAB *PT);
 char **vectorize_this_str(const char *src);
+
+struct utlbuf_s;
+struct docker_ids;
+char *lxc_containers(const char *path, struct utlbuf_s *ub);
+struct docker_ids *docker_containers(const char *path, struct utlbuf_s *ub);
 
 #endif

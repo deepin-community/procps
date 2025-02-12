@@ -1,8 +1,8 @@
 /*
  * pids.h - process related declarations for libproc2
  *
- * Copyright © 2015-2023 Jim Warner <james.warner@comcast.net>
- * Copyright © 2015-2023 Craig Small <csmall@dropbear.xyz>
+ * Copyright © 2015-2024 Jim Warner <james.warner@comcast.net>
+ * Copyright © 2015-2024 Craig Small <csmall@dropbear.xyz>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -38,12 +38,15 @@ enum pids_item {
     PIDS_ADDR_STACK_START,  //   ul_int        stat: start_stack
     PIDS_AUTOGRP_ID,        //    s_int        autogroup
     PIDS_AUTOGRP_NICE,      //    s_int        autogroup
+    PIDS_CAPS_PERMITTED,    //      str        status: CapPrm
     PIDS_CGNAME,            //      str        derived from CGROUP ':name='
     PIDS_CGROUP,            //      str        cgroup
     PIDS_CGROUP_V,          //     strv        cgroup, as *str[]
     PIDS_CMD,               //      str        stat: comm or status: Name
     PIDS_CMDLINE,           //      str        cmdline
     PIDS_CMDLINE_V,         //     strv        cmdline, as *str[]
+    PIDS_DOCKER_ID,         //      str        derived from CGROUP '/docker-' (abbreviated hash)
+    PIDS_DOCKER_ID_64,      //      str        derived from CGROUP '/docker-' (full hash)
     PIDS_ENVIRON,           //      str        environ
     PIDS_ENVIRON_V,         //     strv        environ, as *str[]
     PIDS_EXE,               //      str        exe
@@ -109,6 +112,7 @@ enum pids_item {
     PIDS_NS_UTS,            //   ul_int         "
     PIDS_OOM_ADJ,           //    s_int        oom_score_adj
     PIDS_OOM_SCORE,         //    s_int        oom_score
+    PIDS_OPEN_FILES,        //    s_int        derived from fd/ (total entries)
     PIDS_PRIORITY,          //    s_int        stat: priority
     PIDS_PRIORITY_RT,       //    s_int        stat: rt_priority
     PIDS_PROCESSOR,         //    s_int        stat: task_cpu
@@ -116,6 +120,7 @@ enum pids_item {
     PIDS_RSS,               //   ul_int        stat: rss
     PIDS_RSS_RLIM,          //   ul_int        stat: rsslim
     PIDS_SCHED_CLASS,       //    s_int        stat: policy
+    PIDS_SCHED_CLASSSTR,    //      str        derived from policy, see ps(1) or top(1)
     PIDS_SD_MACH,           //      str        derived from PID/TID, see sd-login(3)
     PIDS_SD_OUID,           //      str         "
     PIDS_SD_SEAT,           //      str         "
@@ -228,7 +233,7 @@ struct pids_stack {
 
 struct pids_counts {
     int total;
-    int running, sleeping, stopped, zombied, other;
+    int running, sleeping, disk_sleep, stopped, zombied, other;
 };
 
 struct pids_fetch {
@@ -239,7 +244,7 @@ struct pids_fetch {
 struct pids_info;
 
 
-#define PIDS_VAL( relative_enum, type, stack, info ) \
+#define PIDS_VAL( relative_enum, type, stack ) \
     stack -> head [ relative_enum ] . result . type
 
 

@@ -1,6 +1,6 @@
 .\"
 .\" Copyright (c) 2016-2023 Jim Warner <james.warner@comcast.net>
-.\" Copyright (c) 2019-2023 Craig Small <csmall@dropbear.xyz>
+.\" Copyright (c) 2019-2024 Craig Small <csmall@dropbear.xyz>
 .\" Copyright (c) 2011-2012 Sami Kerola <kerolasa@iki.fi>
 .\" Copyright (c) 1999      George Staikos <staikos@0wned.org>
 .\"
@@ -15,76 +15,63 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH SYSCTL.CONF 5 15.09.2021 procps\-ng "Formate de fișiere"
+.TH SYSCTL.CONF 5 24.10.2024 procps\-ng 
 .SH NUME
-sysctl.conf \- fișierul de preîncărcare/configurare al «sysctl»
+sysctl.conf \- parametrii de configurare ai nucleului Linux
 .SH DESCRIERE
-\fBsysctl.conf\fP este un fișier simplu care conține valori „sysctl” care
-trebuie citite și stabilite de \fBsysctl\fP.  Sintaxa este pur și simplu după
-cum urmează:
+\fBsysctl.conf\fP este un set de fișiere de configurare care conțin parametrii
+de configurare ai nucleului Linux care urmează să fie citiți și definiți de
+\fBsysctl\fP(8).
+.PP
+Această pagină de manual descrie fișierele de configurare pentru \fIprocps\fP
+\fBsysctl\fP. Dacă utilizați \fBsystemd\-sysctl\fP(8), consultați \fBsysctl.d\fP(5) și
+rețineți că acesta nu va utiliza fișierul \fI\%/etc/\:\%sysctl\:\%.conf\fP.
+.SS "Formatul fișierelor de configurare"
+Fiecare linie a unui fișier citit de \fIprocps\fP \fBsysctl\fP descrie un
+parametru al nucleului în următorul format.
+.P
 .RS
-.sp
-.nf
-.ne 7
-# comentariu
-; comentariu
-
+.EX
 element = valoare
-.fi
+.EE
 .RE
-.PP
-Rețineți că liniile goale și spațiile înainte sau după un element sau
-valoare sunt ignorate.  O valoare poate conține totuși spații.  Rândurile
-care încep cu un \fI#\fP sau un \fI;\fP sunt comentarii și, prin urmare, sunt
-ignorate.
-
-Dacă o linie începe cu un singur \-, orice încercare de a definii valoarea
-care eșuează va fi ignorată.
-
-.SH NOTE
-Deoarece fișierul \fB/etc/sysctl.conf\fP este folosit pentru a suprascrie
-valorile implicite ale parametrilor nucleului, doar un număr mic de
-parametri este predefinit în fișier.  Folosiți \fI/sbin/sysctl\ \-a\fP sau
-urmați \fBsysctl\fP(8) pentru o listă cu toți parametrii posibili.  Descrierea
-parametrilor individuali poate fi găsită în documentația nucleului.
-
-Lungimea maximă de linie acceptată a valorii este de 4096 de caractere din
-cauza unei limitări a intrărilor \fI/proc\fP în nucleul Linux.
-.SH EXEMPLU
-.RS
-.sp
-.nf
-.ne 7
-# model de sysctl.conf
-#
-   kernel.domainname = exemplu.com
-; acesta are un spațiu care va fi scris în sysctl!
-   kernel.modprobe = /sbin/mod probe
-.fi
-.RE
-.PP
+.P
+Liniile goale și liniile care încep cu „\[lq]\fB#\fP\[rq]” sau „\[lq]\fB;\fP\[rq]”
+sunt ignorate.
+.P
+Dacă o linie începe cu un singur „\fB\-\fP”, orice încercare de a definii
+valoarea care eșuează va fi ignorată.
 .SH FIȘIERE
-\fI/etc/sysctl.d/*.conf\fP
-.br
-\fI/run/sysctl.d/*.conf\fP
-.br
-\fI/usr/local/lib/sysctl.d/*.conf\fP
-.br
-\fI/usr/lib/sysctl.d/*.conf\fP
-.br
-\fI/lib/sysctl.d/*.conf\fP
-.br
-\fI/etc/sysctl.conf\fP
-
-Căile în care fișierele de preîncărcare \fBsysctl\fP se găsesc de obicei.  A se
-vedea, de asemenea, opțiunea \fBsysctl\fP \fI\-\-system\fP.
+\fIprocps\fP \fBsysctl\fP, atunci când este rulat cu opțiunea \fB\%\-\-system\fP,
+citește fișierele din directoare în ordinea prezentată mai jos.
+.P
+.RS
+.TP 
+\fI/etc/sysctl.d/\fP*\fI.conf\fP
+.TQ
+\fI/run/sysctl.d/\fP*\fI.conf\fP
+.TQ
+\fI/usr/local/lib/sysctl.d/\fP*\fI.conf\fP
+.TQ
+\fI/usr/lib/sysctl.d/\fP*\fI.conf\fP
+.TQ
+\fI/lib/sysctl.d/\fP*\fI.conf\fP
+.RE
+.P
+În final, \fIprocps\fP \fBsysctl\fP citește \fI\%/etc/\:\%sysctl\:\%.conf\fP. Acest
+fișier nu este utilizat de \fBsystemd\-sysctl\fP, ceea ce înseamnă că unii
+parametri ai nucleului nu sunt definiți în funcție de implementarea lui
+\fBsysctl\fP care este instalată.
+.SH ERORI
+Lungimea maximă de linie acceptată a \fIvalorii\fP este de 4096 de caractere
+din cauza unei limitări a intrărilor \fI/proc\fP în nucleul Linux.
+.SH EXEMPLE
+.EX
+#
+#
+   kernel.domainname = example.com
+; O valoare care conține un spațiu este scrisă în sysctl.
+   kernel.modprobe = /sbin/mod probe
+.EE
 .SH "CONSULTAȚI ȘI"
-\fBsysctl\fP(8)
-.SH AUTOR
-.UR staikos@0wned.org
-George Staikos
-.UE
-.SH "RAPORTAREA ERORILOR"
-Trimiteți rapoartele de eroare la
-.UR procps@freelists.org
-.UE
+\fBsysctl.d\fP(5), \fBsysctl\fP(8), \fBsystemd\-sysctl\fP(8)

@@ -15,13 +15,13 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH PIDOF 1 2023\-01\-16 "" Användarkommandon
+.TH PIDOF 1 2023\-01\-16 procps\-ng 
 .SH NAMN
 pidof — hitta process\-ID för ett körande program
 .SH SYNOPSIS
 \fBpidof\fP [\fB\-s\fP] [\fB\-c\fP] [\fB\-q\fP] [\fB\-w\fP] [\fB\-x\fP] [\fB\-o\fP
-\fIskippapid[,skippapid…]…\fP] \fB\-t\fP [\fB\-S\fP \fIseparator\fP] \fIprogram\fP
-\fI[\fP\fBprogram…\fP\fI]\fP
+\fIomitpid\fP[,.\|.\|.\&]] \&.\|.\|.\& [\fB\-t\fP] [\fB\-S\fP \fIseparator\fP] \fIprogram\fP
+\&.\|.\|.
 .SH BESKRIVNING
 \fBPidof\fP hittar process\-id:t (pid:ar) för de namngivna programmen.  Det
 skriver ut dessa id:n till standard ut.
@@ -58,15 +58,13 @@ flagga för kompatibilitet med sysvinit:s \fBpidof\fP.
 .TP 
 \fB1\fP
 Inget program hittades med det begärda namnet.
-
 .SH FEL
 När flaggan \fB\-x\fP används har \fBpidof\fP endast en enkel metod för att
 upptäcka skript och kommer missa skript som, till exempel, använder env.
 Denna begränsning beror på hur skripten ser ut i proc\-filsystemet.
-
 .SH "SE ÄVEN"
 \fBpgrep\fP(1), \fBpkill\fP(1)
 .SH UPPHOVSMAN
-.UR jcapik@redhat.com
+.MT jcapik@redhat.com
 Jaromir Capik
-.UE
+.ME

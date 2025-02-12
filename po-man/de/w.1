@@ -1,6 +1,6 @@
 .\"
-.\" Copyright (c) 2009-2023 Craig Small <csmall@dropbear.xyz>
-.\" Copyright (c) 2015-2023 Jim Warner <james.warner@comcast.net>
+.\" Copyright (c) 2009-2024 Craig Small <csmall@dropbear.xyz>
+.\" Copyright (c) 2015-2024 Jim Warner <james.warner@comcast.net>
 .\" Copyright (c) 2012-2013 Jaromir Capik <jcapik@redhat.com>
 .\" Copyright (c) 2011-2012 Sami Kerola <kerolasa@iki.fi>
 .\" Copyright (c) 2002-2004 Albert Cahalan
@@ -16,11 +16,11 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH W 1 "15. Januar 2023" procps\-ng "Dienstprogramme für Benutzer"
+.TH W 1 "3. Dezember 2024" procps\-ng 
 .SH BEZEICHNUNG
 w \- anzeigen, welche Benutzer angemeldet sind und was sie machen.
 .SH ÜBERSICHT
-\fBw\fP [\fIOptionen\fP] [\fIBenutzer\fP]
+\fBw\fP [\fIOption\fP .\|.\|.\&] [\fIBenutzer\fP]
 .SH BESCHREIBUNG
 \fBw\fP zeigt Informationen über die gerade angemeldeten Benutzer und ihre
 Prozesse an. Die Kopfzeile enthält in dieser Reihenfolge die aktuelle Zeit,
@@ -37,7 +37,10 @@ Hintergrund\-Aufträge, jedoch die derzeit laufenden Hintergrund\-Aufträge.
 .PP
 Die PCPU\-Zeit ist die Zeit, die vom derzeit laufenden Prozess bisher genutzt
 wurde und im Feld »what« benannt ist.
-.SH BEFEHLSZEILENOPTIONEN
+.SH OPTIONEN
+.TP 
+\fB\-c\fP, \fB\-\-container\fP
+zeigt die Container\- anstatt der System\-Betriebszeit in der Kopfzeile an.
 .TP 
 \fB\-h\fP, \fB\-\-no\-header\fP
 gibt keine Kopfzeile aus.
@@ -64,10 +67,10 @@ zeigt einen Hilfetext an und beendet das Programm.
 zeigt die IP\-Adresse anstelle des Rechnernamens im Feld \fBfrom\fP an.
 .TP 
 \fB\-p\fP, \fB\-\-pids\fP
-Display pid of the login process/the "what" process in the "what" field.
+zeigt die PID des Anmeldeprozesses /  des »Was«\-Prozesses im »Was«\-Feld an.
 .TP 
 \fB\-V\fP, \fB\-\-version\fP
-Versionsinformationen anzeigen.
+zeigt Versionsinformationen an.
 .TP 
 \fB\-o\fP, \fB\-\-old\-style\fP
 aktiviert die Ausgabe im alten Stil. Für Leerlaufzeiten unter einer Minute
@@ -77,31 +80,37 @@ werden Leerräume ausgegeben.
 zeigt Informationen nur für den angegebenen Benutzer an.
 .SH UMGEBUNGSVARIABLEN
 .TP 
-PROCPS_USERLEN
+\fBPROCPS_CONTAINER\fP
+Falls $\fBPROCPS_CONTAINER\fP gesetzt ist, verhält sich \fBw\fP so, als ob die
+Option \fB\-\-container\fP angegeben wurde.
+.TP 
+\fBPROCPS_USERLEN\fP
 setzt die vorgegebene Breite der USER\-Spalte außer Kraft. Standardmäßig 8.
 .TP 
-PROCPS_FROMLEN
+\fBPROCPS_FROMLEN\fP
 setzt die vorgegebene Breite der From\-Spalte außer Kraft. Standardmäßig 16.
 .SH DATEIEN
 .TP 
 \fI/var/run/utmp\fP
-Informationen darüber, wer aktuell angemeldet ist
+Informationen darüber, wer aktuell angemeldet ist, jedoch nur für Rechner
+ohne Systemd.
 .TP 
 \fI/proc\fP
 Prozessinformation
 .SH "SIEHE AUCH"
-\fBfree\fP(1), \fBps\fP(1), \fBtop\fP(1), \fBuptime\fP(1), \fButmp\fP(5), \fBwho\fP(1)
+\fBfree\fP(1), \fBloginctl\fP(1), \fBps\fP(1), \fBtop\fP(1), \fBuptime\fP(1), \fButmp\fP(5),
+\fBwho\fP(1)
 .SH AUTOREN
 \fBw\fP wurde von Charles Blake fast vollständig neu geschrieben, basierend auf
 der Version von
-.UR greenfie@\:gauss.\:rutgers.\:edu
+.MT greenfie@\:gauss.\:rutgers.\:edu
 Larry Greenfield
-.UE
+.ME
 und
-.UR johnsonm@\:redhat.\:com
+.MT johnsonm@\:redhat.\:com
 Michael K. Johnson
-.UE
+.ME .
 .SH "FEHLER MELDEN"
 Bitte schicken Sie Fehlermeldungen (auf Englisch) an
 .MT procps@freelists.org
-.ME
+.ME .

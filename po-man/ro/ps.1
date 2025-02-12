@@ -1,5 +1,5 @@
 .\"
-.\" Copyright (c) 2004-2023 Craig Small <csmall@dropbear.xyz>
+.\" Copyright (c) 2004-2024 Craig Small <csmall@dropbear.xyz>
 .\" Copyright (c) 2011-2023 Jim Warner <james.warner@comcast.net>
 .\" Copyright (c) 2011-2012 Sami Kerola <kerolasa@iki.fi>
 .\" Copyright (c) 1998-2003 Albert Cahalan
@@ -15,40 +15,32 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH PS 1 19.08.2023 procps\-ng "Comenzi utilizator"
+.TH PS 1 17.09.2024 procps\-ng 
 .\"
 .\" Ragged-right text.
 .na
 .\" Disable hyphenation.
 .nh
-.\"
-.\" ColSize is used for the format spec table.
-.\" It's the left margin, minus the right, minus
-.\" the space needed for the 1st two columns.
-.\" Making it messy: inches, ens, points, scaled points...
-.\"
-.nr ColSize ((\n[.l] - \n[.i]) / 1n - 29)
-.\"
 .SH NUME
 ps \- raportează un instantaneu al proceselor curente.
 .SH REZUMAT
-\fBps\fP [\,\fIopțiuni\/\fP]
+\fBps\fP [\fIopțiune\fP .\|.\|.]
 .SH DESCRIERE
 \fBps\fP afișează informații despre o selecție a proceselor active.  Dacă
 doriți o actualizare repetitivă a selecției și a informațiilor afișate,
 utilizați în schimb \fBtop\fP.
 .P
-Această versiune de \fBps\fP acceptă mai multe tipuri de opțiuni:
-.IP
-.PD 0
-.IP 1 4
+Această versiune de \fBps\fP acceptă mai multe tipuri de opțiuni.
+.TP  4n
+\[bu]
 Opțiuni UNIX, care pot fi grupate și trebuie să fie precedate de o liniuță.
-.IP 2 4
+.TP 
+\[bu]
 Opțiuni BSD, care pot fi grupate și nu trebuie să fie precedate de o
 liniuță.
-.IP 3 4
+.TP 
+\[bu]
 Opțiuni lungi GNU, care sunt precedate de două liniuțe.
-.PD
 .PP
 Opțiunile de diferite tipuri pot fi amestecate liber, dar pot apărea
 conflicte.  Există câteva opțiuni sinonime, care sunt identice din punct de
@@ -186,7 +178,6 @@ adaugă setului de procese selectate prin alte mijloace.  Cu alte cuvinte,
 această opțiune determină \fBps\fP să listeze toate procesele deținute de
 dumneavoastră (același EUID ca \fBps\fP) sau să listeze toate procesele atunci
 când este utilizat cu opțiunea \fBa\fP.
-.PD
 .SH "SELECTARE PROCES DIN LISTĂ"
 Aceste opțiuni acceptă un singur argument sub forma unei liste separate prin
 virgule sau spații.  Acestea pot fi folosite de mai multe ori.  De exemplu:
@@ -195,7 +186,7 @@ virgule sau spații.  Acestea pot fi folosite de mai multe ori.  De exemplu:
 \fI123\fP
 Identic cu \fB\-\-pid\ \fP\fI123\fP.
 .TP 
-\+\fI123\fP
++\fI123\fP
 Identic cu \fB\-\-sid\ \fP\fI123\fP.
 .TP 
 \-\fI123\fP
@@ -305,7 +296,7 @@ a creat procesul, vezi \fIgetuid\fP(2).
 Selectează după ID\-ul de utilizator efectiv (EUID) sau nume.  Aceasta
 selectează procesele al căror nume de utilizator efectiv sau ID este în
 \fIlistă_utilizatori\fP.
-
+.P
 ID\-ul de utilizator efectiv descrie utilizatorul ale cărui permisiuni de
 acces la fișiere sunt utilizate de proces (vezi \fIgeteuid\fP(2)).  Identică cu
 \fBU\fP și \fB\-\-user\fP.
@@ -317,7 +308,6 @@ Selectează după ID\-ul utilizatorului real (RUID) sau nume. Identică cu
 \fB\-\-user\fP\fI\ listă_utilizatori\fP
 Selectează după ID\-ul utilizatorului efectiv (EUID) sau nume.  Identică cu
 \fB\-u\fP și \fBU\fP.
-.PD
 .SH "CONTROLUL FORMATULUI DE IEȘIRE"
 Aceste opțiuni sunt folosite pentru a alege informațiile afișate de \fBps\fP.
 Ieșirea poate diferi în funcție de personalizare.
@@ -329,12 +319,12 @@ Afișează diferite informații de planificare pentru opțiunea \fB\-l\fP.
 Afișează formatul contextului de securitate (pentru SELinux).
 .TP 
 \fB\-f\fP
-Afișează listarea în format complet.  Această opțiune poate fi combinată cu
-multe alte opțiuni în stil UNIX pentru a adăuga coloane suplimentare.  De
+Afișează listarea în format complet. Această opțiune poate fi combinată cu
+multe alte opțiuni în stil UNIX pentru a adăuga coloane suplimentare. De
 asemenea, determină afișarea argumentelor comenzii.  Când este utilizată cu
-\fB\-L\fP, se vor adăuga coloanele NLWP (număr de fire) și LWP (ID fir).
-Consultați opțiunea \fBc\fP, cuvântul cheie pentru format \fBargs\fP și cuvântul
-cheie pentru format \fBcomm\fP.
+\fB\-L\fP, se vor adăuga coloanele NLWP (număr de fire) și LWP (ID
+fir). Consultați opțiunea \fBc\fP, cuvântul cheie pentru format \fBargs\fP și
+cuvântul cheie pentru format \fBcomm\fP.
 .TP 
 \fB\-F\fP
 Format extra complet.  Vedeți opțiunea \fB\-f\fP, ceea ce implică \fB\-F\fP.
@@ -358,14 +348,14 @@ Format lung.  Opțiunea \fB\-y\fP este adesea utilă cu aceasta.
 Adaugă o coloană cu date de securitate. Identică cu \fBZ\fP (pentru SELinux).
 .TP 
 \fBO\fP\fI\ format\fP
-Este preîncărcat \fBo\fP (supraîncărcat).  Opțiunea BSD \fBO\fP poate acționa ca
+Este preîncărcat \fBo\fP (supraîncărcat). Opțiunea BSD \fBO\fP poate acționa ca
 opțiunea \fB\-O\fP (format de ieșire definit de utilizator cu unele câmpuri
 comune predefinite) sau poate fi folosită pentru a specifica ordinea de
-sortare.  Euristicele sunt folosite pentru a determina comportamentul
-acestei opțiuni.  Pentru a vă asigura că se obține comportamentul dorit
-(sortare sau formatare), specificați opțiunea într\-un alt mod (de exemplu,
-cu \fB\-O\fP sau \fB\-\-sort\fP).  Când este folosită ca opțiune de formatare, este
-identică cu \fB\-O\fP, cu personalitatea BSD.
+sortare. Euristicele sunt folosite pentru a determina comportamentul acestei
+opțiuni. Pentru a vă asigura că se obține comportamentul dorit (sortare sau
+formatare), specificați opțiunea într\-un alt mod (de exemplu, cu \fB\-O\fP sau
+\fB\-\-sort\fP). Când este folosită ca opțiune de formatare, este identică cu
+\fB\-O\fP, cu personalitatea BSD.
 .TP 
 \fB\-O\fP\fI\ format\fP
 La fel ca \fB\-o\fP, dar preîncărcată cu unele coloane implicite.  Identică cu
@@ -376,23 +366,22 @@ Specifică un format definit de utilizator.  Identică cu \fB\-o\fP și
 \fB\-\-format\fP.
 .TP 
 \fB\-o\fP\fI\ format\fP
-Format definit de utilizator.  \fIformat\fP este un singur argument sub forma
+Format definit de utilizator. \fIformat\fP este un singur argument sub forma
 unei liste separate prin spații în alb sau prin virgule, care oferă o
-modalitate de a specifica individual coloanele de ieșire.  Cuvintele cheie
+modalitate de a specifica individual coloanele de ieșire. Cuvintele cheie
 recunoscute sunt descrise în secțiunea \fBSPECIFICATORI DE FORMAT STANDARD\fP
-de mai jos.  Titlurile coloanelor pot fi redenumite (\fBps \-o pid,\:ruser=RealUser \-o comm=Command\fP) după cum doriți.  Dacă toate
-titlurile de coloană sunt goale (\fBps \-o pid= \-o comm=\fP), atunci linia de
-titluri nu va fi afișată . Lățimea coloanei va crește după cum este necesar
-pentru titlurile largi; aceasta poate fi folosită pentru a lărgi coloane
-precum WCHAN (\fBps \-o pid,\:wchan=\:WIDE\-\:WCHAN\-\:COLUMN \-o comm\fP).
-Controlul explicit al lățimii (\fBps opid,\:wchan:42,\:cmd\fP) este de asemenea
-posibil.  Comportamentul lui \fBps \-o pid=X,\:comm=Y\fP variază în funcție de
+de mai jos. Titlurile coloanelor pot fi redenumite (\fBps \-o pid,\:ruser=RealUser \-o comm=Command\fP) după cum doriți. Dacă toate titlurile
+de coloană sunt goale (\fBps \-o pid= \-o comm=\fP), atunci linia de titluri nu
+va fi afișată . Lățimea coloanei va crește după cum este necesar pentru
+titlurile largi; aceasta poate fi folosită pentru a lărgi coloane precum
+WCHAN (\fBps \-o pid,\:wchan=\:WIDE\-\:WCHAN\-\:COLUMN \-o comm\fP). Controlul
+explicit al lățimii (\fBps opid,\:wchan:42,\:cmd\fP) este de asemenea
+posibil. Comportamentul lui \fBps \-o pid=X,\:comm=Y\fP variază în funcție de
 personalitate; ieșirea poate fi o coloană numită „X,\:comm=Y” sau două
-coloane numite „X” și „Y”.  Utilizați mai multe opțiuni \fB\-o\fP atunci când
-aveți îndoieli.  Utilizați variabila de mediu \fBPS_FORMAT\fP pentru a
-specifica o valoare implicită după cum doriți; DefSysV și DefBSD sunt
-macrocomenzi care pot fi utilizate pentru a alege coloanele UNIX sau BSD
-implicite.
+coloane numite „X” și „Y”. Utilizați mai multe opțiuni \fB\-o\fP atunci când
+aveți îndoieli. Utilizați variabila de mediu \fBPS_FORMAT\fP pentru a specifica
+o valoare implicită după cum doriți; DefSysV și DefBSD sunt macrocomenzi
+care pot fi utilizate pentru a alege coloanele UNIX sau BSD implicite.
 .TP 
 \fB\-P\fP
 Adaugă o coloană care afișează \fBpsr\fP.
@@ -415,7 +404,6 @@ poate fi utilizată numai cu \fB\-l\fP.
 .TP 
 \fBZ\fP
 Adaugă o coloană cu date de securitate.  Identică cu \fB\-M\fP (pentru SELinux).
-.PD
 .SH "MODIFICATORI DE IEȘIRE"
 .TP 
 \fBc\fP
@@ -436,7 +424,6 @@ Stabilește lățimea ecranului.
 .TP 
 \fB\-\-cumulative\fP
 Include unele date despre proces\-copil mort (ca o sumă cu părintele).
-.TP 
 .TP 
 \fB\-D\fP\fI\ format\fP
 Stabilește formatul de dată al câmpului \fBlstart\fP la \fIformat\fP. Acest format
@@ -474,11 +461,11 @@ Afișează ierarhia (arborescența) proceselor.
 Repetă liniile de antet, câte una pe pagină la ieșire.
 .TP 
 \fBk\fP\fI\ spec\fP
-Specifică ordinea de sortare.  Sintaxa de sortare este
-[\fB+\fP|\fB\-\fP]\fIcheie\/.RB [,[ + | \- ].IR cheie [,...]].\fP  Alegeți o cheie cu
-mai multe litere din secțiunea \fBSPECIFICATORI DE FORMAT STANDARD\fP. „+” este
-opțional, deoarece direcția implicită este în creștere în ordine numerică
-sau lexicografică.  Identică cu \fB\-\-sort\fP.
+Specifică ordinea de sortare. Sintaxa de sortare este
+[\fB+\fP|\fB\-\fP]\fIcheie\/.RB [,[ + | \- ].IR cheie [,.\|.\|.]]\fP. Alegeți o cheie
+cu mai multe litere din secțiunea \fBSPECIFICATORI DE FORMAT STANDARD\fP. „+”
+este opțional, deoarece direcția implicită este în creștere în ordine
+numerică sau lexicografică. Identică cu \fB\-\-sort\fP.
 .RS 8
 .IP
 Exemple:
@@ -502,22 +489,22 @@ Nu afișează nicio linie de antet.  \fB\-\-no\-heading\fP este un alias pentru
 această opțiune.
 .TP 
 \fBO\fP\fI\ order\fP
-Ordinea de sortare (supraîncărcată).  Opțiunea BSD \fBO\fP poate acționa ca
+Ordinea de sortare (supraîncărcată). Opțiunea BSD \fBO\fP poate acționa ca
 \fB\-O\fP (format de ieșire definit de utilizator cu unele câmpuri comune
-predefinite) sau poate fi folosită pentru a specifica ordinea de sortare.
-Euristicele sunt folosite pentru a determina comportamentul acestei
-opțiuni.  Pentru a vă asigura că se obține comportamentul dorit (sortare sau
+predefinite) sau poate fi folosită pentru a specifica ordinea de
+sortare. Euristicele sunt folosite pentru a determina comportamentul acestei
+opțiuni. Pentru a vă asigura că se obține comportamentul dorit (sortare sau
 formatare), specificați opțiunea într\-un alt mod (de exemplu, cu \fB\-O\fP sau
 \fB\-\-sort\fP).
 .IP
 Pentru sortare, sintaxa învechită a opțiunii BSD \fBO\fP este
-\fBO\fP[\fB+\fP|\fB\-\fP]\fIk1\fP[,[\fB+\fP|\fB\-\fP]\fIk2\fP[, ...]].  Acesta ordonează listarea
+\fBO\fP[\fB+\fP|\fB\-\fP]\fIk1\fP[,[\fB+\fP|\fB\-\fP]\fIk2\fP[,.\|.\|.]]. Acesta ordonează listarea
 proceselor în funcție de sortarea pe mai multe niveluri specificată de
-secvența cheilor scurte cu o literă \fIk1\fP,\fIk2\fP, ... descrisă în secțiunea
-\fBCHEI DE SORTARE OBSOLETE\fP de mai jos.  În prezent, „+” este opțional, doar
-reiterând direcția implicită pe o cheie, dar poate ajuta la distingerea unui
-format \fBO\fP de un format \fBO\fP. „\-” inversează direcția doar pentru cheia pe
-care o precede.
+secvența cheilor scurte cu o literă \fIk1\fP,\fIk2\fP, .\|.\|. descrisă în
+secțiunea \fBCHEI DE SORTARE OBSOLETE\fP de mai jos. În prezent, „+” este
+opțional, doar reiterând direcția implicită pe o cheie, dar poate ajuta la
+distingerea unui format \fBO\fP de un format \fBO\fP. „\-” inversează direcția doar
+pentru cheia pe care o precede.
 .TP 
 \fB\-\-rows\fP\fI\ n\fP
 Stabilește înălțimea ecranului.
@@ -529,11 +516,11 @@ examinarea unui sistem în care un proces parental generează în mod repetat
 procese\-copil de scurtă durată pentru a\-și îndeplini treaba.
 .TP 
 \fB\-\-sort\fP\fI\ spec\fP
-Specifică ordinea de sortare.  Sintaxa de sortare este
-[\fI+\fP|\fI\-\fP]\fIcheie\fP[,[\fB+\fP|\fB\-\fP]\fIcheie\fP[,...]].  Alegeți o cheie cu mai
+Specifică ordinea de sortare. Sintaxa de sortare este
+[\fI+\fP|\fI\-\fP]\fIcheie\fP[,[\fB+\fP|\fB\-\fP]\fIcheie\fP[,.\|.\|.]]. Alegeți o cheie cu mai
 multe litere din secțiunea \fBSPECIFICATORI DE FORMAT STANDARD\fP. „+” este
 opțional, deoarece direcția implicită este în creștere în ordinea numerică
-sau lexicografică.  Identic cu \fBk\fP.  De exemplu: \fBps jax \-\-sort=\:uid,\:\-ppid,\:+pid\fP
+sau lexicografică. Identic cu \fBk\fP. De exemplu: \fBps jax \-\-sort=\:uid,\:\-ppid,\:+pid\fP
 .TP 
 \fB\-\-signames\fP
 Afișează măștile de semnal folosind nume de semnal prescurtate și extinde
@@ -551,7 +538,6 @@ nelimitată.
 .TP 
 \fB\-\-width\fP\fI\ n\fP
 Stabilește lățimea ecranului.
-.PD
 .SH "AFIȘAREA PROCESELOR FIRELOR DE EXECUȚIE"
 .TP 
 \fBH\fP
@@ -619,24 +605,21 @@ afișare, numele de utilizator va fi trunchiat.  Consultați opțiunile de
 formatare \fB\-o\fP și \fB\-O\fP pentru a personaliza lungimea.
 .PP
 Opțiunile de comenzi precum \fBps \-aux\fP nu sunt recomandate deoarece este o
-confuzie a două standarde diferite.  Conform standardelor POSIX și UNIX,
+confuzie a două standarde diferite. Conform standardelor POSIX și UNIX,
 comanda de mai sus solicită afișarea tuturor proceselor cu un TTY (în
 general, comenzile pe care utilizatorii le execută) plus toate procesele
-deținute de un utilizator numit \fIx\fP.  Dacă acel utilizator nu există,
-atunci \fBps\fP va presupune că de fapt ați vrut să spuneți «\fBps\fP \fIaux\fP».
+deținute de un utilizator numit \fIx\fP. Dacă acel utilizator nu există, atunci
+\fBps\fP va presupune că de fapt ați vrut să spuneți «\fBps\fP \fIaux\fP».
 .SH "FANIOANE DE PROCESE"
 Suma acestor valori este afișată în coloana „F”, care este furnizată de
 specificatorul de ieșire \fBfanioane\fP:
 .PP
 .RS 8
-.PD 0
-.TP  5
-1
-bifurcat, dar nu s\-a executat
-.TP 
-4
-utilizat cu privilegii de superutilizator
-.PD
+.TS
+R4 L.
+1	bifurcat, dar nu s\-a executat
+4	utilizat cu privilegii de superutilizator
+.TE
 .RE
 .SH "CODURI DE STARE A PROCESULUI"
 Iată diferitele valori pe care specificatorii de ieșire \fBs\fP, \fBstat\fP și
@@ -644,73 +627,57 @@ Iată diferitele valori pe care specificatorii de ieșire \fBs\fP, \fBstat\fP ș
 proces:
 .PP
 .RS 8
-.PD 0
-.TP  5
-D
-somn neîntrerupt (de regulă In/Ieș)
-.TP 
-I
-Fir de execuție al nucleului inactiv
-.TP 
-R
-rulează sau se poate rula (în coada de rulare)
-.TP 
-S
-somn întreruptibil (așteaptă finalizarea unui eveniment)
-.TP 
-T
-oprit de semnalul de control al lucrării
-.TP 
-t
-oprit de depanator în timpul urmăririi
-.TP 
-W
-paginare (nu este valabilă de la nucleul 2.6.xx)
-.TP 
-X
-mort (nu ar trebui să fie văzut niciodată)
-.TP 
-Z
-proces defunct ("zombie"), încheiat, dar nerecules de părintele său
-.PD
+.TS
+R4 L.
+D	somn neîntrerupt (de regulă In/Ieș)
+I	fir de execuție al nucleului inactiv
+R	rulează sau se poate rula (în coada de rulare)
+S	T{
+somn întreruptibil
+(așteaptă finalizarea unui eveniment)
+T}
+T	oprit de semnalul de control al lucrării
+t	oprit de depanator în timpul urmăririi
+W	paginare (nu este valabilă de la nucleul 2.6)
+X	mort (nu ar trebui să fie văzut niciodată)
+Z	T{
+proces defunct ("zombie"),
+încheiat, dar nerecules de părintele său
+T}
+.TE
 .RE
 .PP
 Pentru formatele BSD și când este utilizat cuvântul cheie \fBstat\fP, pot fi
 afișate caractere suplimentare:
 .PP
 .RS 8
-.PD 0
-.TP  5
-<
-cu prioritate ridicată (nu este „nice” pentru alți utilizatori)
-.TP 
-N
-cu prioritate scăzută (este „nice” pentru alți utilizatori)
-.TP 
-L
-are pagini blocate în memorie (pentru Intrări/Ieșiri în timp real și
-personalizate)
-.TP 
-s
-este un lider de sesiune
-.TP 
-l
-are mai multe fire de execuție (folosind CLONE_THREAD, așa cum fac
-pthreads(firele de execuție posix) NPTL)
-.TP 
-+
-se află în grupul de procese din primplan
-.PD
+.TS
+R4 L.
+<	cu prioritate ridicată (nu este „nice” pentru alți utilizatori)
+N	cu prioritate scăzută (este „nice” pentru alți utilizatori)
+L	T{
+are pagini blocate în memorie
+(pentru Intrări/Ieșiri în timp real și personalizate)
+T}
+s	este un lider de sesiune
+l	T{
+are mai multe fire de execuție
+(folosind CLONE_THREAD, așa
+cum fac pthreads(firele de execuție posix) NPTL)
+T}
++	se află în grupul de procese din primplan
+.TE
 .RE
 .SH "CHEI DE SORTARE OBSOLETE"
 Aceste chei sunt folosite de opțiunea BSD \fBO\fP (când este folosită pentru
-sortare).  Opțiunea GNU \fB\-\-sort\fP nu folosește aceste chei, ci
-specificatorii descriși mai jos în secțiunea \fBSPECIFICATORI DE FORMAT STANDARD\fP.  Rețineți că valorile utilizate în sortare sunt valorile interne
-pe care le utilizează \fBps\fP și nu valorile „gătite” utilizate în unele
-dintre câmpurile formatului de ieșire (de exemplu, sortarea pe tty va sorta
-după numărul dispozitivului, nu în funcție de numele terminalului afișat) .
-Transmiteți ieșirea \fBps\fP la comanda \fBsort\fP(1) utilizând o conductă dacă
-doriți să sortați valorile „gătite”.
+sortare). Opțiunea GNU \fB\-\-sort\fP nu folosește aceste chei, ci specificatorii
+descriși mai jos în secțiunea \fBSPECIFICATORI DE FORMAT STANDARD\fP. Rețineți
+că valorile utilizate în sortare sunt valorile interne pe care le utilizează
+\fBps\fP și nu valorile „gătite” utilizate în unele dintre câmpurile formatului
+de ieșire (de exemplu, sortarea pe tty va sorta după numărul dispozitivului,
+nu în funcție de numele terminalului afișat) . Transmiteți ieșirea \fBps\fP la
+comanda \fBsort\fP(1) utilizând o conductă dacă doriți să sortați valorile
+„gătite”.
 .TS
 l l lw(3i).
 \fBCHEIE\fP	\fBLUNG\fP	\fBDESCRIERE\fP
@@ -731,7 +698,7 @@ p	pid	identificatorul procesului (pid)
 P	ppid	identificatorul procesului părinte (ppid)
 r	rss	dimensiunea memoriei rezidente
 R	resident	pagini din memoria rezidentă
-s	size	dimensiunea memoriei în kiloocteți
+s	size	dimensiunea memoriei în kibiocteți
 S	share	numărul de pagini partajate
 t	tty	numărul dispozitivului de control al terminalului
 T	start_time	momentul în care a început procesul
@@ -743,9 +710,8 @@ y	priority	prioritatea de planificare a nucleului
 .TE
 .SH "DESCRIPTORI DE FORMAT AIX"
 Acest \fBps\fP acceptă descriptori de format AIX, care funcționează oarecum
-precum codurile de formatare ale \fIprintf\fP(1) și \fIprintf\fP(3).  De exemplu,
-ieșirea implicită normală poate fi produsă cu: \fBps \-eo "%p %y %x %c"\fP..
-Codurile \fBNORMAL\fP sunt descrise în secțiunea următoare.
+precum codurile de formatare ale \fIprintf\fP(1) și \fIprintf\fP(3). Codurile
+\fBNORMAL\fP sunt descrise în secțiunea următoare.
 .TS
 l l l.
 \fBCOD\fP	\fBNORMAL\fP	\fBTITLU\fP
@@ -780,20 +746,12 @@ Următorii specificatori de format definiți de utilizator pot conține spații:
 \fBlstart\fP, \fBbsdstart\fP, \fBstart\fP.
 .PP
 Este posibil ca unele cuvinte cheie să nu fie disponibile pentru sortare.
-
-.\" #######################################################################
-.\" lB1 lB1 lB1 lB1 s s s
-.\" lB1 l1  l1  l1  s s s.
-.\"
-.\" lB1 lB1 lBw(5.5i)
-.\" lB1 l1  l.
-.\"
+.PP
 .TS
-expand;
-l1B l1B lBw(\n[ColSize]n)
-l1B l1  l.
-COD	TITLU	DESCRIERE
-
+Lb Lb Lbx
+Lb Lb L  .
+Cod	Antet	Descriere
+_
 %cpu	%CPU	T{
 utilizarea CPU\-ului de către proces în format „##.#”.  În prezent, este
 timpul folosit de procesor împărțit la timpul în care procesul a rulat
@@ -818,20 +776,20 @@ valoarea priorității „nice” a autogrupului care se aplică planificării t
 T}
 
 args	COMANDA	T{
-comanda cu toate argumentele sale ca șir. Pot fi afișate modificări ale
-argumentelor.
+O comandă cu toate argumentele sale ca șir. Pot fi afișate modificări
+ale argumentelor.
 Rezultatul din această coloană poate conține spații.
-Un proces marcat <defunct> este parțial mort, așteaptă să fie
-complet distrus de părintele său.
+Un proces marcat „<defunct>” este parțial mort, așteaptă să
+fie complet distrus de părintele său.
 Uneori, argumentele procesului vor fi indisponibile; când se întâmplă
 acest lucru,
 \fBps\fP
-va afișa în schimb numele executabilului între paranteze (alias
+raportează în schimb numele executabilului între paranteze (alias
 \fBcmd\fP, \fBcomanda\fP).
 Consultați, de asemenea, cuvântul cheie de formatare \fBcomm\fP,
 opțiunea \fB\-f\fP și opțiunea \fBc\fP.
-.br
-când este specificată ultima, această coloană se va extinde până la marginea afișajului.  Dacă \fBps\fP nu poate determina lățimea de afișare, ca atunci când ieșirea este redirecționată (prin conductă) într\-un fișier sau altă comandă, lățimea de ieșire este nedefinită (poate fi 80, nelimitată, determinată de variabila \fBTERM\fP ș.a.m.d.).  Variabila de mediu \fBCOLUMNS\fP sau opțiunea \fB\-\-cols\fP poate fi folosită pentru a determina exact lățimea în acest caz.  Opțiunea \fBw\fP sau \fB \-w\fP poate fi, de asemenea, utilizată pentru a ajusta lățimea..
+.sp \n[PD]u
+Când este specificată ultima, această coloană se va extinde până la marginea afișajului. Dacă \fBps\fP nu poate determina lățimea de afișare, ca atunci când ieșirea este redirecționată (prin conductă) într\-un fișier sau o altă comandă, lățimea de ieșire este nedefinită (poate fi 80, nelimitată, determinată de variabila \fBTERM\fP ș.a.m.d.). Variabila de mediu \fBCOLUMNS\fP sau opțiunea \fB\-\-cols\fP poate fi folosită pentru a determina exact lățimea în acest caz. Opțiunea \fBw\fP sau \fB \-w\fP poate fi, de asemenea, utilizată pentru a ajusta lățimea..
 T}
 
 blocked	BLOCKED	T{
@@ -854,9 +812,7 @@ timpul CPU acumulat, utilizator + sistem.  Formatul de afișare este de obicei
 T}
 
 c	C	T{
-utilizarea procesorului. În prezent, aceasta este valoarea întreagă a 
-procentului de utilizare pe durata de viață a procesului. (a se vedea
-\fB%cpu\fP).
+utilizarea procesorului. În prezent, aceasta este valoarea întreagă a procentului de utilizare pe durata de viață a procesului. (a se vedea \fB%cpu\fP).
 T}
 
 caught	CAUGHT	T{
@@ -885,7 +841,7 @@ class	CLS	T{
 clasa de planificare a procesului.  (alias
 \fBpolicy\fP, \fBcls\fP).
 Valorile posibile ale câmpului sunt:
-.sp 1
+.sp \n[PD]u
 .in +9n
 \-	nu este raportată
 .br
@@ -911,7 +867,7 @@ cls	CLS	T{
 clasa de planificare a procesului.  (alias
 \fBpolicy\fP, \fBcls\fP).
 Valorile posibile ale câmpului sunt:
-.sp 1
+.sp \n[PD]u
 .in +9n
 \-	nu este raportată
 .br
@@ -950,7 +906,7 @@ opțiunea
 \fB\-f\fP
 și opțiunea
 \fBc\fP.
-.br
+.sp \n[PD]u
 Când este specificată ultima, această coloană se va extinde până la marginea afișajului.  Dacă \fBps\fP nu poate determina lățimea de afișare, ca atunci când ieșirea este redirecționată (prin conductă) într\-un fișier sau altă comandă, lățimea de ieșire este nedefinită (poate fi 80, nelimitată, determinată de variabila \fBTERM\fP ș.a.m.d.).  Variabila de mediu \fBCOLUMNS\fP sau opțiunea \fB\-\-cols\fP poate fi folosită pentru a determina exact lățimea în acest caz.  Opțiunea \fBw\fP sau \fB \-w\fP poate fi, de asemenea, utilizată pentru a ajusta lățimea.
 T}
 
@@ -977,13 +933,7 @@ timpul cumulat al CPU\-ului în secunde (alias
 T}
 
 cuc	%CUC	T{
-Utilizarea CPU\-ului de către un proces, inclusiv procesele\-copii moarte,
-într\-un format extins „##.###” (consultați, de asemenea,
-\fB%cpu\fP,
-\fBc\fP,
-\fBcp\fP,
-\fBcuu\fP,
-\fBpcpu\fP).
+Utilizarea CPU\-ului de către un proces, inclusiv procesele\-copii moarte, într\-un format extins „##.###” (consultați, de asemenea, \fB%cpu\fP, \fBc\fP, \fBcp\fP, \fBcuu\fP, \fBpcpu\fP).
 T}
 
 cuu	%CUU	T{
@@ -996,10 +946,12 @@ Utilizarea CPU\-ului de către un proces într\-un format extins „##.###”
 \fBpcpu\fP).
 T}
 
-drs	DRS	T{
-dimensiunea setului rezident de date, cantitatea de memorie privată \fIrezervată\fP de către un proces.
-Este cunoscută și sub numele de DATA. Este posibil ca această memorie să nu fie încă repartizată în \fBrss\fP, dar va fi întotdeauna inclusă în cantitatea \fBvsz\fP.
+docker	DOCKER	T{
+ID\-ul prescurtat al containerului docker în care rulează o sarcină.Dacă un proces nu rulează în interiorul unui container, va fi afișată o liniuță („\-”).
+T}
 
+drs	DRS	T{
+dimensiunea setului rezident de date, cantitatea de memorie privată \fIrezervată\fP de către un proces. Este cunoscută și sub numele de DATA. Este posibil ca această memorie să nu fie încă repartizată în \fBrss\fP, dar va fi întotdeauna inclusă în cantitatea \fBvsz\fP.
 T}
 
 egid	EGID	T{
@@ -1008,22 +960,18 @@ numărul ID\-ului grupului efectiv al procesului ca număr întreg zecimal (alia
 T}
 
 egroup	EGROUP	T{
-ID\-ul grupului efectiv al procesului.  Acesta va fi ID\-ul grupului textual,
+ID\-ul grupului efectiv al procesului. Acesta va fi ID\-ul grupului textual,
 dacă poate fi obținut și lățimea câmpului o permite, sau o reprezentare
 zecimală în caz contrar (alias
 \fBgroup\fP).
 T}
 
 eip	EIP	T{
-indicatorul de instrucțiune.  Începând cu nucleul 4.9.xx, va fi reinițiat
-la zero, cu excepția cazului în care sarcina iese sau sistemul creează
-un fișier cu descărcarea conținutului acesteia din memorie.
+indicatorul de instrucțiune. Începând cu nucleul 4.9.xx, va fi reinițiat la zero, cu excepția cazului în care sarcina iese sau sistemul creează un fișier cu descărcarea conținutului acesteia din memorie.
 T}
 
 esp	ESP	T{
-indicatorul de stivă.  Începând cu nucleul 4.9.xx, va fi reinițiat la zero,
-cu excepția cazului în care sarcina iese sau sistemul creează un fișier cu
-descărcarea conținutului acesteia din memorie.
+indicatorul de stivă. Începând cu nucleul 4.9.xx, va fi reinițiat la zero, cu excepția cazului în care sarcina iese sau sistemul creează un fișier cu descărcarea conținutului acesteia din memorie.
 T}
 
 etime	ELAPSED	T{
@@ -1034,6 +982,9 @@ etimes	ELAPSED	T{
 timpul scurs de la pornirea procesului, în secunde.
 T}
 
+environ	ENVIRON	T{
+variabilele de mediu pentru proces.
+T}
 euid	EUID	T{
 ID\-ul utilizatorului efectiv (alias
 \fBuid\fP).
@@ -1049,8 +1000,9 @@ poate fi folosită pentru a forța reprezentarea zecimală (alias
 T}
 
 exe	EXE	T{
-calea către executabil.  Util dacă calea nu poate fi afișată prin opțiunile
-de format
+ruta către executabil.
+Util dacă ruta nu poate fi afișată prin
+opțiunile de format
 \fBcmd\fP, \fBcomm\fP
 sau
 \fBargs\fP.
@@ -1063,13 +1015,17 @@ fanioanele asociate procesului, consultați secțiunea
 \fBflag\fP, \fBflags\fP).
 T}
 
+fds	FDS	T{
+numărul total de descriptori de fișiere deschise.
+T}
+
 fgid	FGID	T{
 ID\-ul grupului de acces la sistemul de fișiere (alias
 \fBfsgid\fP).
 T}
 
 fgroup	FGROUP	T{
-ID\-ul grupului de acces la sistemul de fișiere.  Acesta va fi ID\-ul textual al
+ID\-ul grupului de acces la sistemul de fișiere. Acesta va fi ID\-ul textual al
 grupului, dacă poate fi obținut și lățimea câmpului o permite,
 sau o reprezentare zecimală în caz contrar (alias
 \fBfsgroup\fP).
@@ -1100,7 +1056,7 @@ ID\-ul utilizatorului de acces la sistemul de fișiere (alias
 T}
 
 fuser	FUSER	T{
-ID\-ul utilizatorului de acces la sistemul de fișiere.  Acesta va fi ID\-ul
+ID\-ul utilizatorului de acces la sistemul de fișiere. Acesta va fi ID\-ul
 textual al utilizatorului, dacă poate fi obținut și lățimea câmpului o permite,
 sau o reprezentare zecimală în caz contrar.
 T}
@@ -1117,6 +1073,14 @@ consultați
 \fBegroup\fP.
 (alias
 \fBegroup\fP).
+T}
+
+htprv	HTPRV	T{
+Cantitatea de memorie privată stocată de pagina hugetlbfs care nu este contabilizată în opțiunile de format \fBrss\fP sau \fBpss\fP.
+T}
+
+htshr	HTSHR	T{
+Cantitatea de memorie partajată stocată de pagina hugetlbfs care nu este contabilizată în opțiunile de format \fBrss\fP sau \fBpss\fP.
 T}
 
 ignored	IGNORED	T{
@@ -1142,7 +1106,8 @@ care se găsește pe sistemele de înaltă securitate.
 T}
 
 lstart	STARTED	T{
-ora la care a început comanda. Aceasta va fi sub forma „DDD mmm HH:MM:SS YYY”,
+ora la care a început comanda.
+Aceasta va fi sub forma „DDD mmm HH:MM:SS YYY”,
 cu excepția cazului în care este modificată prin opțiunea \fB\-D\fP.
 T}
 
@@ -1194,7 +1159,9 @@ A se vedea
 T}
 
 ni	NI	T{
-valoarea priorității „nice”. Acesta variază de la 19 (cea mai „drăguță” nicest) la \-20 (nu este „drăguță” cu alte procese),
+valoarea priorității „nice”.
+Acesta variază de la 19 (cea mai „drăguță” nicest)
+la \-20 (nu este „drăguță” cu alte procese),
 consultați
 \fInice\fP(1).
 (alias
@@ -1224,10 +1191,7 @@ dacă doriți numele funcției nucleului).
 T}
 
 oom	OOM	T{
-estimarea depășirii limitelor memoriei disponibile. Valoarea, care variază
-de la 0 la +1000, utilizată pentru a selecta sarcinile de omorât atunci când
-memoria este epuizată. Zero se traduce prin „nu ucide niciodată”, în timp ce
-1000 înseamnă „ucide întotdeauna”.
+estimarea depășirii limitelor memoriei disponibile. Valoarea, care variază de la 0 la +1000, utilizată pentru a selecta sarcinile de omorât atunci când memoria este epuizată. Zero se traduce prin „nu ucide niciodată”, în timp ce 1000 înseamnă „ucide întotdeauna”.
 T}
 
 oomadj	OOMADJ	T{
@@ -1236,6 +1200,14 @@ T}
 
 ouid	OWNER	T{
 afișează identificatorul de utilizator Unix al proprietarului sesiunii unui proces, dacă a fost inclus suportul pentru «systemd».
+T}
+
+pcap	PCAP	T{
+capacitățile permise ale procesului, afișate ca o mască de biți hexazecimală. Consultați \fIcapabilities\fP(7).
+T}
+
+pcaps	PCAPS	T{
+capacitățile permise ale procesului, afișate ca un șir de nume de capacități. Consultați \fIcapabilities\fP(7).
 T}
 
 pcpu	%CPU	T{
@@ -1283,7 +1255,7 @@ policy	POL	T{
 clasa de planificare a procesului.  (alias
 \fBclass\fP, \fBcls\fP).
 Valorile posibile sunt:
-.sp 1
+.sp \n[PD]u
 .in +9n
 \-	nu este raportată
 .br
@@ -1318,12 +1290,12 @@ procesorul pe care a fost executat ultima dată procesul.
 T}
 
 pss	PSS	T{
-dimensiunea cotei proporționale, memoria fizică neinterschimbabilă(non\-swapped), 
-cu memoria partajată raportată proporțional cu toate sarcinile care îi sunt asociate.
+dimensiunea cotei proporționale, memoria fizică neinterschimbabilă(non\-swapped), cu memoria partajată calculată proporțional pentru toate sarcinile care îi sunt asociate.
 T}
 
 rbytes	RBYTES	T{
 numărul de octeți care au fost preluați efectiv din stratul de stocare de date prin acest proces.
+numărul de octeți pe care acest proces i\-a făcut într\-adevăr să fie preluați din stratul de stocare.
 T}
 
 rchars	RCHARS	T{
@@ -1340,15 +1312,11 @@ obținut și lățimea câmpului o permite, sau o reprezentare zecimală în caz
 T}
 
 rops	ROPS	T{
-Numărul de operații de citire In/Ieș — adică apeluri de sistem, cum ar fi
-\fBread\fP(2) și \fBpread\fP(2).
+Numărul de operații de citire In/Ieș — adică apeluri de sistem, cum ar fi \fBread\fP(2) și \fBpread\fP(2).
 T}
 
 rss	RSS	T{
-dimensiunea memoriei rezidente („resident set size” sau RSS), memoria fizică
-netransferată în spațiul de interschimb pe care o sarcină l\-a folosit (în
-kiloocteți) (alias
-\fBrssize\fP, \fBrsz\fP).
+dimensiunea memoriei rezidente („resident set size” sau RSS), memoria fizică netransferată în spațiul de interschimb pe care o sarcină l\-a folosit (în kiloocteți) (alias \fBrssize\fP, \fBrsz\fP).
 T}
 
 rssize	RSS	T{
@@ -1451,7 +1419,7 @@ consultați
 T}
 
 size	DIMENSIUNE	T{
-cantitatea aproximativă de spațiu de interschimb care ar fi necesară dacă procesul ar fi pe cale să modifice (mâzgălească „dirty”) toate paginile inscriptibile și apoi să se transfere în spațiul de schimb (swap).  Acest număr este foarte aproximativ!
+cantitatea aproximativă de spațiu de interschimb care ar fi necesară dacă procesul ar fi pe cale să modifice (mâzgălească „dirty”) toate paginile inscriptibile și apoi să se transfere în spațiul de schimb (swap). Acest număr este foarte aproximativ!
 T}
 
 slice	SLICE	T{
@@ -1491,7 +1459,8 @@ consultați
 T}
 
 stime	STIME	T{
-consultați \fBstart_time\fP. (alias \fBstart_time\fP).
+consultați \fBstart_time\fP
+(alias \fBstart_time\fP).
 T}
 
 suid	SUID	T{
@@ -1585,7 +1554,8 @@ identificatorul grupului de procese din primplan pe tty (terminalul) la care est
 T}
 
 trs	TRS	T{
-dimensiunea textului în memoria rezidentă, cantitatea de memorie fizică dedicată codului executabil.
+dimensiunea textului în memoria rezidentă,
+cantitatea de memorie fizică dedicată codului executabil.
 T}
 
 tt	TT	T{
@@ -1681,31 +1651,32 @@ numele funcției de nucleu în care procesul se află dormind.
 T}
 
 wchars	WCHARS	T{
-numărul de octeți pe care această sarcină l\-a cauzat, sau îl va face să fie scris pe disc.
+numărul de octeți pe care această sarcină l\-a cauzat,
+sau îl va face să fie scris pe disc.
 T}
 
 wops	WOPS	T{
-Numărul de operații de scriere In/Ieș — adică apeluri de sistem, cum ar fi
-\fBwrite\fP(2) și \fBpwrite\fP(2).
+Numărul de operații de scriere In/Ieș — adică apeluri de sistem,i
+precum \fBwrite\fP(2) și \fBpwrite\fP(2).
 T}
 
 .TE
 .SH "VARIABILE DE MEDIU"
 Următoarele variabile de mediu ar putea afecta \fBps\fP:
 .TP  3
-\fBCOLOANE\fP
+\fBCOLUMNS\fP
 Reamplasează lățimea de afișare implicită.
 .TP 
-\fBLINII\fP
+\fBLINES\fP
 Reamplasează înălțimea de afișare implicită.
 .TP 
 \fBPS_PERSONALITY\fP
-Stabilește una dintre valorile: posix, old, linux, bsd, sun, digital...\&
-(consultați secțiunea \fBPERSONALITATE\fP de mai jos).
+Stabilește una dintre valorile: posix, old, linux, bsd, sun,
+digital.\|.\|.\& (consultați secțiunea \fBPERSONALITATE\fP de mai jos).
 .TP 
 \fBCMD_ENV\fP
-Stabilește una dintre valorile: posix, old, linux, bsd, sun, digital...\&
-(consultați secțiunea \fBPERSONALITATE\fP de mai jos).
+Stabilește una dintre valorile: posix, old, linux, bsd, sun,
+digital.\|.\|.\& (consultați secțiunea \fBPERSONALITATE\fP de mai jos).
 .TP 
 \fBI_WANT_A_BROKEN_PS\fP
 Forțează interpretarea liniei de comandă învechite.
@@ -1777,24 +1748,27 @@ Câmpurile \fBbsdstart\fP și \fBstart\fP vor afișa doar numele prescurtat al l
 prescurtat al lunii în limba locală configurată, dar pot depăși lățimea
 coloanei din cauza lungimilor diferite ale numelor prescurtate ale lunii și
 zilei în funcție de limbă.
-.PP
 .SH "CONSULTAȚI ȘI"
-\fBpgrep\fP(1), \fBpstree\fP(1), \fBtop\fP(1), \fBstrftime\fP(3), \fBproc\fP(5).
+\fBpgrep\fP(1), \fBpstree\fP(1), \fBtop\fP(1), \fBstrftime\fP(3), \fBproc\fP(5),
+\fBcapabilities\fP(7).
+
 .SH STANDARDE
-Acest \fBps\fP este conform cu:
-.PP
-.PD 0
-.IP 1 4
+Acest \fBps\fP este conform cu următoarele standarde:
+.TP  4n
+\[bu]
 Versiunea 2 a Single Unix Specification
-.IP 2 4
+.TP  4n
+\[bu]
 The Open Group Technical Standard Base Specifications, versiunea 6
-.IP 3 4
+.TP  4n
+\[bu]
 IEEE Std 1003.1, ediția 2004
-.IP 4 4
+.TP  4n
+\[bu]
 X/Open System Interfaces Extension [UP XSI]
-.IP 5 4
+.TP  4n
+\[bu]
 ISO/IEC 9945:2003
-.PD
 .SH AUTOR
 \fBps\fP a fost scris inițial de
 .MT lankeste@\:fwi.\:uva.\:nl
@@ -1802,13 +1776,12 @@ Branko
 Lankester
 .ME .
 .MT johnsonm@\:redhat.\:com
-Michael K. Johnson
+Michael K.\& Johnson
 .ME
-l\-a rescris extensiv pentru a folosi sistemul de fișiere \fIproc\fP, schimbând
-câteva detalii pe parcurs.
+l\-a rescris extensiv pentru a folosi sistemul de fișiere \fIproc\fP,
+schimbând câteva detalii pe parcurs.
 .MT mjshield@\:nyx.\:cs.\:du.\:edu
-Michael
-Shields
+Michael Shields
 .ME
 a adăugat funcționalitatea listei PID.
 .MT cblake@\:bbn.\:com
@@ -1817,7 +1790,7 @@ Charles Blake
 a adăugat sortarea pe mai multe
 niveluri, biblioteca în stilul „dirent”, baza de date „mmaped” de la nume la
 număr al dispozitivului, căutarea binară aproximativă direct pe System.map,
-și multe curățări de cod și documentație.  David Mossberger\-Tang a scris
+și multe curățări de cod și documentație. David Mossberger\-Tang a scris
 suportul BFD generic pentru „psupdate”.
 .MT albert@\:users.\:sf.\:net
 Albert Cahalan

@@ -1,3 +1,54 @@
+procps (2:4.0.5-1) unstable; urgency=medium
+
+  * New upstream version
+    library: Recover from meminfo seek using LXC Closes: #1072831
+    ps.1: Update man page to standards Closes: #1081801
+    snice: Minor fix for help screen Closes: #1086441
+    sysctl: --all skips stat_refresh Closes: #978688
+    vmstat.8: si/so are changed by --unit Closes: #1061944
+    w.1: Note utmp is for non-systemd Closes: #1080333
+    w.1: Update man page to standards Closes: #1077367
+    w: Don't segfault with -s option
+    watch.1: --chgexit only works for visible changes Closes: #729569
+  * Remove ps_not_path_max patch as upstream has it
+  * Remove makefile_w_link_systemd as its fixed upstream
+
+ -- Craig Small <csmall@debian.org>  Thu, 19 Dec 2024 13:09:01 +1100
+
+procps (2:4.0.4-7) unstable; urgency=medium
+
+  [ Ben Hutchings ]
+  * Add file trigger on /usr/lib/sysctl.d to apply new configuration
+    Closes: #1088203
+
+  [ Craig Small ]
+  * Updated watch file for GitLab api Closes: #1079806
+  * Add rm_conffile for /etc/sysctl.conf Closes: #1085130
+  * Update standards version to 4.7.0, no change
+  * Update/Add patches metadata
+
+ -- Craig Small <csmall@debian.org>  Tue, 10 Dec 2024 16:35:44 +1100
+
+procps (2:4.0.4-6) unstable; urgency=medium
+
+  * Remove old conffile sysctl.conf Closes: #1076352
+  * Fixed vmstat regex, thanks Paul! Closes: #1072533
+
+ -- Craig Small <csmall@debian.org>  Mon, 30 Sep 2024 07:24:54 +1000
+
+procps (2:4.0.4-5) unstable; urgency=medium
+
+  * Add Recommends: linux-sysctl-defaults Closes: #1074156
+  * Remove /etc/sysctl.conf as using /etc/sysctl.d/*.conf is better
+  * Updated /etc/sysctld.d/README
+  * Remove maintscript as these are very old files
+  * Remove old Breaks control:
+     guymager <= 0.5.9 : stable is 0.8.13
+     open-vm-tools <= 2011 : stable uses a epoch
+  * Remove libsystemd-dev build-dep version  >= 209 : stable is 252
+
+ -- Craig Small <csmall@debian.org>  Thu, 11 Jul 2024 18:41:23 +1000
+
 procps (2:4.0.4-4) unstable; urgency=medium
 
   * Moved into unstable

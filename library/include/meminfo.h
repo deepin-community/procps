@@ -79,6 +79,7 @@ enum meminfo_item {
     MEMINFO_MEM_MAP_COPY,          //   ul_int         "
     MEMINFO_MEM_NFS_UNSTABLE,      //   ul_int         "
     MEMINFO_MEM_PAGE_TABLES,       //   ul_int         "
+    MEMINFO_MEM_PAGE_TABLES_SEC,   //   ul_int         "
     MEMINFO_MEM_PER_CPU,           //   ul_int         "
     MEMINFO_MEM_SHADOWCALLSTACK,   //   ul_int         "
     MEMINFO_MEM_SHARED,            //   ul_int         "
@@ -88,6 +89,7 @@ enum meminfo_item {
     MEMINFO_MEM_SLAB_RECLAIM,      //   ul_int         "
     MEMINFO_MEM_SLAB_UNRECLAIM,    //   ul_int         "
     MEMINFO_MEM_TOTAL,             //   ul_int         "
+    MEMINFO_MEM_UNACCEPTED,        //   ul_int         "
     MEMINFO_MEM_UNEVICTABLE,       //   ul_int         "
     MEMINFO_MEM_USED,              //   ul_int        derived from MEM_TOTAL - MEM_AVAILABLE
     MEMINFO_MEM_VM_ALLOC_CHUNK,    //   ul_int        /proc/meminfo
@@ -95,6 +97,8 @@ enum meminfo_item {
     MEMINFO_MEM_VM_ALLOC_USED,     //   ul_int         "
     MEMINFO_MEM_WRITEBACK,         //   ul_int         "
     MEMINFO_MEM_WRITEBACK_TMP,     //   ul_int         "
+    MEMINFO_MEM_ZSWAP,             //   ul_int         "
+    MEMINFO_MEM_ZSWAPPED,          //   ul_int         "
 
     MEMINFO_DELTA_ACTIVE,          //    s_int        derived from above
     MEMINFO_DELTA_ACTIVE_ANON,     //    s_int         "
@@ -141,6 +145,7 @@ enum meminfo_item {
     MEMINFO_DELTA_MAP_COPY,        //    s_int         "
     MEMINFO_DELTA_NFS_UNSTABLE,    //    s_int         "
     MEMINFO_DELTA_PAGE_TABLES,     //    s_int         "
+    MEMINFO_DELTA_PAGE_TABLES_SEC, //    s_int         "
     MEMINFO_DELTA_PER_CPU,         //    s_int         "
     MEMINFO_DELTA_SHADOWCALLSTACK, //    s_int         "
     MEMINFO_DELTA_SHARED,          //    s_int         "
@@ -150,6 +155,7 @@ enum meminfo_item {
     MEMINFO_DELTA_SLAB_RECLAIM,    //    s_int         "
     MEMINFO_DELTA_SLAB_UNRECLAIM,  //    s_int         "
     MEMINFO_DELTA_TOTAL,           //    s_int         "
+    MEMINFO_DELTA_UNACCEPTED,      //    s_int         "
     MEMINFO_DELTA_UNEVICTABLE,     //    s_int         "
     MEMINFO_DELTA_USED,            //    s_int         "
     MEMINFO_DELTA_VM_ALLOC_CHUNK,  //    s_int         "
@@ -157,6 +163,8 @@ enum meminfo_item {
     MEMINFO_DELTA_VM_ALLOC_USED,   //    s_int         "
     MEMINFO_DELTA_WRITEBACK,       //    s_int         "
     MEMINFO_DELTA_WRITEBACK_TMP,   //    s_int         "
+    MEMINFO_DELTA_ZSWAP,           //    s_int         "
+    MEMINFO_DELTA_ZSWAPPED,        //    s_int         "
 
     MEMINFO_SWAP_CACHED,           //   ul_int        /proc/meminfo
     MEMINFO_SWAP_FREE,             //   ul_int         "
@@ -189,7 +197,7 @@ struct meminfo_info;
     struct meminfo_result *r = procps_meminfo_get( info, actual_enum ); \
     r ? r->result . type : 0; } )
 
-#define MEMINFO_VAL( relative_enum, type, stack, info ) \
+#define MEMINFO_VAL( relative_enum, type, stack ) \
     stack -> head [ relative_enum ] . result . type
 
 
