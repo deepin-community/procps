@@ -1,6 +1,6 @@
 .\"
-.\" Copyright (c) 2011-2023 Craig Small <csmall@dropbear.xyz>
-.\" Copyright (c) 2011-2023 Jim Warner <james.warner@comcast.net>
+.\" Copyright (c) 2011-2024 Craig Small <csmall@dropbear.xyz>
+.\" Copyright (c) 2011-2024 Jim Warner <james.warner@comcast.net>
 .\" Copyright (c) 2011-2012 Sami Kerola <kerolasa@iki.fi>
 .\" Copyright (c) 2002      Albert Cahalan
 .\"
@@ -15,11 +15,11 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH UPTIME 1 "Dezember 2012" procps\-ng "Dienstprogramme für Benutzer"
+.TH UPTIME 1 "8. August 2024" procps\-ng 
 .SH BEZEICHNUNG
 uptime \- feststellen, wie lange das System schon läuft
 .SH ÜBERSICHT
-\fBuptime\fP [\fIOptionen\fP]
+\fBuptime\fP [\fIOption\fP .\|.\|.]
 .SH BESCHREIBUNG
 \fBuptime\fP zeigt in einer Zeile die folgenden Informationen an: die aktuelle
 Zeit, wie lange das System bereits läuft, die Anzahl der aktuell
@@ -43,17 +43,29 @@ einem System mit vier CPUs bedeutet dieselbe Auslastung, dass der Rechner
 während 75% der Zeit im Leerlauf war.
 .SH OPTIONEN
 .TP 
+\fB\-c\fP, \fB\-\-container\fP
+zeigt die Container\- anstatt der System\-Betriebszeit.
+.TP 
 \fB\-p\fP, \fB\-\-pretty\fP
-Uptime im schönen Format anzeigen
+zeigt die Betriebszeit im schönen Format an.
 .TP 
 \fB\-h\fP, \fB\-\-help\fP
-Diesen Hilfetext anzeigen
+zeigt diesen Hilfetext an.
+.TP 
+\fB\-r\fP, \fB\-\-raw\fP
+zeigt die Werte im Rohformat an. Die aktuelle Zeit und die Betriebszeit
+werden in Sekunden angezeigt.
 .TP 
 \fB\-s\fP, \fB\-\-since\fP
 System ist hochgefahren seit, im Format »yyyy\-mm\-dd HH:MM:SS«
 .TP 
 \fB\-V\fP, \fB\-\-version\fP
 Versionsinformationen anzeigen und das Programm beenden.
+.SH UMGEBUNGSVARIABLEN
+.TP 
+\fBPROCPS_CONTAINER\fP
+Falls $\fBPROCPS_CONTAINER\fP gesetzt ist, verhält sich \fBuptime\fP so, als ob
+die Option \fB\-\-container\fP angegeben wurde.
 .SH DATEIEN
 .TP 
 \fI/var/run/utmp\fP
@@ -61,19 +73,9 @@ Informationen darüber, wer aktuell angemeldet ist
 .TP 
 \fI/proc\fP
 Prozessinformation
-.SH AUTOREN
-\fBuptime\fP wurde von
-.UR greenfie@gauss.\:rutgers.\:edu
-Larry Greenfield
-.UE
-und
-.UR johnsonm@sunsite.\:unc.\:edu
-Michael K. Johnson
-.UE
-geschrieben.
 .SH "SIEHE AUCH"
 \fBps\fP(1), \fBtop\fP(1), \fButmp\fP(5), \fBw\fP(1)
 .SH "FEHLER MELDEN"
 Bitte schicken Sie Fehlermeldungen (auf Englisch) an
 .MT procps@freelists.org
-.ME
+.ME .

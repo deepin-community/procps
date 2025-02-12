@@ -1,5 +1,5 @@
 .\"
-.\" Copyright (c) 2002-2023 Craig Small <csmall@dropbear.xyz>
+.\" Copyright (c) 2002-2024 Craig Small <csmall@dropbear.xyz>
 .\" Copyright (c) 2012-2023 Jim Warner <james.warner@comcast.net>
 .\" Copyright (c) 2011-2012 Sami Kerola <kerolasa@iki.fi>
 .\" Copyright (c) 1994      Henry Ware <al172@yfn.ysu.edu>
@@ -15,11 +15,11 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH VMSTAT 8 2023\-01\-18 procps\-ng "Administration système"
+.TH VMSTAT 8 2024\-07\-19 procps\-ng 
 .SH NOM
 vmstat \- Afficher des statistiques sur la mémoire virtuelle
 .SH SYNOPSIS
-\fBvmstat\fP [\fIoptions\fP] [\fIdélai\fP [\fItotal\fP]]
+\fBvmstat\fP [\fIoption\fP .\|.\|.\&] [\fIdelay\fP [\fIcount\fP]]
 .SH DESCRIPTION
 \fBvmstat\fP affiche des informations sur les processus, la mémoire, la
 pagination, les blocs d'entrées et sorties, les interruptions et l'activité
@@ -41,14 +41,14 @@ Le nombre de mises à jour. Si \fItotal\fP n'est pas indiqué, quand \fIdélai\f
 défini, \fItotal\fP vaut l'infini par défaut.
 .TP 
 \fB\-a\fP, \fB\-\-active\fP
-Afficher la mémoire active et inactive pour les noyaux\ 2.5.41 et supérieurs.
+Afficher la mémoire active et inactive pour les noyaux 2.5.41 et supérieurs.
 .TP 
 \fB\-f\fP, \fB\-\-forks\fP
 L'option \fB\-f\fP affiche le nombre de processus fils depuis le démarrage du
-système, à savoir les «\ fork\ », «\ vfork\ » et les clones d'appels
+système, à savoir les « fork », « vfork » et les clones d'appels
 système. Cela correspond au nombre total de tâches créées. Chaque processus
 est représenté par une ou plusieurs tâches dépendant de l'utilisation des
-processus légers («\ threads\ »). Il n'y a pas de rafraîchissement.
+processus légers (« threads »). Il n'y a pas de rafraîchissement.
 .TP 
 \fB\-m\fP, \fB\-\-slabs\fP
 Afficher le slabinfo.
@@ -61,20 +61,19 @@ Afficher un tableau de compteurs d'événements et des statistiques sur la
 mémoire. Il s'agit d'un affichage unique.
 .TP 
 \fB\-d\fP, \fB\-\-disk\fP
-Afficher des statistiques sur le disque (pour les versions\ 2.5.70 ou
+Afficher des statistiques sur le disque (pour les versions 2.5.70 ou
 supérieures).
 .TP 
 \fB\-D\fP, \fB\-\-disk\-sum\fP
 Afficher des statistiques succinctes à propos de l'activité des disques.
 .TP 
 \fB\-p\fP, \fB\-\-partition\fP \fIpériphérique\fP
-Afficher des statistiques sur les partitions (pour les versions\ 2.5.70 ou
+Afficher des statistiques sur les partitions (pour les versions 2.5.70 ou
 supérieures).
 .TP 
 \fB\-S\fP, \fB\-\-unit\fP \fIlettre\fP
 Switches outputs between 1000 (\fIk\fP), 1024 (\fIK\fP), 1000000 (\fIm\fP), or
-1048576 (\fIM\fP)  bytes.  Note this does not change the swap (si/so) or block
-(bi/bo)  fields.
+1048576 (\fIM\fP)  bytes.  Note this does not change the block (bi/bo) fields.
 .TP 
 \fB\-t\fP, \fB\-\-timestamp\fP
 Ajouter un horodatage à toutes les lignes.
@@ -82,7 +81,7 @@ Ajouter un horodatage à toutes les lignes.
 \fB\-w\fP, \fB\-\-wide\fP
 Mode de sortie large (utile pour les systèmes avec une grande quantité de
 mémoire, où le mode d’affichage par défaut est victime de rupture de colonne
-involontaire). La sortie est plus grande que 80\ caractères par ligne.
+involontaire). La sortie est plus grande que 80 caractères par ligne.
 .TP 
 \fB\-y\fP, \fB\-\-no\-first\fP
 Omits first report with statistics since system boot.
@@ -92,7 +91,6 @@ Afficher la version du logiciel et quitter.
 .TP 
 \fB\-h\fP, \fB\-\-help\fP
 Afficher l'aide et quitter.
-.PD
 .SH "DESCRIPTIONS DES CHAMPS POUR LE MODE VM"
 .SS "procs (processus)"
 .nf
@@ -182,4 +180,6 @@ what is visible.
 \fBfree\fP(1), \fBiostat\fP(1), \fBmpstat\fP(1), \fBps\fP(1), \fBsar\fP(1), \fBtop\fP(1),
 \fBslabinfo\fP(5)
 .SH BOGUES
-Signalez les bogues à <\fIprocps@freelists.org\fP>
+Please send bug reports to
+.MT procps@freelists.org
+.ME .

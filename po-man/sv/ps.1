@@ -1,5 +1,5 @@
 .\"
-.\" Copyright (c) 2004-2023 Craig Small <csmall@dropbear.xyz>
+.\" Copyright (c) 2004-2024 Craig Small <csmall@dropbear.xyz>
 .\" Copyright (c) 2011-2023 Jim Warner <james.warner@comcast.net>
 .\" Copyright (c) 2011-2012 Sami Kerola <kerolasa@iki.fi>
 .\" Copyright (c) 1998-2003 Albert Cahalan
@@ -15,39 +15,31 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH PS 1 2023\-08\-19 procps\-ng Användarkommandon
+.TH PS 1 2024\-09\-17 procps\-ng 
 .\"
 .\" Ragged-right text.
 .na
 .\" Disable hyphenation.
 .nh
-.\"
-.\" ColSize is used for the format spec table.
-.\" It's the left margin, minus the right, minus
-.\" the space needed for the 1st two columns.
-.\" Making it messy: inches, ens, points, scaled points...
-.\"
-.nr ColSize ((\n[.l] - \n[.i]) / 1n - 29)
-.\"
 .SH NAMN
 ps — rapportera en ögonblicksbild av de nuvarande processerna.
 .SH SYNOPSIS
-\fBps\fP [\,\fIflaggor\/\fP]
+\fBps\fP [\fIoption\fP .\|.\|.]
 .SH BESKRIVNING
 \fBps\fP visar information om ett urval av de aktiva processerna. Om du vill ha
 en upprepad uppdatering av urvalet och den visade informationen, använd
 \fBtop\fP istället.
 .P
-Denna version av \fBps\fP accepterar flera olika sorters flaggor:
-.IP
-.PD 0
-.IP 1 4
-UNIX\-flaggor, som kan grupperas och måste föregås av ett bindestreck.
-.IP 2 4
+This version of \fBps\fP accepts several kinds of options.
+.TP  4n
+\[bu]
+Unix options, which may be grouped and must be preceded by a dash.
+.TP 
+\[bu]
 BSD\-flaggor, som kan grupperas och inte får föregås av ett bindestreck.
-.IP 3 4
+.TP 
+\[bu]
 GNU långa flaggor, vilka föregås av två bindestreck.
-.PD
 .PP
 Flaggor av olika typer får blandas fritt, men konflikter kan förekomma. Det
 finns några synonyma flaggor, vars funktionalitet är identisk, på grund av
@@ -181,7 +173,6 @@ på detta sätt är utöver mängden processer som väljs på andra sätt. Ett a
 sätt att beskriva detta är att denna flagga får \fBps\fP att lista alla
 processer som ägs av dig (samma EAID som \fBps\fP) eller att lista alla
 processer när de används tillsammans med flaggan \fBa\fP.
-.PD
 .SH "VAL AV PROCESS MED LISTA"
 Dessa flaggor tar ett ensamt argument på formen av en mellanslagsseparerad
 eller kommaseparerad lista. De kan användas flera gånger. Till exempel:
@@ -190,7 +181,7 @@ eller kommaseparerad lista. De kan användas flera gånger. Till exempel:
 \fI123\fP
 Identiskt med \fB\-\-pid\ \fP\fI123\fP.
 .TP 
-\+\fI123\fP
++\fI123\fP
 Identiskt med \fB\-\-sid\ \fP\fI123\fP.
 .TP 
 \-\fI123\fP
@@ -292,7 +283,7 @@ verkliga användar\-ID:t identifierar användaren som skapade processen, se
 \fB\-u\fP\fI\ användarlista\fP
 Välj via effektivt användar\-ID (EAID) eller \-namn. Detta väljer processerna
 vars effektiva användramn eller \-ID finns i \fIanvändarlista\fP.
-
+.P
  Det effektiva användar\-ID:t beskriver användaren var vars
 filåtkomsträttigheter används av processen (se \fIgeteuid\fP(2)). Identiskt med
 \fBU\fP och \fB\-\-user\fP.
@@ -303,7 +294,6 @@ Välj via verkligt användar\-ID (VAID) eller \-namn. Identiskt med \fB\-U\fP.
 \fB\-\-user\fP\fI\ användarlista\fP
 Välj via effektivt användar\-ID (EAID) eller \-namn. Identiskt med \fB\-u\fP och
 \fBU\fP.
-.PD
 .SH "STYRNING AV UTMATNINGSFORMAT"
 Dessa flaggor används för att välja informationen som visas av
 \fBps\fP. Utmatningen kan skilja beroende på personlighet.
@@ -315,11 +305,11 @@ Visa annan schemaläggarinformation för flaggan \fB\-l\fP.
 Visa säkerhetskontextsformat (för SELinux).
 .TP 
 \fB\-f\fP
-Gör en helformatslistning. Denna flagga kan kombineras med många andra
-flaggor i UNIX\-stil för att lägga till ytterligare kolumner. Det gör också
-att kommandoargumenten skrivs ut. När det används med \fB\-L\fP kommer
-kolumnerna NLWP (antal trådar) och LWP (tråd\-ID) läggas till. Se flaggan
-\fBc\fP, formatnyckelordet \fBargs\fP och formatnyckelordet \fBcomm\fP.
+Do full\-format listing.  This option can be combined with many other
+Unix\-style options to add additional columns.  It also causes the command
+arguments to be printed.  When used with \fB\-L\fP, the NLWP (number of threads)
+and LWP (thread ID) columns will be added.  See the \fBc\fP option, the format
+keyword \fBargs\fP, and the format keyword \fBcomm\fP.
 .TP 
 \fB\-F\fP
 Extra fullt format. Se flaggan \fB\-f\fP som \fB\-F\fP implicerar.
@@ -343,13 +333,13 @@ Långt format. Flaggan \fB\-y\fP är ofta användbar med denna.
 Lägg till en kolumn med säkerhetsdata. Identiskt med \fBZ\fP (för SELinux).
 .TP 
 \fBO\fP\fI\ format\fP
-är förladdad \fBo\fP (överlagrad). BSD\-flaggan \fBO\fP kan fungera som \fB\-O\fP
-(användardefinierat utdataformat med några vanliga fält fördefinierade)
-eller kan användas för att ange sorteringsordning. Heuristiker används för
-att avgöra beteendet för denna flagga. För att säkerställa att det önskade
-beteendet erhålls (sortering eller formatering), ange flaggan på något annat
-sätt (t.ex. med \fB\-O\fP eller \fB\-\-sort\fP). När använd som en formateringsflagga
-är den identisk med \fB\-O\fP med BSD\-personligheten.
+is preloaded \fBo\fP (overloaded).  The BSD \fBO\fP option can act like \fB\-O\fP
+(user\-defined output format with some common fields predefined) or can be
+used to specify sort order.  Heuristics are used to determine the behavior
+of this option.  To ensure that the desired behavior is obtained (sorting or
+formatting), specify the option in some other way (e.g., with \fB\-O\fP or
+\fB\-\-sort\fP).  When used as a formatting option, it is identical to \fB\-O\fP,
+with the BSD personality.
 .TP 
 \fB\-O\fP\fI\ format\fP
 Som \fB\-o\fP men förladdad med några standardkolumner. Identiskt med \fB\-o\ pid,\:\fP\fIformat\fP\fB,\:state,\:tname,\:time,\:command\fP eller \fB\-o\ pid,\:\fP\fIformat\fP\fB,\:tname,\:time,\:cmd\fP, se \fB\-o\fP nedan.
@@ -358,18 +348,17 @@ Som \fB\-o\fP men förladdad med några standardkolumner. Identiskt med \fB\-o\ 
 Ange användardefinierat format. Identiskt med \fB\-o\fP och \fB\-\-format\fP.
 .TP 
 \fB\-o\fP\fI\ format\fP
-Användardefinierat format. \fIformat\fP är ett enda argument i form av en
-blankseparerad eller kommaseparerad lista, vilket ger ett sett att ange
-individuella utdatakolumner. De kända nyckelorden beskrivs i avsnittet
-\fBSTANDARDFORMATSPECIFICERARE\fP nedan. Namn på huvuden kan ändras (\fBps \-o pid,\:ruser=VerkligAnvändare \-o comm=Kommando\fP) som önskas. Om alla
-kolumnhuvuden är tomma (\fBps \-o pid= \-o comm=\fP) kommer huvudraden inte att
-skrivas ut. Kolumnbredder kommer öka efter behov för breda huvuden; detta
-kan användas för att bredda kolumner såsom WCHAN (\fBps \-o pid,\:wchan=\:BRED\-\:WCHAN\-\:KOLUMN \-o comm\fP). Explicit breddstyrning (\fBps opid,\:wchan:42,\:cmd\fP) finns också.. Beteendet hos \fBps \-o pid=X,\:comm=Y\fP
-varierar med personligheten; utmatningen kan vara en kolumn med namnen
-”X,\:comm=Y” eller två kolumner med namen ”X” och ”Y”. Använd flera
-\fB\-o\fP\-flaggor vid tveksamhet. Använd miljövariabeln \fBPS_FORMAT\fP för att
-ange en standard som önskas; DefSysV och DefBSD är makron som kan användas
-för att som välja UNIX\- eller BSD\-standardkolumner.
+User\-defined format.  \fIformat\fP is a single argument in the form of a
+blank\-separated or comma\-separated list, which offers a way to specify
+individual output columns.  The recognized keywords are described in the
+\fBSTANDARD FORMAT SPECIFIERS\fP section below.  Headers may be renamed (\fBps \-o pid,\:ruser=RealUser \-o comm=Command\fP)  as desired.  If all column
+headers are empty (\fBps \-o pid= \-o comm=\fP)  then the header line will not be
+output.  Column width will increase as needed for wide headers; this may be
+used to widen up columns such as WCHAN (\fBps \-o pid,\:wchan=\:WIDE\-\:WCHAN\-\:COLUMN \-o comm\fP).  Explicit width control (\fBps opid,\:wchan:42,\:cmd\fP)  is offered too.  The behavior of \fBps \-o pid=X,\:comm=Y\fP varies with personality; output may be one column named
+"X,\:comm=Y" or two columns named "X" and "Y".  Use multiple \fB\-o\fP options
+when in doubt.  Use the \fBPS_FORMAT\fP environment variable to specify a
+default as desired; DefSysV and DefBSD are macros that may be used to choose
+the default Unix or BSD columns.
 .TP 
 \fB\-P\fP
 Lägg till en kolumn som visar \fBpsr\fP.
@@ -392,7 +381,6 @@ användas med \fB\-l\fP.
 .TP 
 \fBZ\fP
 Lägg till en kolumn med säkerhetsdata. Identiskt med \fB\-M\fP (för SELinux).
-.PD
 .SH UTMATNINGSMODIFIERARE
 .TP 
 \fBc\fP
@@ -413,11 +401,10 @@ Ange skärmbredd.
 \fB\-\-cumulative\fP
 Inkludera några data om döda processer (som en summa med föräldern).
 .TP 
-.TP 
 \fB\-D\fP\fI\ format\fP
-Ange datumformatet för fältet \fBlstart\fP till \fIformat\fP. Detta format tolkas
-av \fBstrftime\fP(3) och skall vara maximalt 24 tecken för att feljustera
-kolumner.
+Set the date format of the \fBlstart\fP field to \fIformat\fP.  This format is
+parsed by \fBstrftime\fP(3)  and should be a maximum of 24 characters to not
+mis\-align columns.
 .TP 
 \fB\-\-date\-format\fP\fI\ format\fP
 Identiskt med \fB\-D\fP.
@@ -449,10 +436,8 @@ Vissa processhierarki (skog).
 Repetera huvudrader, en gång per sida med utmatning.
 .TP 
 \fBk\fP\fI\ spec\fP
-Ange sorteringsordning. Sorteringssyntaxen är [\fB+\fP|\fB\-\fP]\fInyckel\/.RB [,[ + | \- ].IR nyckel [,…]].\fP Välj en flerbokstavsnyckel från avsnittet
-\fBSTANDARDFORMATSPECIFICERARE\fP. ”+”:et är frivilligt eftersom
-standardriktningen är ökande numerisk eller lexikografisk ordning. Identiskt
-med \fB\-\-sort\fP.
+Specify sorting order.  Sorting syntax is [\fB+\fP|\fB\-\fP]\fIkey\/.RB [,[ + | \- ].IR key [,.\|.\|.]].\fP Choose a multi\-letter key from the \fBSTANDARD FORMAT SPECIFIERS\fP section.  The "+" is optional since default direction is
+increasing numerical or lexicographic order.  Identical to \fB\-\-sort\fP.
 .RS 8
 .IP
 Exempel:
@@ -475,20 +460,20 @@ Skriv inte ut något huvud alls. \fB\-\-no\-heading\fP är ett alias för denna
 flagga.
 .TP 
 \fBO\fP\fI\ ordning\fP
-Sorteringsordning (överlagrad). BSD\-flaggan \fBO\fP kan fungera som \fB\-O\fP
-(användardefinierat utmatningsformat med några vanliga fält fördefinierade)
-eller kan användas för att ange sorteringsordningen. Heuristiker används för
-att bestämma beteenendet hos denna flagga. För att vara säker på att det
-önskade beteendet erhålls (sortering eller formatering), ange flaggan på
-något annat sätt (t.ex. med \fB\-O\fP eller \fB\-\-sort\fP).
+Sorting order (overloaded).  The BSD \fBO\fP option can act like \fB\-O\fP
+(user\-defined output format with some common fields predefined) or can be
+used to specify sort order.  Heuristics are used to determine the behavior
+of this option.  To ensure that the desired behavior is obtained (sorting or
+formatting), specify the option in some other way (e.g., with \fB\-O\fP or
+\fB\-\-sort\fP).
 .IP
-För sortering är syntaxen för det föråldrade syntaxen \fBO\fP från BSD
-\fBO\fP[\fB+\fP|\fB\-\fP]\fIn1\fP[,[\fB+\fP|\fB\-\fP]\fIn2\fP[,…]], Det ordnar processlistan enligt
-den sortering i flera nivåer som specifiseras av sekvensen av enbokstavs
-korta nycklar \fIn1\fP, \fIn2\fP, … som beskrivs i avsnittet \fBFÖRÅLDRADE SORTERINGSNYCKLAR\fP nedan. ”+”:et är för närvarande frivilligt, det upprepar
-bara standarrikningen för en nyckel, men kan hjälpa till att särskilja en
-\fBO\fP\-sortering från ett \fBO\fP\-format. ”\-”:et vänder riktingen endast för den
-nyckel det föregår.
+For sorting, obsolete BSD \fBO\fP option syntax is
+\fBO\fP[\fB+\fP|\fB\-\fP]\fIk1\fP[,[\fB+\fP|\fB\-\fP]\fIk2\fP[,.\|.\|.]].  It orders the processes
+listing according to the multilevel sort specified by the sequence of
+one\-letter short keys \fIk1\fP,\fIk2\fP, .\|.\|." described in the \fBOBSOLETE SORT KEYS\fP section below.  The\ "+" is currently optional, merely re\-iterating
+the default direction on a key, but may help to distinguish an \fBO\fP sort
+from an \fBO\fP format.  The "\-" reverses direction only on the key it
+precedes.
 .TP 
 \fB\-\-rows\fP\fI\ n\fP
 Ange skärmhöjd.
@@ -499,11 +484,11 @@ till deras förälder. Detta är användbart för att undersöka ett system där
 föräldraprocess upprepat grenar av kortlivade barn för att göra arbetet.
 .TP 
 \fB\-\-sort\fP\fI\ spec\fP
-Ange sorteringsordning. Sorteringssyntaxen är
-[\fB+\fP|\fB\-\fP]\fInyckel\fP[,[\fB+\fP|\fB\-\fP]\fInyckel\fP[,…]]. Välj en flerbokstavsnyckel
-från avsnittet \fBSTANDARDFORMATSPECIFICERARE\fP. ”+”:et är frivilligt eftersom
-standardordningen är ökande numeriks eller lexikografisk ordning. Identiskt
-med \fBk\fP. Till exempel: \fBps jax \-\-sort=\:uid,\:\-ppid,\:+pid\fP
+Specify sorting order.  Sorting syntax is
+[\fI+\fP|\fI\-\fP]\fIkey\fP[,[\fB+\fP|\fB\-\fP]\fIkey\fP[,.\|.\|.]].  Choose a multi\-letter key
+from the \fBSTANDARD FORMAT SPECIFIERS\fP section.  The "+" is optional since
+default direction is increasing numerical or lexicographic order.  Identical
+to \fBk\fP.  For example: \fBps jax \-\-sort=\:uid,\:\-ppid,\:+pid\fP
 .TP 
 \fB\-\-signames\fP
 Visa signalmasker som använder förkortade signalnamn och expanderar
@@ -519,7 +504,6 @@ Bred utmatning. Använd denna flagga två gånger för obegränsad bredd.
 .TP 
 \fB\-\-width\fP\fI\ n\fP
 Ange skärmbredd.
-.PD
 .SH TRÅDVISNING
 .TP 
 \fBH\fP
@@ -582,25 +566,22 @@ Om längden på användarnamnet är större än bredden på visningskolumnen hug
 användarnamnet av. Se formateringsflaggorna \fB\-o\fP och \fB\-O\fP för att anpassa
 längden.
 .PP
-Kommandoflaggor såsom \fBps \-aux\fP rekommenderas inte eftersom det är en
-sammanblandning av två olika standarder. Enligt standarderna POSIX och UNIX
-begär ovanståend kommando att visa alla processer med en TTY (i allmänhet
-kommandona användare kör) plus alla processer som ägs av en användare med
-namnet \fIx\fP. Om den användaren inte finns kommer \fBps\fP anta att du
-egentligen menade ”\fBps aux\fP”.
+Commands options such as \fBps \-aux\fP are not recommended as it is a confusion
+of two different standards.  According to the POSIX and Unix standards, the
+above command asks to display all processes with a TTY (generally the
+commands users are running) plus all processes owned by a user named \fIx\fP.
+If that user doesn't exist, then \fBps\fP will assume you really meant "\fBps\fP
+\fIaux\fP".
 .SH PROCESSFLAGGOR
 Summan av dessa flaggor visas i kolumnen ”F”, som ges av
 utmatningsspecificeraren \fBflags\fP:
 .PP
 .RS 8
-.PD 0
-.TP  5
-1
-grenad men gjorde inte exec
-.TP 
-4
-använde superanvändarprivileger
-.PD
+.TS
+R4 L.
+1	grenad men gjorde inte exec
+4	använde superanvändarprivileger
+.TE
 .RE
 .SH PROCESSTATUSKODER
 Här är de olika värdena som utmatningsspecificerarna \fBs\fP, \fBstat\fP och
@@ -608,72 +589,56 @@ Här är de olika värdena som utmatningsspecificerarna \fBs\fP, \fBstat\fP och
 tillståndet hos en process:
 .PP
 .RS 8
-.PD 0
-.TP  5
-D
-oavbrytbar sömn (vanligen IO)
-.TP 
-I
-Inaktiv kärntråd
-.TP 
-R
-körande eller körbar (på körkön)
-.TP 
-S
-avbrytbar sömn (väntar på att en händelse skall avsluta)
-.TP 
-T
-stoppad av jobbstyrningssignal
-.TP 
-t
-stoppad av en felsökare under spårning
-.TP 
-W
-sidväxling (inte giltig sedan kärnan 2.6.xx)
-.TP 
-X
-död (skall aldrig synas)
-.TP 
-Z
-upphörd process (”zombie”), avslutad men inte skördad av sin förälder
-.PD
+.TS
+R4 L.
+D	uninterruptible sleep (usually I/O)
+I	idle kernel thread
+R	körande eller körbar (på körkön)
+S	T{
+interruptible sleep
+(waiting for an event to complete)
+T}
+T	stoppad av jobbstyrningssignal
+t	stoppad av en felsökare under spårning
+W	paging (not valid since Linux 2.6)
+X	död (skall aldrig synas)
+Z	T{
+defunct (\[lq]zombie\[rq]) process,
+terminated but not reaped by its parent
+T}
+.TE
 .RE
 .PP
 För BSD\-format och när nyckelordet \fBstat\fP används kan ytterligare bokstäver
 visas:
 .PP
 .RS 8
-.PD 0
-.TP  5
-<
-hög prioritet (inte trevlig mot andra användare)
-.TP 
-N
-låg prioritet (trevlig mot andra användare)
-.TP 
-L
-har sidor låsta i minnet (för realtid och anpassat IO)
-.TP 
-s
-är en sessionsledare
-.TP 
-l
-är multitrådad (använder CLONE_THREAD, som NPTL pthreads gör)
-.TP 
-+
-är i förgrundsprocessgruppen
-.PD
+.TS
+R4 L.
+<	hög prioritet (inte trevlig mot andra användare)
+N	låg prioritet (trevlig mot andra användare)
+L	T{
+has pages locked into memory
+(for real\-time and custom I/O)
+T}
+s	är en sessionsledare
+l	T{
+is multi\-threaded
+(using CLONE_THREAD,
+like NPTL pthreads do)
+T}
++	är i förgrundsprocessgruppen
+.TE
 .RE
 .SH "FÖRÅLDRADE SORTERINGSNYCKLAR"
-Dessa nycklar används av BSD\-flaggan \fBO\fP (när den används för
-sortering). GNU\-flaggan \fB\-\-sort\fP använder inte dessa nycklar, utan
-specificerarna som beskrivs i avsnittet
-\fBSTANDARDFORMATSPECIFICERARE\fP. Observera att värdena som används i
-sorteringen är de interna värden som \fBps\fP använder och inte de ”kokta”
-värden som används i några av utmatningsformatsfälten (t.ex. kommer
-sortering på tty sortera efter enhetsnummer, inte enligt terminalnamnet som
-visas). Skicka utdata från \fBps\fP i rör till kommandot \fBsort\fP(1) om du vill
-sortera de kokta värdena.
+These keys are used by the BSD \fBO\fP option (when it is used for sorting).
+The GNU \fB\-\-sort\fP option doesn't use these keys, but the specifiers
+described below in the \fBSTANDARD FORMAT SPECIFIERS\fP section.  Note that the
+values used in sorting are the internal values \fBps\fP uses and not the
+"cooked" values used in some of the output format fields (e.g., sorting on
+tty will sort into device number, not according to the terminal name
+displayed).  Pipe \fBps\fP output into the \fBsort\fP(1)  command if you want to
+sort the cooked values.
 .TS
 l l lw(3i).
 \fBNYCKEL\fP	\fBLÅNG\fP	\fBBESKRIVNING\fP
@@ -694,7 +659,7 @@ p	pid	process\-ID
 P	ppid	föräldraprocess\-ID
 r	rss	residenta mängdens storlek
 R	resident	residenta sidor
-s	size	minnesstorlek i kilobyte
+s	size	memory size in kibibytes
 S	share	mängden delade sidor
 t	tty	enhetsnumret på den styrande tty:n
 T	start_time	tidpunkten processen startades
@@ -705,10 +670,9 @@ y	priority	kärnskemaläggningsprioritet
 .\"K	stime	system time (conflict, system vs. start time)
 .TE
 .SH AIX\-FORMATBESKRIVARE
-Denna \fBps\fP stödjer AIX formatbeskrivare, vilka fungerar ungefär som
-formateringskoderna till \fIprintf\fP(1) och \fIprintf\fP(3). Till exempel kan den
-normala standardutmatningen skapas med detta: \fBps \-eo "%p %y %x %c"\fP. De
-\fBVANLIGA\fP koderna beskrivs i nästa stycke.
+This \fBps\fP supports AIX format descriptors, which work somewhat like the
+formatting codes of \fIprintf\fP(1)  and \fIprintf\fP(3).  The \fBNORMAL\fP codes are
+described in the next section.
 .TS
 l l l.
 \fBKOD\fP	\fBVANLIG\fP	\fBRUBRIK\fP
@@ -743,22 +707,14 @@ Följande användardefinierade formatspecificerare kan innehålla blanktecken:
 \fBlstart\fP, \fBbsdstart\fP, \fBstart\fP.
 .PP
 Några nyckelord är kanske inte tillgängliga för sortering.
-
-.\" #######################################################################
-.\" lB1 lB1 lB1 lB1 s s s
-.\" lB1 l1  l1  l1  s s s.
-.\"
-.\" lB1 lB1 lBw(5.5i)
-.\" lB1 l1  l.
-.\"
+.PP
 .TS
-expand;
-l1B l1B lBw(\n[ColSize]n)
-l1B l1  l.
-KOD	RUBRIK	BESKRIVNING
-
+Lb Lb Lbx
+Lb Lb L  .
+Code	Header	Description
+_
 %cpu	%CPU	T{
-cpu\-användning av processerna i formatet ”##.#”. För närvarande är det CPU\-tiden som används dividerad med tiden som processen har kört (förhållandet cputid/verklig tid), uttryckt som en procentsats. Det kommer inte summeras till 100\ % utom om du har tur. (alias \fBpcpu\fP).
+cpu\-användning av processerna i formatet ”##.#”. För närvarande är det CPU\-tiden som används dividerad med tiden som processen har kört (förhållandet cputid/verklig tid), uttryckt som en procentsats. Det kommer inte summeras till 100 % utom om du har tur. (alias \fBpcpu\fP).
 T}
 
 %mem	%MIN	T{
@@ -776,36 +732,48 @@ Autogruppens nice\-värde vilket påverkar schemaläggningen för alla processer
 T}
 
 args	KOMMANDO	T{
-kommandot med alla dess flaggor som en sträng. Ändringar av argumenten kan
-visas. Utdatan i denna kolumn kan innehålla blanktecken. En process markerad
-<defunct> är delvis död, och väntar på att helt destrueras av sin
-förälder. Ibland är processargumenten inte tillgängliga; när detta händer
-kommer
+A command with all its arguments as a string.
+Modifications to the arguments may be shown.
+The output in this column may contain spaces.
+A process marked \[lq]<defunct>\[rq] is partly dead,
+waiting to be fully destroyed by its parent.
+Sometimes the process arguments will be unavailable;
+when this happens,
 \fBps\fP
-istället skriva det körbara namnet i hakparenteser.  (alias
+instead reports the executable name in brackets.
+(alias
 \fBcmd\fP, \fBcommand\fP).
-Se även formatnyckelordet
+See also the
 \fBcomm\fP
-flaggan
+format keyword, the
 \fB\-f\fP
-och flaggan
-\fBc\fP.
-.br
-När den anges sist kommer denna kolumn sträcka sig till kanten av displayen. Om
+option, and the
+\fBc\fP
+option.
+.sp \n[PD]u
+When specified last,
+this column will extend to the edge of the display.
+If
 \fBps\fP
-inte kan avgöra displaybredden, som när utdata är omdirigerad (pipe) till en
-fil eller ett annat kommando, är utdatabredden odefinierad (den kan vara 80,
-obegränsad, bestämd av variabeln
-\fBTERM\fP,
-och så vidare). Miljövariabeln
+can not determine the display width,
+as when output is redirected (piped) into a file or another command,
+the output width is undefined
+(it may be 80,
+unlimited,
+determined by the
+\fBTERM\fP
+variable,
+and so on).
+The
 \fBCOLUMNS\fP
-eller flaggan
+environment variable or
 \fB\-\-cols\fP
-kan användas för att exakt bestämma bredden i detta fall. Flaggan
+option may be used to exactly determine the width in this case.
+The
 \fBw\fP
-eller
+or
 \fB\-w\fP
-kan också användas för att justera bredden.
+option may be also be used to adjust width.
 T}
 
 blocked	BLOCKED	T{
@@ -830,8 +798,10 @@ minuter cpu\-tid.
 T}
 
 c	C	T{
-processoranvändning. För närvarande är detta heltalsvärdet av procent
-användning över processens livslängd. (se
+processor utilization.
+Currently, this is the integer value of the percent
+usage over the lifetime of the process.
+(see
 \fB%cpu\fP).
 T}
 
@@ -861,7 +831,7 @@ class	CLS	T{
 processens schemaläggningsklass. (alias
 \fBpolicy\fP, \fBcls\fP).
 Fältets möjliga värden är:
-.sp 1
+.sp \n[PD]u
 .in +9n
 \-	inte rapporterad
 .br
@@ -887,7 +857,7 @@ cls	CLS	T{
 processens schemaläggningsklass. (alias
 \fBpolicy\fP, \fBcls\fP).
 Fältets möjliga värden är:
-.sp 1
+.sp \n[PD]u
 .in +9n
 \-	inte rapporterad
 .br
@@ -926,7 +896,7 @@ Se även formatnyckelordet
 \fB\-f\fP
 och flaggan
 \fBc\fP.
-.br
+.sp \n[PD]u
 När den anges sist kommer denna kolumn sträcka sig till kanten av displayen. Om
 \fBps\fP
 inte kan avgöra displaybredden, som när utdata är omdirigerad (pipe) till en
@@ -965,8 +935,9 @@ ackumulerad CPU\-tid i sekunder (alias
 T}
 
 cuc	%CUB	T{
-En process CPU\-användning, inklusive döda barn, i ett utökat format ”##.###”.
-(se även
+The CPU utilization of a process, including dead children,
+in an extended "##.###" format.
+(see also
 \fB%cpu\fP,
 \fBc\fP,
 \fBcp\fP,
@@ -984,14 +955,20 @@ En process CPU\-användning i ett utökat format ”##.###”.
 \fBpcpu\fP).
 T}
 
-drs	DRS	T{
-storleken på den residenta mängden data, mängden fysiskt minne \fIreserverat\fP
-av en process. Det är även känt som DATA. Sådant minne behöver ännu inte
-vara mappat till
-\fBrss\fP
-men kommer alltid att inkluderas i mängden
-\fBvsz\fP.
+docker	DOCKER	T{
+The abbreviated id of the docker container within which a task is running.
+If a process is not running inside a container, a dash ('\-') will be shown.
+T}
 
+drs	DRS	T{
+data resident set size,
+the amount of private memory \fIreserved\fP by a process.
+It is also known as DATA.
+Such memory may not yet be mapped to
+\fBrss\fP
+but will always be included in the
+\fBvsz\fP
+amount.
 T}
 
 egid	EGID	T{
@@ -1007,13 +984,15 @@ i annat fall. (alias
 T}
 
 eip	EIP	T{
-instruktionspekaren. Från kärna 4.9.xx kommer det att vara nollställt utom
-om en uppgift avslutar eller dumpar minnet.
+instruction pointer.
+As of kernel 4.9.xx will be zeroed out unless task is
+exiting or being core dumped.
 T}
 
 esp	ESP	T{
-stackpekaren. Från kärna 4.9.xx kommer det att vara nollställt utom
-om en uppgift avslutar eller dumpar minnet.
+stack pointer.
+As of kernel 4.9.xx will be zeroed out unless task is
+exiting or being core dumped.
 T}
 
 etime	FÖRFLUTEN	T{
@@ -1024,6 +1003,9 @@ etimes	FÖRFLUTEN	T{
 förlupen tid sedan processen startades, i sekunder.
 T}
 
+environ	ENVIRON	T{
+environment variables for the process.
+T}
 euid	EUID	T{
 effektivt användar\-ID (alias
 \fBuid\fP).
@@ -1039,11 +1021,12 @@ kan användas för att framtvinga den decimala representationen. (alias
 T}
 
 exe	EXE	T{
-sökvägen till den körbara. Användbart om sökvägen inte kan skrivas ut via
-formatflaggorna
+path to the executable.
+Useful if path cannot be printed via
 \fBcmd\fP, \fBcomm\fP
-eller
-\fBargs\fP.
+or
+\fBargs\fP
+format options.
 T}
 
 f	F	T{
@@ -1051,6 +1034,10 @@ flaggor associerade med processen, se avsnittet
 \fBPROCESSFLAGGOR\fP.
 (alias
 \fBflag\fP, \fBflags\fP).
+T}
+
+fds	FDS	T{
+total open file descriptors.
 T}
 
 fgid	FGID	T{
@@ -1109,6 +1096,16 @@ se
 \fBegroup\fP).
 T}
 
+htprv	HTPRV	T{
+The amount of private memory backed by hugetlbfs page which is not counted in the \fBrss\fP
+or \fBpss\fP format options.
+T}
+
+htshr	HTSHR	T{
+The amount of shared memory backed by hugetlbfs page which is not counted in the \fBrss\fP
+or \fBpss\fP format options.
+T}
+
 ignored	IGNORED	T{
 mask över de ignorerade signalerna, se
 \fIsignal\fP(7).
@@ -1130,8 +1127,9 @@ säkerhetsetikett, vanligen använt för SELinux\-kontextdata. Detta är till f�
 T}
 
 lstart	STARTED	T{
-Tiden kommandot startade. Detta kommer vara i formatet ”DDD mmm HH:MM:SS ÅÅÅÅ”
-om det inte ändras av flaggan \fB\-D\fP.
+time the command started.
+This will be in the form "DDD mmm HH:MM:SS YYY"
+unless changed by the \fB\-D\fP option.
 T}
 
 lsession	SESSION	T{
@@ -1182,8 +1180,9 @@ Se
 T}
 
 ni	NI	T{
-nice\-värde. Detta går från 19 (trevligast) till \-20 (inte trevligt mot andra),
-se
+nice value.
+This ranges from 19 (nicest) to \-20 (not nice to others),
+see
 \fInice\fP(1).
 (alias
 \fBnice\fP).
@@ -1213,19 +1212,33 @@ om du vill veta kärnfunktionens namn).
 T}
 
 oom	OOM	T{
-Slut\-på\-minne\-värde. Värdet, från 0 till +1000, som används för att välja
-uppgift(er) att döda när minnet tar slut.
+Out of Memory Score.
+The value, ranging from 0 to +1000, used to select
+task(s) to kill when memory is exhausted.
 T}
 
 oomadj	OOMADJ	T{
-Slut\-på\-minne\-justeringsfaktor. Värdet läggs till till det aktuella slut\-på
-minnet\-värdet som sedan används för att avgöra vilken uppgift som skall dödas
-när minnet tar slut.
+Out of Memory Adjustment Factor.
+The value is added to the current out of
+memory score which is then used to determine which task to kill when memory
+is exhausted.
 T}
 
 ouid	OWNER	T{
 visar Unix\-användaridentifieraren för ägaren av processens sessionen,
 om stöd för systemd har inkluderats.
+T}
+
+pcap	PCAP	T{
+Permitted Capabilites of the process, displayed as a hexadecimal bitmask.
+See
+\fIcapabilities\fP(7).
+T}
+
+pcaps	PCAPS	T{
+Permitted Capabilites of the process, displayed as a string of capability
+names.  See
+\fIcapabilities\fP(7).
 T}
 
 pcpu	%CPU	T{
@@ -1236,15 +1249,20 @@ se
 T}
 
 pending	PENDING	T{
-mask av väntande signaler. Se
+mask of the pending signals.
+See
 \fIsignal\fP(7).
-Signaler som väntar på processen skiljer sig från signaler som väntar på
-enskilda trådar. Använd flaggan
+Signals pending on the process are distinct from signals pending on
+individual threads.
+Use the
 \fBm\fP
-eller flaggan
+option or the
 \fB\-m\fP
-för att se båda.  Enligt fältets bredd visas en 32\- eller 64\-bitars mask
-i hexadecimal form, om inte flagga \fB\-\-signames\fP används. (alias
+option to see both.
+According to the width of the field, a 32 or 64 bits mask in hexadecimal
+format is displayed,
+unless the \fB\-\-signames\fP option is used.
+(alias
 \fBsig\fP).
 T}
 
@@ -1283,7 +1301,7 @@ policy	POL	T{
 processens schemaläggningsklass.  (alias
 \fBclass\fP, \fBcls\fP).
 Möjliga värden är:
-.sp 1
+.sp \n[PD]u
 .in +9n
 \-	inte rapporterad
 .br
@@ -1318,12 +1336,14 @@ processor som processen senast körde på.
 T}
 
 pss	ARSS	T{
-Proportinell andels storlek, det inte utväxlade fysiska minnet, med delat minne
-proportionellt fördelat över alla uppgifter som avbildar in det.
+Proportional share size,
+the non\-swapped physical memory,
+with shared memory proportionally accounted to all tasks mapping it.
 T}
 
 rbytes	RBYTES	T{
-Antal byte som denna process verkligen fick att hämtas från lagringslagret.
+Number of bytes which this process really did cause to be fetched from the
+storage layer.
 T}
 
 rchars	RCHARS	T{
@@ -1340,13 +1360,13 @@ hämtas och fältbredden tillåter, eller en decimal representation i annat fall
 T}
 
 rops	ROPS	T{
-Antal läsnings\-I/O\-åtgärder — det vill säga, systemanrop såsom
-\fBread\fP(2) och \fBpread\fP(2).
+Number of read I/O operations\[em]that is, system calls such as
+\fBread\fP(2) and \fBpread\fP(2).
 T}
 
 rss	RSS	T{
-residenta mängdens storlek, det ej utväxlade fysiska minnet som en uppgift
-har använt (i kiloyte).  (alias
+resident set size, the non\-swapped physical memory that a task has used (in
+kibibytes).  (alias
 \fBrssize\fP, \fBrsz\fP).
 T}
 
@@ -1504,7 +1524,8 @@ se
 T}
 
 stime	STID	T{
-se \fBstart_time\fP. (alias \fBstart_time\fP).
+see \fBstart_time\fP.
+(alias \fBstart_time\fP).
 T}
 
 suid	SAID	T{
@@ -1598,7 +1619,8 @@ till, eller \-1 om processen inte är kopplad till någon tty.
 T}
 
 trs	TRS	T{
-den residenta text\-mängdens storlek, mängden fysiskt minne tilldelat till körbar kod.
+text resident set size,
+the amount of physical memory devoted to executable code.
 T}
 
 tt	TT	T{
@@ -1700,12 +1722,13 @@ namnet på kärnfunktionen i vilken processen sover.
 T}
 
 wchars	WCHARS	T{
-Antal byt vilka denna uppgift har fått, eller kommer att få skrivas till disk.
+Number of bytes which this task has caused,
+or shall cause to be written to disk.
 T}
 
 wops	WOPS	T{
-Antal skrivnings\-I/O\-åtgärder — det vill säga, systemanrop såsom
-\fBwrite\fP(2) och \fBpwrite\fP(2).
+Number of write I/O operations\[em]that is, system calls such as
+\fBwrite\fP(2) and \fBpwrite\fP(2).
 T}
 
 .TE
@@ -1719,12 +1742,12 @@ Följande miljövariabler kan påverka \fBps\fP:
 Åsidosätt standardvisningshöjden.
 .TP 
 \fBPS_PERSONALITY\fP
-Sätt till en av posix, old, linux, bsd, sun, digital …\& (se avsnittet
-\fBPERSONLIGHET\fP nedan).
+Set to one of posix, old, linux, bsd, sun, digital.\|.\|.\& (see section
+\fBPERSONALITY\fP below).
 .TP 
 \fBCMD_ENV\fP
-Sätt till en av posix, old, linux, bsd, sun, digital …\& (se avsnittet
-\fBPERSONLIGHET\fP nedan).
+Set to one of posix, old, linux, bsd, sun, digital.\|.\|.\& (see section
+\fBPERSONALITY\fP below).
 .TP 
 \fBI_WANT_A_BROKEN_PS\fP
 Framtvinga fåråldrad tolkning av kommandoraden.
@@ -1795,54 +1818,55 @@ månadsnamnet på engelska. Fältet \fBlstart\fP och \fBstime\fP kommer visa det
 förkortade månadsnamnet i den konfigurerade lokalen men kan överskrida
 kolumnbredden på grund av olika längder för förkortade månads\- och dagnamn
 mellan språk.
-.PP
 .SH "SE ÄVEN"
-\fBpgrep\fP(1), \fBpstree\fP(1), \fBtop\fP(1), \fBstrftime\fP(3), \fBproc\fP(5).
+\fBpgrep\fP(1), \fBpstree\fP(1), \fBtop\fP(1), \fBstrftime\fP(3), \fBproc\fP(5),
+\fBcapabilities\fP(7).
+
 .SH STANDARDER
-Denna \fBps\fP följer:
-.PP
-.PD 0
-.IP 1 4
+This \fBps\fP conforms to the following standards.
+.TP  4n
+\[bu]
 Version 2 av Single Unix Specification
-.IP 2 4
+.TP  4n
+\[bu]
 Technical Standard Base Specifications, utgåva 6 från Open Group
-.IP 3 4
+.TP  4n
+\[bu]
 IEEE Std 1003.1, utgåva 2004
-.IP 4 4
+.TP  4n
+\[bu]
 X/Open System Interfaces Extension [UP\ XSI]
-.IP 5 4
+.TP  4n
+\[bu]
 ISO/IEC 9945:2003
-.PD
 .SH UPPHOVSMAN
-\fBps\fP skrevs ursprungligen av
+\fBps\fP was originally written by
 .MT lankeste@\:fwi.\:uva.\:nl
 Branko
 Lankester
-.ME
-.
+.ME .
 .MT johnsonm@\:redhat.\:com
-Michael K. Johnson
+Michael K.\& Johnson
 .ME
-skrev om det signifikant till att använda proc\-filsystemet och ändrade en
-del saker på vägen.
+re\-wrote it significantly to use the proc filesystem, changing a few
+things in the process.
 .MT mjshield@\:nyx.\:cs.\:du.\:edu
-Michael Shields
+Michael
+Shields
 .ME
-lade till funktionen pid\-lista.
+added the pid\-list feature.
 .MT cblake@\:bbn.\:com
-Charles
-Blake
+Charles Blake
 .ME
-lade till flernivåsortering, bibliotek i dirent\-stil, databasen
-med avbildningar från namn till nummer, den ungefärliga binära sökningen
-direkt i System.map och gjorde många kod\- och
-dokumentationsstädningar. David Mossberger\-Tang skrev det generiska stödet
-av BFD för psupdate.
+added multi\-level sorting, the dirent\-style library,
+the device name\-to\-number mmaped database, the approximate binary search
+directly on System.map, and many code and documentation cleanups.  David
+Mossberger\-Tang wrote the generic BFD support for psupdate.
 .MT albert@\:users.\:sf.\:net
 Albert Cahalan
 .ME
-skrev om ps med fullständigt stöd för Unix98 och BSD, tillsammans med några
-fula hack för föråldrad och främmande syntax.
+rewrote ps for full Unix98
+and BSD support, along with some ugly hacks for obsolete and foreign syntax.
 .PP
 Skicka felrapporter till
 .MT procps@freelists.org

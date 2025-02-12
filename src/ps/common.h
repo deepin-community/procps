@@ -44,7 +44,7 @@
 
 /* a 'results stack value' extractor macro
    where: E=rel enum, T=data type, S=stack */
-#define rSv(E,T,S) PIDS_VAL(rel_ ## E, T, S, Pids_info)
+#define rSv(E,T,S) PIDS_VAL(rel_ ## E, T, S)
 
 #define namREL(e) rel_ ## e
 #define makEXT(e) extern int namREL(e);
@@ -87,10 +87,12 @@ makEXT(ADDR_CURR_ESP)
 makEXT(ADDR_STACK_START)
 makEXT(AUTOGRP_ID)
 makEXT(AUTOGRP_NICE)
+makEXT(CAPS_PERMITTED)
 makEXT(CGNAME)
 makEXT(CGROUP)
 makEXT(CMD)
 makEXT(CMDLINE)
+makEXT(DOCKER_ID)
 makEXT(ENVIRON)
 makEXT(EXE)
 makEXT(FLAGS)
@@ -141,6 +143,7 @@ makEXT(NS_USER)
 makEXT(NS_UTS)
 makEXT(OOM_ADJ)
 makEXT(OOM_SCORE)
+makEXT(OPEN_FILES)
 makEXT(PRIORITY)
 makEXT(PRIORITY_RT)
 makEXT(PROCESSOR)
@@ -148,6 +151,7 @@ makEXT(PROCESSOR_NODE)
 makEXT(RSS)
 makEXT(RSS_RLIM)
 makEXT(SCHED_CLASS)
+makEXT(SCHED_CLASSSTR)
 makEXT(SD_MACH)
 makEXT(SD_OUID)
 makEXT(SD_SEAT)
@@ -160,6 +164,8 @@ makEXT(SIGCATCH)
 makEXT(SIGIGNORE)
 makEXT(SIGNALS)
 makEXT(SIGPENDING)
+makEXT(SMAP_HUGE_TLBPRV)
+makEXT(SMAP_HUGE_TLBSHR)
 makEXT(SMAP_PRV_TOTAL)
 makEXT(SMAP_PSS)
 makEXT(STATE)
@@ -213,6 +219,7 @@ makEXT(noop)
 #define SEL_COMM 13
 #define SEL_PPID 14
 #define SEL_PID_QUICK 15
+#define SEL_PID_TRY_QUICK 16
 
 /* Since an enum could be smashed by a #define, it would be bad. */
 #define U98  0 /* Unix98 standard */    /* This must be 0 */
@@ -494,9 +501,6 @@ extern void reset_sortformat(void);
 /* select.c */
 extern int want_this_proc(proc_t *buf);
 extern const char *select_bits_setup(void);
-
-/* signames.c */
-int print_signame(char *restrict const outbuf, const char *restrict const sig, const size_t len);
 
 /* help.c */
 extern void __attribute__ ((__noreturn__)) do_help(const char *opt, int rc);

@@ -16,11 +16,11 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH FREE 1 2023\-05\-02 procps\-ng "Commandes de l'utilisateur"
+.TH FREE 1 2023\-05\-02 procps\-ng 
 .SH NOM
 free \- Afficher la quantité de mémoire libre et utilisée du système
 .SH SYNOPSIS
-\fBfree\fP [\fIoptions\fP]
+\fBfree\fP [\fIoption\fP .\|.\|.]
 .SH DESCRIPTION
 \fBfree\fP affiche la quantité totale de mémoire physique et d'espace d'échange
 libre et utilisée par le système, ainsi que les tampons et caches utilisés
@@ -57,8 +57,8 @@ nouvelles applications, sans utiliser l’espace d’échange. Contrairement aux
 données fournies par les champs \fBcache\fP ou \fBfree\fP, ce champ tient compte
 du cache de page et aussi du fait que tous les slabs de mémoire récupérables
 seront récupérés à cause des éléments utilisés (MemAvailable dans
-\fI/proc/meminfo\fP, disponible à partir du noyau\ 3.14, émulé à partir du
-noyau\ 2.6.27, sinon identique à \fBfree\fP)
+\fI/proc/meminfo\fP, disponible à partir du noyau 3.14, émulé à partir du
+noyau 2.6.27, sinon identique à \fBfree\fP)
 .SH OPTIONS
 .TP 
 \fB\-b\fP, \fB\-\-bytes\fP
@@ -96,7 +96,7 @@ Afficher la quantité de mémoire en téraoctets. Implique \-\-si.
 Afficher la quantité de mémoire en pétaoctets. Implique \-\-si.
 .TP 
 \fB\-h\fP, \fB\-\-human\fP
-Montrer tous les champs automatiquement à l'échelle la plus appropriée\ : le
+Montrer tous les champs automatiquement à l'échelle la plus appropriée : le
 plus petit nombre à trois chiffres affiché avec l'unité. Les unités
 suivantes sont utilisées.
 .sp
@@ -115,7 +115,7 @@ ne pas être alignées avec l'en\-tête.
 .TP 
 \fB\-w\fP, \fB\-\-wide\fP
 Basculer en mode large. Le mode large produit des lignes plus grandes que
-80\ caractères. Dans ce mode, \fBbuffers\fP et \fBcache\fP sont affichés en deux
+80 caractères. Dans ce mode, \fBbuffers\fP et \fBcache\fP sont affichés en deux
 colonnes séparées.
 .TP 
 \fB\-c\fP, \fB\-\-count\fP \fIcompte\fP
@@ -153,18 +153,16 @@ Afficher l'aide.
 .TP 
 \fB\-V\fP, \fB\-\-version\fP
 Afficher les informations de version.
-.PD
 .SH FICHIERS
 .TP 
 \fI/proc/meminfo\fP
 Renseignements sur la mémoire
-.PD
 .SH BOGUES
 La valeur de la colonne  \fBshared\fP n'est pas disponible pour les noyaux
 antérieurs à la version 2.6.32 (affiche zéro à la place).
-.TP 
-Veuillez signaler les bogues à
-.UR procps@freelists.org
-.UE
+.P
+Please send bug reports to
+.MT procps@freelists.org
+.ME .
 .SH "VOIR AUSSI"
 \fBps\fP(1), \fBslabtop\fP(1), \fBtop\fP(1), \fBvmstat\fP(8)

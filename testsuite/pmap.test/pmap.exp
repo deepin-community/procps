@@ -61,29 +61,34 @@ if  { [ file readable "/proc/self/smaps" ] == 0 } {
     spawn $pmap -XX $mypid
     expect_table $test $pmap_generic_header "\[^=\]+" "\[= \]+"
 
-    set test "pmap X with unreachable process"
-    spawn $pmap -X 1
-    expect_pass $test "$pmap_initname\$"
+    if { [ file exists "/proc/1/smaps" ] == 1  && [ file readable "/proc/1/smaps" ] == 0 } {
+        set test "pmap X with unreachable process"
+        spawn $pmap -X 1
+        expect_pass $test "$pmap_initname\$"
 
-    set test "pmap XX with unreachable process"
-    spawn $pmap -XX 1
-    expect_pass $test "$pmap_initname\$"
+        set test "pmap XX with unreachable process"
+        spawn $pmap -XX 1
+        expect_pass $test "$pmap_initname\$"
+    } else {
+        unsupported "pmap X with unreachable process : PID 1 smaps file needs to exist and not be readable"
+        unsupported "pmap XX with unreachable process : PID 1 smaps file needs to exist and not be readable"
+    }
 }
 
 
 proc expect_twice_total { test } {
     set totkb 0
     expect {
-        -re "\r\n\\s+(\\d+)\[0-9 \]*KB" {
+        -re "\r\n\\s+(\\d+)\\s+.*KB" {
             set totkb $expect_out(1,string)
             expect {
                 -re "\r\n\\s+$totkb\[0-9 \]*KB" { pass "$test" }
-                eof { fail "$test" }
-                timeout { fail "$test" }
+                eof { fail "$test: first match" }
+                timeout { fail "$test: first match" }
             }
         }
-        eof { fail "$test" }
-        timeout { fail "$test" }
+        eof { fail "$test: second match" }
+        timeout { fail "$test: second match" }
     }
 }
 

@@ -16,11 +16,11 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH FREE 1 2023\-05\-02 procps\-ng "Polecenia użytkownika"
+.TH FREE 1 2023\-05\-02 procps\-ng 
 .SH NAZWA
 free \- wyświetlanie ilości wolnej i użytej pamięci w systemie
 .SH SKŁADNIA
-\fBfree\fP [\fIopcje\fP]
+\fBfree\fP [\fIoption\fP .\|.\|.]
 .SH OPIS
 \fBfree\fP wyświetla całkowitą ilość wolnej i użytej pamięci fizycznej oraz
 pamięci wymiany w systemie, a także rozmiary buforów i pamięci podręcznych
@@ -28,9 +28,9 @@ używanych przez jądro. Informacje są zbierane poprzez analizę
 /proc/meminfo. Wyświetlane kolumny to:
 .TP 
 \fBrazem\fP
-Total usable memory (MemTotal and SwapTotal in /proc/meminfo). This includes
-the physical and swap memory minus a few reserved bits and kernel binary
-code.
+Całkowita użyteczna pamięć (MemTotal oraz SwapTotal w
+/proc/meminfo). Obejmuje pamięć fizyczną i obszar wymiany minus kilka
+zarezerwowanych partii oraz binarny kod jądra.
 .TP 
 \fBużyte\fP
 Pamięć użyta lub niedostępna (liczona jako \fBrazem\fP \- \fBwolne\fP)
@@ -121,8 +121,8 @@ Wyświetlenie wyniku podaną \fIliczbę\fP razy. Wymaga opcji \fB\-s\fP.
 Wyświetlanie szczegółowych statystyk niskiej i wysokiej pamięci.
 .TP 
 \fB\-L\fP, \fB\-\-line\fP
-Show output on a single line, often used with the \fB\-s\fP option to show
-memory statistics repeatedly.
+Wyjście w pojedynczej linii, używane zwykle z opcją \fB\-s\fP do wielokrotnego
+pokazywania statystyk pamięci.
 .TP 
 \fB\-s\fP, \fB\-\-seconds\fP \fIopóźnienie\fP
 Stałe wyświetlanie wyników co podane \fIopóźnienie\fP w sekundach. Można podać
@@ -147,18 +147,16 @@ Wyświetlenie opisu.
 .TP 
 \fB\-V\fP, \fB\-\-version\fP
 Wyświetlenie informacji o wersji.
-.PD
 .SH PLIKI
 .TP 
 /proc/meminfo
 informacje dotyczące pamięci
-.PD
 .SH BŁĘDY
 Wartość kolumny \fBdzielone\fP nie jest dostępna w jądrach starszych niż 2.6.32
 \- wtedy wyświetlane jest zero.
-.TP 
-Zgłoszenia błędów prosimy wysyłać na adres
-.UR procps@freelists.org
-.UE
+.P
+Please send bug reports to
+.MT procps@freelists.org
+.ME .
 .SH "ZOBACZ TAKŻE"
 \fBps\fP(1), \fBslabtop\fP(1), \fBtop\fP(1), \fBvmstat\fP(8).

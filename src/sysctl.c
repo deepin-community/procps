@@ -1,7 +1,7 @@
 /*
  * Sysctl - A utility to read and manipulate the sysctl parameters
  *
- * Copyright © 2009-2023 Craig Small <csmall@dropbear.xyz>
+ * Copyright © 2009-2024 Craig Small <csmall@dropbear.xyz>
  * Copyright © 2012-2023 Jim Warner <james.warner@comcast.net>
  * Copyright © 2017-2018 Werner Fink <werner@suse.de>
  * Copyright © 2014      Jaromir Capik <jcapik@redhat.com>
@@ -36,6 +36,7 @@
 #include <errno.h>
 #include <getopt.h>
 #include <glob.h>
+#include <fnmatch.h>
 #include <libgen.h>
 #include <limits.h>
 #include <regex.h>
@@ -64,6 +65,12 @@ static const char *DEPRECATED[] = {
 	"retrans_time",
 	""
 };
+/* Verboten parameters must never be read as they cause side-effects */
+static const char *VERBOTEN[] = {
+    "stat_refresh",
+    NULL
+};
+
 static bool IgnoreDeprecated;
 static bool NameOnly;
 static bool PrintName;
@@ -180,9 +187,9 @@ static SysctlSetting *setting_new(
     s = xmalloc(sizeof(SysctlSetting));
 
     *s = (SysctlSetting) {
-        .key = strdup(key),
+        .key = xstrdup(key),
         .path = path,
-        .value = value? strdup(value): NULL,
+        .value = value? xstrdup(value): NULL,
         .ignore_failure = ignore_failure,
         .glob_exclude = glob_exclude,
         .next = NULL,
@@ -213,6 +220,8 @@ static SysctlSetting *settinglist_findpath(const SettingList *l, const char *pat
     for (node=l->head; node != NULL; node = node->next) {
         if (strcmp(node->path, path) == 0)
             return node;
+        if (node->glob_exclude && fnmatch(node->path, path, 0) == 0)
+            return node;
     }
     return NULL;
 }
@@ -232,6 +241,7 @@ static void __attribute__ ((__noreturn__))
 	      _(" %s [options] [variable[=value] ...]\n"),
 		program_invocation_short_name);
 	fputs(USAGE_OPTIONS, out);
+	// TODO: other tools in src/ use one leading blank
 	fputs(_("  -a, --all            display all variables\n"), out);
 	fputs(_("  -A                   alias of -a\n"), out);
 	fputs(_("  -X                   alias of -a\n"), out);
@@ -475,6 +485,16 @@ static int is_deprecated(char *filename)
 	return 0;
 }
 
+static bool is_verboten(const char *filename)
+{
+	int i;
+	for (i = 0; VERBOTEN[i]; i++) {
+		if (strcmp(VERBOTEN[i], filename) == 0)
+			return TRUE;
+	}
+	return FALSE;
+}
+
 /*
  * Display all the sysctl settings
  */
@@ -498,6 +518,8 @@ static int DisplayAll(const char *restrict const path)
 			char *restrict tmpdir;
 			if (IgnoreDeprecated && is_deprecated(de->d_name))
 				continue;
+                        if (is_verboten(de->d_name))
+                            continue;
 			tmpdir =
 			    (char *restrict) xmalloc(strlen(path) +
 						     strlen(de->d_name) +
@@ -633,6 +655,7 @@ static int WriteSetting(
  * -key = value                              ignore errors
  * key.pattern.*.with.glob = value           set keys that match glob
  * -key.pattern.exclude.with.glob            dont set this value
+ * -key.pattern.exclude.*.glob               dont set values for keys matching glob
  * key.pattern.override.with.glob = value    set this glob match to value
  *
  */

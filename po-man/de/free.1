@@ -16,11 +16,11 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH FREE 1 "2. Mai 2023" procps\-ng "Dienstprogramme für Benutzer"
+.TH FREE 1 "2. Mai 2023" procps\-ng 
 .SH BEZEICHNUNG
-free \- Anzeige des freien und belegten Speichers
+free \- Anzeige des freien und belegten Speichers im System
 .SH ÜBERSICHT
-\fBfree\fP [\fIOptionen\fP]
+\fBfree\fP [\fIOption\fP .\|.\|.]
 .SH BESCHREIBUNG
 \fBfree\fP zeigt den gesamten freien und genutzten physischen Speicher und
 Auslagerungsspeicher im System sowie die vom Kernel verwendeten Puffer und
@@ -46,7 +46,7 @@ Ungenutzter Speicher (MemFree und SwapFree in /proc/meminfo)
 Von den Kernel\-Puffern genutzter Speicher (Buffers in /proc/meminfo)
 .TP 
 \fBCache\fP
-Vom Page\-Cache und Slabs genutzter Speicher (Cached und SReclaimable in
+Vom Seiten\-Cache und Slabs genutzter Speicher (Cached und SReclaimable in
 /proc/meminfo)
 .TP 
 \fBPuffer/Cache\fP
@@ -81,19 +81,19 @@ zeigt die Speichergröße in Tebibyte an.
 Zeigt die Speichergröße in Pebibyte an.
 .TP 
 \fB\-\-kilo\fP
-zeigt die Speichergröße in Kilobyte an. Impliziert \-\-si.
+zeigt die Speichergröße in Kilobyte an. Impliziert \fB\-\-si\fP.
 .TP 
 \fB\-\-mega\fP
-zeigt die Speichergröße in Megabyte an. Impliziert \-\-si.
+zeigt die Speichergröße in Megabyte an. Impliziert \fB\-\-si\fP.
 .TP 
 \fB\-\-giga\fP
-zeigt die Speichergröße in Gigabyte an. Impliziert \-\-si.
+zeigt die Speichergröße in Gigabyte an. Impliziert \fB\-\-si\fP.
 .TP 
 \fB\-\-tera\fP
-zeigt die Speichergröße in Terabyte an. Impliziert \-\-si.
+zeigt die Speichergröße in Terabyte an. Impliziert \fB\-\-si\fP.
 .TP 
 \fB\-\-peta\fP
-zeigt die Speichergröße in Petabyte an. Impliziert \-\-si.
+zeigt die Speichergröße in Petabyte an. Impliziert \fB\-\-si\fP.
 .TP 
 \fB\-h\fP, \fB\-\-human\fP
 Alle angezeigten Felder werden automatisch auf die kleinste Einheit mit drei
@@ -130,10 +130,9 @@ verwendet, um Speicherstatistiken wiederholt anzuzeigen.
 .TP 
 \fB\-s\fP, \fB\-\-seconds\fP \fIIntervall\fP
 Fortlaufende Aktualisierung der Anzeige nach \fIIntervall\fP Sekunden. Sie
-können für \fIIntervall\fP eine beliebige Gleitkommazahl angeben mit einem
-Punkt oder Komma als Dezimaltrenner angeben. Durch die Nutzung von
-\fBusleep\fP(3) können die Intervalle bis auf die Mikrosekunde genau festgelegt
-werden.
+können für \fIIntervall\fP eine beliebige Gleitkommazahl mit einem Punkt oder
+Komma als Dezimaltrenner angeben. Durch die Nutzung von \fBusleep\fP(3) können
+die Intervalle bis auf die Mikrosekunde genau festgelegt werden.
 .TP 
 \fB\-\-si\fP
 verwendet Kilo, Mega, Giga usw. (Vielfache von 1000) anstelle von Kibi,
@@ -143,28 +142,26 @@ Mebi, Gibi (Vielfache von 1024).
 zeigt eine Zeile mit den Spaltensummen an.
 .TP 
 \fB\-v\fP, \fB\-\-committed\fP
-Display a line showing the memory commit limit and amount of
-committed/uncommitted memory. The \fBtotal\fP column on this line will display
-the memory commit limit.  This line is relevant if memory overcommit is
-disabled.
+zeigt eine Zeile mit der Zuweisungsbegrenzung des Speichers und der Menge
+des zugewiesenen bzw. nicht zugewiesenen Speichers an. Die \fBGesamt\fP\-Spalte
+zeigt hierbei die Zuweisungsbegrenzung an. Diese Zeile ist für den Fall
+relevant, wenn die Speicher\-»Überbuchung« deaktiviert ist.
 .TP 
 \fB\-\-help\fP
-Hilfe ausgeben.
+gibt eine Hilfe aus.
 .TP 
 \fB\-V\fP, \fB\-\-version\fP
-Versionsinformationen anzeigen.
-.PD
+zeigt Versionsinformationen an.
 .SH DATEIEN
 .TP 
 /proc/meminfo
 Speicherinformationen
-.PD
 .SH FEHLER
 Der Wert der Spalte \fBgemns.\fP ist für Kernel vor 2.6.32 nicht verfügbar und
 wird als Null angezeigt.
-.TP 
-Bitte senden Sie Fehlermeldungen (auf Englisch) an
-.UR procps@freelists.org
-.UE
+.P
+Bitte schicken Sie Fehlermeldungen (auf Englisch) an
+.MT procps@freelists.org
+.ME .
 .SH "SIEHE AUCH"
 \fBps\fP(1), \fBslabtop\fP(1), \fBtop\fP(1), \fBvmstat\fP(8).

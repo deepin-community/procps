@@ -16,11 +16,11 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH FREE 1 2023\-05\-02 procps\-ng Användarkommandon
+.TH FREE 1 2023\-05\-02 procps\-ng 
 .SH NAMN
 free — Visa mängden fritt och använt minne i systemet
 .SH SYNOPSIS
-\fBfree\fP [\fIflaggor\fP]
+\fBfree\fP [\fIoption\fP .\|.\|.]
 .SH BESKRIVNING
 \fBfree\fP visar den totala mängden fritt och använt fysiskt minne och
 växlingsminne i systemet, liksom buffertarna och cacharna som används av
@@ -149,22 +149,16 @@ Skriv ut hjälp.
 .TP 
 \fB\-V\fP, \fB\-\-version\fP
 Visa versionsinformation.
-.PD
 .SH FILER
 .TP 
 /proc/meminfo
 minnesinformation
-.PD
 .SH FEL
 Värdet på kolumnen \fBdelat\fP är inte tillgängligt från kärnan före 2.6.32 och
 visas som noll.
-.TP 
-Skicka synpunkter på översättningen till
-.UR tp\-sv@listor.tp\-sv.se
-.UE
-.TP
-Skicka felrapporter till
-.UR procps@freelists.org
-.UE
+.P
+Please send bug reports to
+.MT procps@freelists.org
+.ME .
 .SH "SE ÄVEN"
 \fBps\fP(1), \fBslabtop\fP(1), \fBtop\fP(1), \fBvmstat\fP(8).

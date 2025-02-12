@@ -1,7 +1,7 @@
 /*
  * meminfo.c - memory related definitions for libproc2
  *
- * Copyright © 2015-2023 Jim Warner <james.warner@comcast.net>
+ * Copyright © 2015-2024 Jim Warner <james.warner@comcast.net>
  * Copyright © 2015-2023 Craig Small <csmall@dropbear.xyz>
  *
  * This library is free software; you can redistribute it and/or
@@ -93,6 +93,7 @@ struct meminfo_data {
     unsigned long Percpu;
     unsigned long SReclaimable;
     unsigned long SUnreclaim;
+    unsigned long SecPageTables;
     unsigned long ShadowCallStack;
     unsigned long Shmem;
     unsigned long ShmemHugePages;
@@ -101,12 +102,15 @@ struct meminfo_data {
     unsigned long SwapCached;
     unsigned long SwapFree;
     unsigned long SwapTotal;
+    unsigned long Unaccepted;
     unsigned long Unevictable;         //  man 5 proc: 'to be documented'
     unsigned long VmallocChunk;
     unsigned long VmallocTotal;
     unsigned long VmallocUsed;
     unsigned long Writeback;
     unsigned long WritebackTmp;
+    unsigned long Zswap;
+    unsigned long Zswapped;
 
     unsigned long derived_mem_cached;
     unsigned long derived_mem_hi_used;
@@ -198,6 +202,7 @@ MEM_set(MEM_MAPPED,             ul_int,  Mapped)
 MEM_set(MEM_MAP_COPY,           ul_int,  MmapCopy)
 MEM_set(MEM_NFS_UNSTABLE,       ul_int,  NFS_Unstable)
 MEM_set(MEM_PAGE_TABLES,        ul_int,  PageTables)
+MEM_set(MEM_PAGE_TABLES_SEC,    ul_int,  SecPageTables)
 MEM_set(MEM_PER_CPU,            ul_int,  Percpu)
 MEM_set(MEM_SHADOWCALLSTACK,    ul_int,  ShadowCallStack)
 MEM_set(MEM_SHARED,             ul_int,  Shmem)
@@ -207,6 +212,7 @@ MEM_set(MEM_SLAB,               ul_int,  Slab)
 MEM_set(MEM_SLAB_RECLAIM,       ul_int,  SReclaimable)
 MEM_set(MEM_SLAB_UNRECLAIM,     ul_int,  SUnreclaim)
 MEM_set(MEM_TOTAL,              ul_int,  MemTotal)
+MEM_set(MEM_UNACCEPTED,         ul_int,  Unaccepted)
 MEM_set(MEM_UNEVICTABLE,        ul_int,  Unevictable)
 MEM_set(MEM_USED,               ul_int,  derived_mem_used)
 MEM_set(MEM_VM_ALLOC_CHUNK,     ul_int,  VmallocChunk)
@@ -214,6 +220,8 @@ MEM_set(MEM_VM_ALLOC_TOTAL,     ul_int,  VmallocTotal)
 MEM_set(MEM_VM_ALLOC_USED,      ul_int,  VmallocUsed)
 MEM_set(MEM_WRITEBACK,          ul_int,  Writeback)
 MEM_set(MEM_WRITEBACK_TMP,      ul_int,  WritebackTmp)
+MEM_set(MEM_ZSWAP,              ul_int,  Zswap)
+MEM_set(MEM_ZSWAPPED,           ul_int,  Zswapped)
 
 HST_set(DELTA_ACTIVE,            s_int,  Active)
 HST_set(DELTA_ACTIVE_ANON,       s_int,  Active_anon)
@@ -260,6 +268,7 @@ HST_set(DELTA_MAPPED,            s_int,  Mapped)
 HST_set(DELTA_MAP_COPY,          s_int,  MmapCopy)
 HST_set(DELTA_NFS_UNSTABLE,      s_int,  NFS_Unstable)
 HST_set(DELTA_PAGE_TABLES,       s_int,  PageTables)
+HST_set(DELTA_PAGE_TABLES_SEC,   s_int,  SecPageTables)
 HST_set(DELTA_PER_CPU,           s_int,  Percpu)
 HST_set(DELTA_SHADOWCALLSTACK,   s_int,  ShadowCallStack)
 HST_set(DELTA_SHARED,            s_int,  Shmem)
@@ -269,6 +278,7 @@ HST_set(DELTA_SLAB,              s_int,  Slab)
 HST_set(DELTA_SLAB_RECLAIM,      s_int,  SReclaimable)
 HST_set(DELTA_SLAB_UNRECLAIM,    s_int,  SUnreclaim)
 HST_set(DELTA_TOTAL,             s_int,  MemTotal)
+HST_set(DELTA_UNACCEPTED,        s_int,  Unaccepted)
 HST_set(DELTA_UNEVICTABLE,       s_int,  Unevictable)
 HST_set(DELTA_USED,              s_int,  derived_mem_used)
 HST_set(DELTA_VM_ALLOC_CHUNK,    s_int,  VmallocChunk)
@@ -276,6 +286,8 @@ HST_set(DELTA_VM_ALLOC_TOTAL,    s_int,  VmallocTotal)
 HST_set(DELTA_VM_ALLOC_USED,     s_int,  VmallocUsed)
 HST_set(DELTA_WRITEBACK,         s_int,  Writeback)
 HST_set(DELTA_WRITEBACK_TMP,     s_int,  WritebackTmp)
+HST_set(DELTA_ZSWAP,             s_int,  Zswap)
+HST_set(DELTA_ZSWAPPED,          s_int,  Zswapped)
 
 MEM_set(SWAP_CACHED,            ul_int,  SwapCached)
 MEM_set(SWAP_FREE,              ul_int,  SwapFree)
@@ -366,6 +378,7 @@ static struct {
   { RS(MEM_MAP_COPY),          TS(ul_int) },
   { RS(MEM_NFS_UNSTABLE),      TS(ul_int) },
   { RS(MEM_PAGE_TABLES),       TS(ul_int) },
+  { RS(MEM_PAGE_TABLES_SEC),   TS(ul_int) },
   { RS(MEM_PER_CPU),           TS(ul_int) },
   { RS(MEM_SHADOWCALLSTACK),   TS(ul_int) },
   { RS(MEM_SHARED),            TS(ul_int) },
@@ -375,6 +388,7 @@ static struct {
   { RS(MEM_SLAB_RECLAIM),      TS(ul_int) },
   { RS(MEM_SLAB_UNRECLAIM),    TS(ul_int) },
   { RS(MEM_TOTAL),             TS(ul_int) },
+  { RS(MEM_UNACCEPTED),        TS(ul_int) },
   { RS(MEM_UNEVICTABLE),       TS(ul_int) },
   { RS(MEM_USED),              TS(ul_int) },
   { RS(MEM_VM_ALLOC_CHUNK),    TS(ul_int) },
@@ -382,6 +396,8 @@ static struct {
   { RS(MEM_VM_ALLOC_USED),     TS(ul_int) },
   { RS(MEM_WRITEBACK),         TS(ul_int) },
   { RS(MEM_WRITEBACK_TMP),     TS(ul_int) },
+  { RS(MEM_ZSWAP),             TS(ul_int) },
+  { RS(MEM_ZSWAPPED),          TS(ul_int) },
 
   { RS(DELTA_ACTIVE),          TS(s_int)  },
   { RS(DELTA_ACTIVE_ANON),     TS(s_int)  },
@@ -428,8 +444,9 @@ static struct {
   { RS(DELTA_MAP_COPY),        TS(s_int)  },
   { RS(DELTA_NFS_UNSTABLE),    TS(s_int)  },
   { RS(DELTA_PAGE_TABLES),     TS(s_int)  },
+  { RS(DELTA_PAGE_TABLES_SEC), TS(s_int)  },
   { RS(DELTA_PER_CPU),         TS(s_int)  },
-  { RS(DELTA_SHADOWCALLSTACK), TS(s_int) },
+  { RS(DELTA_SHADOWCALLSTACK), TS(s_int)  },
   { RS(DELTA_SHARED),          TS(s_int)  },
   { RS(DELTA_SHMEM_HUGE),      TS(s_int)  },
   { RS(DELTA_SHMEM_HUGE_MAP),  TS(s_int)  },
@@ -437,6 +454,7 @@ static struct {
   { RS(DELTA_SLAB_RECLAIM),    TS(s_int)  },
   { RS(DELTA_SLAB_UNRECLAIM),  TS(s_int)  },
   { RS(DELTA_TOTAL),           TS(s_int)  },
+  { RS(DELTA_UNACCEPTED),      TS(s_int)  },
   { RS(DELTA_UNEVICTABLE),     TS(s_int)  },
   { RS(DELTA_USED),            TS(s_int)  },
   { RS(DELTA_VM_ALLOC_CHUNK),  TS(s_int)  },
@@ -444,6 +462,8 @@ static struct {
   { RS(DELTA_VM_ALLOC_USED),   TS(s_int)  },
   { RS(DELTA_WRITEBACK),       TS(s_int)  },
   { RS(DELTA_WRITEBACK_TMP),   TS(s_int)  },
+  { RS(DELTA_ZSWAP),           TS(s_int)  },
+  { RS(DELTA_ZSWAPPED),        TS(s_int)  },
 
   { RS(SWAP_CACHED),           TS(ul_int) },
   { RS(SWAP_FREE),             TS(ul_int) },
@@ -544,9 +564,9 @@ static int meminfo_make_hash_failed (
         struct meminfo_info *info)
 {
  #define htVAL(f) e.key = STRINGIFY(f); e.data = &info->hist.new. f; \
-  if (!hsearch_r(e, ENTER, &ep, &info->hashtab)) return 1;
+  if (!hsearch_r(e, ENTER, &ep, &info->hashtab)) goto err_return;
  #define htXTRA(k,f) e.key = STRINGIFY(k); e.data = &info->hist.new. f; \
-  if (!hsearch_r(e, ENTER, &ep, &info->hashtab)) return 1;
+  if (!hsearch_r(e, ENTER, &ep, &info->hashtab)) goto err_return;
     ENTRY e, *ep;
     size_t n;
 
@@ -554,7 +574,7 @@ static int meminfo_make_hash_failed (
     n = sizeof(struct meminfo_data) / sizeof(unsigned long);
     // we'll follow the hsearch recommendation of an extra 25%
     if (!hcreate_r(n + (n / 4), &info->hashtab))
-        return 1;
+        goto err_return;
 
     htVAL(Active)
     htXTRA(Active(anon), Active_anon)
@@ -602,6 +622,7 @@ static int meminfo_make_hash_failed (
     htVAL(Percpu)
     htVAL(SReclaimable)
     htVAL(SUnreclaim)
+    htVAL(SecPageTables)
     htVAL(ShadowCallStack)
     htVAL(Shmem)
     htVAL(ShmemHugePages)
@@ -610,14 +631,19 @@ static int meminfo_make_hash_failed (
     htVAL(SwapCached)
     htVAL(SwapFree)
     htVAL(SwapTotal)
+    htVAL(Unaccepted)
     htVAL(Unevictable)
     htVAL(VmallocChunk)
     htVAL(VmallocTotal)
     htVAL(VmallocUsed)
     htVAL(Writeback)
     htVAL(WritebackTmp)
+    htVAL(Zswap)
+    htVAL(Zswapped)
 
     return 0;
+ err_return:
+    return 1;
  #undef htVAL
  #undef htXTRA
 } // end: meminfo_make_hash_failed
@@ -649,9 +675,17 @@ static int meminfo_read_failed (
     if (-1 == info->meminfo_fd
     && (-1 == (info->meminfo_fd = open(MEMINFO_FILE, O_RDONLY))))
         return 1;
-
-    if (lseek(info->meminfo_fd, 0L, SEEK_SET) == -1)
-        return 1;
+    else {
+        if (-1 == lseek(info->meminfo_fd, 0L, SEEK_SET)) {
+            /* a concession to libvirt lxc support, which has been
+               known to treat a /proc file as non-seekable ... */
+            if (ESPIPE != errno)
+                return 1;
+            close(info->meminfo_fd);
+            if (-1 == (info->meminfo_fd = open(MEMINFO_FILE, O_RDONLY)))
+                return 1;
+        }
+    }
 
     for (;;) {
         if ((size = read(info->meminfo_fd, buf, sizeof(buf)-1)) < 0) {
@@ -992,7 +1026,6 @@ PROCPS_EXPORT struct meminfo_result *xtra_meminfo_val (
         int relative_enum,
         const char *typestr,
         const struct meminfo_stack *stack,
-        struct meminfo_info *info,
         const char *file,
         int lineno)
 {
@@ -1012,5 +1045,4 @@ PROCPS_EXPORT struct meminfo_result *xtra_meminfo_val (
         fprintf(stderr, "%s line %d: was %s, expected %s\n", file, lineno, typestr, str);
     }
     return &stack->head[relative_enum];
-    (void)info;
 } // end: xtra_meminfo_val

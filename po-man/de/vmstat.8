@@ -1,5 +1,5 @@
 .\"
-.\" Copyright (c) 2002-2023 Craig Small <csmall@dropbear.xyz>
+.\" Copyright (c) 2002-2024 Craig Small <csmall@dropbear.xyz>
 .\" Copyright (c) 2012-2023 Jim Warner <james.warner@comcast.net>
 .\" Copyright (c) 2011-2012 Sami Kerola <kerolasa@iki.fi>
 .\" Copyright (c) 1994      Henry Ware <al172@yfn.ysu.edu>
@@ -15,11 +15,11 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH VMSTAT 8 "18. Januar 2023" procps\-ng System\-Administration
+.TH VMSTAT 8 "19. Juli 2024" procps\-ng 
 .SH BEZEICHNUNG
 vmstat \- Statistiken zum virtuellen Speicher anzeigen
 .SH ÜBERSICHT
-\fBvmstat\fP [Optionen] [\fIVerzögerung\fP [\fIAnzahl\fP]]
+\fBvmstat\fP [\fIOption\fP .\|.\|.\&] [\fIVerzögerung\fP [\fIZähler\fP]]
 .SH BESCHREIBUNG
 \fBvmstat\fP zeigt Informationen zu Prozessen, Speicher, Paging, Block\-E/A,
 Traps, Laufwerken und CPU\-Aktivität an.
@@ -73,9 +73,9 @@ erforderlich).
 .TP 
 \fB\-S\fP, \fB\-\-unit\fP \fIZeichen\fP
 wechselt die Einheit der Ausgabe zwischen 1000 (\fIk\fP), 1024 (\fIK\fP), 1000000
-(\fIm\fP) oder 1048576 (\fIM\fP) Byte. Beachten Sie, dass diese Änderung die Swap\-
-(si/so) oder Block\-Felder (bi/bo) nicht beeinflusst, die stets in Blöcken
-gemessen werden.
+(\fIm\fP) oder 1048576 (\fIM\fP) Byte. Beachten Sie, dass diese Änderung die
+Block\-Felder (bi/bo) nicht beeinflusst, die stets in Blöcken gemessen
+werden.
 .TP 
 \fB\-t\fP, \fB\-\-timestamp\fP
 hängt an jede Zeile einen Zeitstempel an.
@@ -94,7 +94,6 @@ zeigt Versionsinformationen an und beendet das Programm.
 .TP 
 \fB\-h\fP, \fB\-\-help\fP
 zeigt eine Hilfe an und beendet das Programm.
-.PD
 .SH "FELDBESCHREIBUNG FÜR VM\-MODUS"
 .SS Prozesse
 .nf
@@ -188,4 +187,4 @@ sich darauf auswirken, was tatsächlich angezeigt wird.
 .SH "FEHLER MELDEN"
 Bitte schicken Sie Fehlermeldungen (auf Englisch) an
 .MT procps@freelists.org
-.ME
+.ME .

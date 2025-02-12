@@ -1,6 +1,6 @@
 /* top_nls.c - provide the basis for future nls translations */
 /*
- * Copyright © 2011-2023 Jim Warner <james.warner@comcast.net
+ * Copyright © 2011-2024 Jim Warner <james.warner@comcast.net
  *
  * This file may be used subject to the terms and conditions of the
  * GNU Library General Public License Version 2, or any later version
@@ -28,24 +28,6 @@
 #include <stdlib.h>
 #endif
 
-
-        /*
-         * The provision excluding some strings is intended to be
-         * used very sparingly. It exists in case we collide with
-         * some translation project person in a position to delay
-         * a future release over his or her personal preferences.
-         *
-         * If it's ever enabled, it will produce a fatal compiler
-         * error as our only option since those gettext tools are
-         * far too primitive to be influenced with a conditional.
-         * They always ignore a '_X()' macro no matter its state. */
-
-#ifndef NLS_INCLUDED
-# define _X(str)  (str)
-#else
-# define _X(str)
-# error instead of this #define, restore the true gettext macro(s)
-#endif
 
         // Programmer Note(s):
         //  Preparation ---------------------------------------------
@@ -199,7 +181,7 @@ static void build_two_nlstabs (void) {
 /* Translation Hint: maximum 'nTH' = 3 */
    Head_nlstab[EU_THD] = _("nTH");
    Desc_nlstab[EU_THD] = _("Number of Threads");
-/* Translation Hint: maximum 'P' = 1 */
+/* Translation Hint: maximum 'P' = 2 */
    Head_nlstab[EU_CPN] = _("P");
    Desc_nlstab[EU_CPN] = _("Last Used Cpu (SMP)");
 /* Translation Hint: maximum '%CPU' = 4 */
@@ -387,6 +369,15 @@ static void build_two_nlstabs (void) {
 /* Translation Hint: maximum 'nsTIME' = 10 + */
    Head_nlstab[EU_NS8] = _("nsTIME");
    Desc_nlstab[EU_NS8] = _("TIME namespace Inode");
+/* Translation Hint: maximum 'CLS' = 3 */
+   Head_nlstab[EU_CLS] = _("CLS");
+   Desc_nlstab[EU_CLS] = _("Schedule Class");
+/* Translation Hint: maximum 'Docker' = 8 + */
+   Head_nlstab[EU_DKR] = _("Docker");
+   Desc_nlstab[EU_DKR] = _("Docker container id");
+/* Translation Hint: maximum 'nFD' = 3 */
+   Head_nlstab[EU_FDS] = _("nFD");
+   Desc_nlstab[EU_FDS] = _("Number of Open Files");
 }
 
 
@@ -409,7 +400,12 @@ static void build_norm_nlstab (void) {
    Norm_nlstab[EXIT_signals_fmt] = _(""
       "\tsignal %d (%s) was caught by %s, please\n"
       "\tsend bug reports to <procps@freelists.org>\n");
-   Norm_nlstab[HELP_cmdline_fmt] = _X("\n"
+/* Translation Hint:
+   . The following help text has been right-justified as an English only
+   . exercise. There is absolutely no requirement that your translations
+   . need conform to such a convention.
+   . */
+   Norm_nlstab[HELP_cmdline_fmt] = _("\n"
       "Usage:\n"
       " %s [options]\n"
       "\n"
@@ -607,6 +603,7 @@ static void build_norm_nlstab (void) {
    Norm_nlstab[AGNI_invalid_txt] = _("valid AGNI range is -20 to +19");
    Norm_nlstab[AGNI_notopen_fmt] = _("autogroup open failed, %s");
    Norm_nlstab[AGNI_nowrite_fmt] = _("autogroup write failed, %s");
+   Norm_nlstab[X_BOT_capprm_fmt] = _("permitted capabilities for pid %d, %s");
    Norm_nlstab[X_BOT_cmdlin_fmt] = _("command line for pid %d, %s");
    Norm_nlstab[X_BOT_ctlgrp_fmt] = _("control groups for pid %d, %s");
    Norm_nlstab[X_BOT_envirn_fmt] = _("environment for pid %d, %s");
@@ -731,15 +728,15 @@ static void build_uniq_nlstab (void) {
       "   ~1 8601 pts/1    7 -10  0.4   0:00.03   916    0 R color -b -z~7\n"
       "   11005 ~8?      ~7  9   0  0.0   0:02.50  2852 1008 S amor -sessi~8\n"
       "   available toggles: ~1B~2 =disable bold globally (~1%s~2),\n"
-      "       ~1z~2 =color/mono (~1%s~2), ~1b~2 =tasks \"bold\"/reverse (~1%s~2)\n"
+      "       ~1z~2 =color/mono (~1%s~2), ~1b~2 =tasks bold/reverse (~1%s~2)\n"
       "\n"
       "1) Select a ~1target~2 as an upper case letter, ~1current target~2 is ~1 %c ~4:\n"
-      "   S~2 = Summary Data,~1  M~2 = Messages/Prompts,\n"
-      "   H~2 = Column Heads,~1  T~2 = Task Information\n"
-      "2) Select a ~1color~2 as a number or use the up/down arrow keys\n"
-      "   to raise/lower the %d colors value, ~1current color~2 is ~1 %d ~4:\n"
+      "   S~2 = Summary Data,~1  M~2 = Messages/Prompts,~1  H~2 = Column Heads\n"
+      "   T~2 = Task Information,~1  X~2 = Task x/y (col/row) Highlights\n"
+      "2) Select a ~1color~2 as a number (~1none~2 as @) or use the up/down arrow\n"
+      "   keys to raise/lower the %d colors value, ~1current color~2 is ~1 %d ~4:\n"
       "   0~2 = black,~1  1~2 = red,    ~1  2~2 = green,~1  3~2 = yellow,\n"
-      "   4~2 = blue, ~1  5~2 = magenta,~1  6~2 = cyan, ~1  7~2 = white\n"
+      "   4~2 = blue, ~1  5~2 = magenta,~1  6~2 = cyan, ~1  7~2 = white,~1  @~2 = none (-1)\n"
       "\n"
       "3) Then use these keys when finished:\n"
       "   'q' or <Esc> to abort changes to window '~1%s~2'\n"
@@ -765,7 +762,7 @@ static void build_uniq_nlstab (void) {
    .  The next 5 items must each be translated as a single line.
    . */
    Uniq_nlstab[STATE_line_1_fmt] = _("%s:~3"
-      " %3u ~2total,~3 %3u ~2running,~3 %3u ~2sleeping,~3 %3u ~2stopped,~3 %3u ~2zombie~3\n");
+      " %u ~2total,~3 %u ~2running,~3 %u ~2sleep,~3 %u ~2d-sleep,~3 %u ~2stopped,~3 %u ~2zombie~3\n");
 
 /* Translation Hint: Only the following abbreviations need be translated
    .                 us = user, sy = system, ni = nice, id = idle, wa = wait,

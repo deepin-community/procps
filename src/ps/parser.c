@@ -192,7 +192,7 @@ static const char *parse_list(const char *arg, const char *(*parse_fn)(char *, s
   node = xmalloc(sizeof(selection_node));
   node->n = 0;
   node->u = NULL;
-  buf = strdup(arg);
+  buf = xstrdup(arg);
   /*** sanity check and count items ***/
   need_item = 1; /* true */
   items = 0;
@@ -256,7 +256,7 @@ static const char *parse_sysv_option(void){
       arg = get_opt_arg();
       if (!arg) return _("date format must follow -D");
       if (lstart_format) free(lstart_format);
-      lstart_format = strdup(arg);
+      lstart_format = xstrdup(arg);
       break;
     case 'F':  /* DYNIX/ptx -f plus sz,rss,psr=ENG between c and stime */
       trace("-F does fuller listing\n");
@@ -423,7 +423,7 @@ static const char *parse_sysv_option(void){
       if(!arg) return _("list of process IDs must follow -p");
       err=parse_list(arg, parse_pid);
       if(err) return err;
-      selection_list->typecode = SEL_PID;
+      selection_list->typecode = SEL_PID_TRY_QUICK;
       return NULL; /* can't have any more options */
     case 'q': /* end */
       trace("-q quick select by PID.\n");
@@ -695,7 +695,7 @@ static const char *parse_bsd_option(void){
       if(!arg) return _("list of process IDs must follow p");
       err=parse_list(arg, parse_pid);
       if(err) return err;
-      selection_list->typecode = SEL_PID;
+      selection_list->typecode = SEL_PID_TRY_QUICK;
       return NULL; /* can't have any more options */
     case 'q': /* end */
       trace("q Quick select by process ID\n");
@@ -901,7 +901,7 @@ static const char *parse_gnu_option(void){
     arg=grab_gnu_arg();
     if (!arg) return _("date format must follow --date-format");
     if (lstart_format) free(lstart_format);
-    lstart_format = strdup(arg);
+    lstart_format = xstrdup(arg);
     return NULL;
   case_deselect:
     trace("--deselect\n");
@@ -965,7 +965,7 @@ static const char *parse_gnu_option(void){
     if(!arg) return _("list of process IDs must follow --pid");
     err=parse_list(arg, parse_pid);
     if(err) return err;
-    selection_list->typecode = SEL_PID;
+    selection_list->typecode = SEL_PID_TRY_QUICK;
     return NULL;
   case_pid_quick:
     trace("--quick-pid\n");

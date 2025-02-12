@@ -1,6 +1,7 @@
 /*
  * watch - execute a program repeatedly, displaying output fullscreen
  *
+ * Copyright © 2023 Roman Žilka <roman.zilka@gmail.com>
  * Copyright © 2010-2023 Jim Warner <james.warner@comcast.net>
  * Copyright © 2015-2023 Craig Small <csmall@dropbear.xyz>
  * Copyright © 2011-2012 Sami Kerola <kerolasa@iki.fi>
@@ -28,83 +29,107 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#include "c.h"
-#include "config.h"
-#include "fileutils.h"
-#include "nls.h"
-#include "strutils.h"
-#include "xalloc.h"
-#include <ctype.h>
-#include <errno.h>
+#ifdef WITH_WATCH8BIT
+# define _XOPEN_SOURCE_EXTENDED 1
+# include <wctype.h>
+#else
+# include <ctype.h>
+#endif
+#ifdef HAVE_NCURSESW_NCURSES_H
+# include <ncursesw/ncurses.h>
+#else
+# include <ncurses.h>
+#endif
+#include <assert.h>
+#include <fcntl.h>
 #include <getopt.h>
+#include <inttypes.h>
 #include <locale.h>
-#include <limits.h>
 #include <signal.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <sys/ioctl.h>
 #include <sys/time.h>
 #include <sys/wait.h>
 #include <termios.h>
 #include <time.h>
 #include <unistd.h>
-#ifdef WITH_WATCH8BIT
-# define _XOPEN_SOURCE_EXTENDED 1
-# include <wchar.h>
-# include <wctype.h>
-# include <ncursesw/ncurses.h>
-#else
-# include <ncurses.h>
-#endif	/* WITH_WATCH8BIT */
+#include "c.h"
+#include "config.h"
+#include "fileutils.h"
+#include "nls.h"
+#include "signals.h"
+#include "strutils.h"
+#include "xalloc.h"
 
 #ifdef FORCE_8BIT
 # undef isprint
 # define isprint(x) ( (x>=' '&&x<='~') || (x>=0xa0) )
 #endif
 
-/* Boolean command line options */
-static int flags;
-#define WATCH_DIFF	(1 << 1)
-#define WATCH_CUMUL	(1 << 2)
-#define WATCH_EXEC	(1 << 3)
-#define WATCH_BEEP	(1 << 4)
-#define WATCH_COLOR	(1 << 5)
-#define WATCH_ERREXIT	(1 << 6)
-#define WATCH_CHGEXIT	(1 << 7)
-#define WATCH_EQUEXIT	(1 << 8)
-#define WATCH_NORERUN	(1 << 9)
+#ifdef WITH_WATCH8BIT
+#define XL(c) L ## c
+#define XEOF WEOF
+#define Xint wint_t
+#define Xgetc(stream) getmb(stream)
+#else
+#define XL(c) c
+#define XEOF EOF
+#define Xint int
+#define Xgetc(stream) getc(stream)
+#endif
 
-static int curses_started = 0;
-static long height = 24, width = 80;
-static int screen_size_changed = 0;
-static int first_screen = 1;
-static int show_title = 2;	/* number of lines used, 2 or 0 */
-static int precise_timekeeping = 0;
-static int line_wrap = 1;
-
-#define min(x,y) ((x) > (y) ? (y) : (x))
+#define HEIGHT_FALLBACK 24
+#define WIDTH_FALLBACK 80
+#define TAB_WIDTH 8
 #define MAX_ANSIBUF 100
 
-static void __attribute__ ((__noreturn__))
-    usage(FILE * out)
+/* Boolean command line options */
+#define WATCH_DIFF     (1 << 0)
+#define WATCH_CUMUL    (1 << 1)
+#define WATCH_EXEC     (1 << 2)
+#define WATCH_BEEP     (1 << 3)
+#define WATCH_COLOR    (1 << 4)
+#define WATCH_ERREXIT  (1 << 5)
+#define WATCH_CHGEXIT  (1 << 6)
+#define WATCH_EQUEXIT  (1 << 7)
+#define WATCH_NORERUN  (1 << 8)
+#define WATCH_PRECISE  (1 << 9)
+#define WATCH_NOWRAP   (1 << 10)
+#define WATCH_NOTITLE  (1 << 11)
+// Do we care about screen contents changes at all?
+#define WATCH_ALL_DIFF (WATCH_DIFF | WATCH_CHGEXIT | WATCH_EQUEXIT)
+
+static uf16 flags;
+static int height, width;
+static bool first_screen = true, screen_size_changed, screen_changed;
+static double interval_real = 2;
+static char *command;
+static size_t command_len;
+static char *const *command_argv;
+static const char *shotsdir = "";
+
+
+
+// don't use EXIT_FAILURE, it can be anything and manpage makes guarantees about
+// exitcodes
+static void __attribute__ ((__noreturn__)) usage(FILE * out)
 {
 	fputs(USAGE_HEADER, out);
-	fprintf(out,
-              _(" %s [options] command\n"), program_invocation_short_name);
+	fprintf(out, _(" %s [options] command\n"), program_invocation_short_name);
 	fputs(USAGE_OPTIONS, out);
+	// TODO: other tools in src/ use one leading blank
 	fputs(_("  -b, --beep             beep if command has a non-zero exit\n"), out);
 	fputs(_("  -c, --color            interpret ANSI color and style sequences\n"), out);
 	fputs(_("  -C, --no-color         do not interpret ANSI color and style sequences\n"), out);
 	fputs(_("  -d, --differences[=<permanent>]\n"
-                "                         highlight changes between updates\n"), out);
+	        "                         highlight changes between updates\n"), out);
 	fputs(_("  -e, --errexit          exit if command has a non-zero exit\n"), out);
 	fputs(_("  -g, --chgexit          exit when output from command changes\n"), out);
 	fputs(_("  -q, --equexit <cycles>\n"
-				"                         exit when output from command does not change\n"), out);
+	        "                         exit when output from command does not change\n"), out);
 	fputs(_("  -n, --interval <secs>  seconds to wait between updates\n"), out);
-	fputs(_("  -p, --precise          attempt run command in precise intervals\n"), out);
+	fputs(_("  -p, --precise          -n includes command running time\n"), out);  // TODO: gettext
 	fputs(_("  -r, --no-rerun         do not rerun program on window resize\n"), out);
+	fputs(_("  -s, --shotsdir         directory to store screenshots\n"), out);  // TODO: gettext
 	fputs(_("  -t, --no-title         turn off header\n"), out);
 	fputs(_("  -w, --no-wrap          turn off line wrapping\n"), out);
 	fputs(_("  -x, --exec             pass command to exec instead of \"sh -c\"\n"), out);
@@ -113,15 +138,28 @@ static void __attribute__ ((__noreturn__))
 	fputs(_(" -v, --version  output version information and exit\n"), out);
 	fprintf(out, USAGE_MAN_TAIL("watch(1)"));
 
-	exit(out == stderr ? EXIT_FAILURE : EXIT_SUCCESS);
+	exit(out == stderr ? 1 : EXIT_SUCCESS);
 }
 
-static int nr_of_colors;
-static int attributes;
-static int fg_col;
-static int bg_col;
-static int more_colors;
+#define endwin_xerr(...) do { endwin(); xerr(__VA_ARGS__); } while (0)
+#define endwin_error(...) do { endwin(); error(__VA_ARGS__); } while (0)
+#define endwin_exit(status) do { endwin(); exit(status); } while (0)
 
+static void die(int notused __attribute__ ((__unused__)))
+{
+	endwin_exit(EXIT_SUCCESS);
+}
+
+static void winch_handler(int notused __attribute__ ((__unused__)))
+{
+	screen_size_changed = true;
+}
+
+
+
+static int attributes;  // TODO: attr_t likely has more value digits than int
+static int nr_of_colors, fg_col, bg_col;
+static bool more_colors;
 
 static void reset_ansi(void)
 {
@@ -130,13 +168,15 @@ static void reset_ansi(void)
 	bg_col = 0;
 }
 
+
+
 static void init_ansi_colors(void)
 {
-	short ncurses_colors[] = {
+	const short ncurses_colors[] = {
 		-1, COLOR_BLACK, COLOR_RED, COLOR_GREEN, COLOR_YELLOW,
 		COLOR_BLUE, COLOR_MAGENTA, COLOR_CYAN, COLOR_WHITE
 	};
-	nr_of_colors = sizeof(ncurses_colors) / sizeof(short);
+	nr_of_colors = sizeof(ncurses_colors) / sizeof(*ncurses_colors);
 
 	more_colors = (COLORS >= 16) && (COLOR_PAIRS >= 16 * 16);
 
@@ -167,7 +207,8 @@ static void init_ansi_colors(void)
 }
 
 
-static int process_ansi_color_escape_sequence(char** escape_sequence) {
+
+static uf8 process_ansi_color_escape_sequence(char **const escape_sequence) {
 	// process SGR ANSI color escape sequence
 	// Eg 8-bit
 	// 38;5;⟨n⟩  (set fg color to n)
@@ -176,9 +217,8 @@ static int process_ansi_color_escape_sequence(char** escape_sequence) {
 	// Eg 24-bit (not yet implemented)
 	// ESC[ 38;2;⟨r⟩;⟨g⟩;⟨b⟩ m Select RGB foreground color
 	// ESC[ 48;2;⟨r⟩;⟨g⟩;⟨b⟩ m Select RGB background color
-	int num;
 
-	if (!escape_sequence)
+	if (!escape_sequence || !*escape_sequence)
 		return 0; /* avoid NULLPTR dereference, return "not understood" */
 
 	if ((*escape_sequence)[0] != ';')
@@ -188,7 +228,7 @@ static int process_ansi_color_escape_sequence(char** escape_sequence) {
 		// 8 bit! ANSI specifies a predefined set of 256 colors here.
 		if ((*escape_sequence)[2] != ';')
 			return 0; /* not understood */
-		num = strtol((*escape_sequence) + 3, escape_sequence, 10);
+		long num = strtol((*escape_sequence) + 3, escape_sequence, 10);
 		if (num >= 0 && num <= 7) {
 			// 0-7 are standard colors  same as SGR 30-37
 			return num + 1;
@@ -199,7 +239,8 @@ static int process_ansi_color_escape_sequence(char** escape_sequence) {
 		}
 
 		// Remainder aren't yet implemented
-		// 16-231:  6 × 6 × 6 cube (216 colors): 16 + 36 × r + 6 × g + b (0 ≤ r, g, b ≤ 5)
+		// 16-231:  6 × 6 × 6 cube (216 colors): 16 + 36 × r + 6 × g + b
+		//                                       (0 ≤ r, g, b ≤ 5)
 		// 232-255:  grayscale from black to white in 24 steps
 	}
 
@@ -207,8 +248,12 @@ static int process_ansi_color_escape_sequence(char** escape_sequence) {
 }
 
 
-static int set_ansi_attribute(const int attrib, char** escape_sequence)
+
+static bool set_ansi_attribute(const int attrib, char** escape_sequence)
 {
+	if (!(flags & WATCH_COLOR))
+		return true;
+
 	switch (attrib) {
 	case -1:	/* restore last settings */
 		break;
@@ -258,7 +303,7 @@ static int set_ansi_attribute(const int attrib, char** escape_sequence)
     case 38:
         fg_col = process_ansi_color_escape_sequence(escape_sequence);
         if (fg_col == 0) {
-            return 0; /* not understood */
+            return false; /* not understood */
         }
         break;
 	case 39:
@@ -267,7 +312,7 @@ static int set_ansi_attribute(const int attrib, char** escape_sequence)
     case 48:
         bg_col = process_ansi_color_escape_sequence(escape_sequence);
         if (bg_col == 0) {
-            return 0; /* not understood */
+            return false; /* not understood */
         }
         break;
     case 49:
@@ -283,19 +328,24 @@ static int set_ansi_attribute(const int attrib, char** escape_sequence)
 		} else if (attrib >= 100 && attrib <= 107) { /* set bright bg color */
 			bg_col = more_colors ? attrib - 100 + 9 : attrib - 100 + 1;
 		} else {
-			return 0; /* Not understood */
+			return false; /* Not understood */
 		}
 	}
     attr_set(attributes, bg_col * nr_of_colors + fg_col + 1, NULL);
-    return 1;
+    return true;
 }
+
+
 
 static void process_ansi(FILE * fp)
 {
+	if (!(flags & WATCH_COLOR))
+		return;
+
 	int i, c;
 	char buf[MAX_ANSIBUF];
-	char *numstart, *endptr = buf;
-    int ansi_attribute;
+	char *numstart, *endptr;
+	int ansi_attribute;
 
 	c = getc(fp);
 
@@ -317,7 +367,8 @@ static void process_ansi(FILE * fp)
 		if ((c < '0' || c > '9') && c != ';') {
 			return;
 		}
-		buf[i] = (char)c;
+		assert(c >= 0 && c <= SCHAR_MAX);
+		buf[i] = c;
 	}
 	/*
 	 * buf now contains a semicolon-separated list of decimal integers,
@@ -340,152 +391,198 @@ static void process_ansi(FILE * fp)
     }
 }
 
-static void __attribute__ ((__noreturn__)) do_exit(int status)
-{
-	if (curses_started)
-		endwin();
-	exit(status);
-}
 
-/* signal handler */
-static void die(int notused __attribute__ ((__unused__)))
-{
-	do_exit(EXIT_SUCCESS);
-}
 
-static void winch_handler(int notused __attribute__ ((__unused__)))
-{
-	screen_size_changed = 1;
-}
+typedef uf64 watch_usec_t;
+#define USECS_PER_SEC ((watch_usec_t)1000000)  // same type
 
-static char env_col_buf[24];
-static char env_row_buf[24];
-static int incoming_cols;
-static int incoming_rows;
-
-static void get_terminal_size(void)
-{
-	struct winsize w;
-	if (!incoming_cols) {
-		/* have we checked COLUMNS? */
-		const char *s = getenv("COLUMNS");
-		incoming_cols = -1;
-		if (s && *s) {
-			long t;
-			char *endptr;
-			t = strtol(s, &endptr, 0);
-			if (!*endptr && 0 < t)
-				incoming_cols = t;
-			width = incoming_cols;
-			snprintf(env_col_buf, sizeof env_col_buf, "COLUMNS=%ld",
-				 width);
-			putenv(env_col_buf);
-		}
-	}
-	if (!incoming_rows) {
-		/* have we checked LINES? */
-		const char *s = getenv("LINES");
-		incoming_rows = -1;
-		if (s && *s) {
-			long t;
-			char *endptr;
-			t = strtol(s, &endptr, 0);
-			if (!*endptr && 0 < t)
-				incoming_rows = t;
-			height = incoming_rows;
-			snprintf(env_row_buf, sizeof env_row_buf, "LINES=%ld",
-				 height);
-			putenv(env_row_buf);
-		}
-	}
-	if (ioctl(STDERR_FILENO, TIOCGWINSZ, &w) == 0) {
-		if (incoming_cols < 0 || incoming_rows < 0) {
-			if (incoming_rows < 0 && w.ws_row > 0) {
-				height = w.ws_row;
-				snprintf(env_row_buf, sizeof env_row_buf,
-					 "LINES=%ld", height);
-				putenv(env_row_buf);
-			}
-			if (incoming_cols < 0 && w.ws_col > 0) {
-				width = w.ws_col;
-				snprintf(env_col_buf, sizeof env_col_buf,
-					 "COLUMNS=%ld", width);
-				putenv(env_col_buf);
-			}
-		}
-	}
-}
-
-/* get current time in usec */
-typedef unsigned long long watch_usec_t;
-#define USECS_PER_SEC (1000000ull)
-static watch_usec_t get_time_usec()
+static inline watch_usec_t get_time_usec(void)
 {
 	struct timeval now;
+#if defined(HAVE_CLOCK_GETTIME) && defined(_POSIX_TIMERS)
+	struct timespec ts;
+	if (0 > clock_gettime(CLOCK_MONOTONIC, &ts))
+		endwin_xerr(1, "clock_gettime(CLOCK_MONOTONIC)");
+	TIMESPEC_TO_TIMEVAL(&now, &ts);
+#else
 	gettimeofday(&now, NULL);
+#endif /* HAVE_CLOCK_GETTIME */
 	return USECS_PER_SEC * now.tv_sec + now.tv_usec;
 }
 
-#ifdef WITH_WATCH8BIT
-/* read a wide character from a popen'd stream */
-#define MAX_ENC_BYTES 16
-wint_t my_getwc(FILE * s);
-wint_t my_getwc(FILE * s)
-{
-	/* assuming no encoding ever consumes more than 16 bytes */
-	char i[MAX_ENC_BYTES];
-	int byte = 0;
-	int convert;
-	wchar_t rval;
-	while (1) {
-		i[byte] = getc(s);
-		if (i[byte] == EOF) {
-			return WEOF;
-		}
-		byte++;
-		errno = 0;
-		mbtowc(NULL, NULL, 0);
-		convert = mbtowc(&rval, i, byte);
-		if (convert > 0) {
-			/* legal conversion */
-			return rval;
-		}
-		if (byte == MAX_ENC_BYTES) {
-			while (byte > 1) {
-				/* at least *try* to fix up */
-				ungetc(i[--byte], s);
+
+
+static void screenshot(void) {
+	static time_t last;
+	static uf8 last_nr;
+	static char *dumpfile;
+	static size_t dumpfile_mark;
+	static uf8 dumpfile_avail = 128;
+
+	if (! dumpfile) {
+		dumpfile_mark = strlen(shotsdir);  // can be empty
+		if (SIZE_MAX - dumpfile_mark < dumpfile_avail)
+			endwin_error(1, ENAMETOOLONG, "%s", shotsdir);
+		dumpfile = xmalloc(dumpfile_mark + dumpfile_avail);  // never freed
+		if (dumpfile_mark) {
+			memcpy(dumpfile, shotsdir, dumpfile_mark);
+			if (dumpfile[dumpfile_mark-1] != '/') {
+				dumpfile[dumpfile_mark++] = '/';
+				--dumpfile_avail;
 			}
-			errno = -EILSEQ;
-			return WEOF;
+		}
+		memcpy(dumpfile+dumpfile_mark, "watch_", 6);
+		dumpfile_mark += 6;
+		dumpfile_avail -= 6;
+	}
+
+	const time_t now = time(NULL);
+	if (! strftime(dumpfile+dumpfile_mark, dumpfile_avail, "%Y%m%d-%H%M%S", localtime(&now))) {
+		assert(false);
+		dumpfile[dumpfile_mark] = '\0';
+	}
+	if (now == last) {
+		const uf8 l = strlen(dumpfile+dumpfile_mark);
+		assert(dumpfile_avail - l >= 5);
+		snprintf(dumpfile+dumpfile_mark+l, dumpfile_avail-l, "-%03" PRIuFAST8, last_nr);
+		assert(last_nr < UINT_FAST8_MAX);
+		if (last_nr < UINT_FAST8_MAX)
+			++last_nr;
+	}
+	else {
+		last = now;
+		last_nr = 0;
+	}
+
+	const int f = open(dumpfile, O_WRONLY|O_CREAT|O_EXCL, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+	if (f == -1)
+		endwin_xerr(1, "open(%s)", dumpfile);
+
+	int bufsize = 0;  // int because of mvinnstr()
+#ifdef WITH_WATCH8BIT
+	if ( INT_MAX / width >= CCHARW_MAX &&
+	     MB_CUR_MAX <= INT_MAX &&
+	     INT_MAX / (width*CCHARW_MAX) >= (int)MB_CUR_MAX &&
+	     width * CCHARW_MAX * MB_CUR_MAX < INT_MAX
+	   ) {
+		bufsize = width*CCHARW_MAX*MB_CUR_MAX + 1;
+	}
+#else
+	if (width < INT_MAX)
+		bufsize = width + 1;
+#endif
+	if (! bufsize || (uintmax_t)bufsize > SIZE_MAX)
+		endwin_error(1, EOVERFLOW, "%s(%s)", __func__, dumpfile);
+	char *const buf = xmalloc(bufsize);
+
+	int yin, xout;
+	for (int y=0; y<height; ++y) {
+		yin = mvinnstr(y, 0, buf, bufsize-1);
+		if (yin == ERR)  // screen resized
+			yin = 0;
+		buf[yin] = '\n';
+		for (int x=0; x<yin+1; x+=xout) {
+			xout = write(f, buf+x, (yin+1)-x);
+			if (xout == -1)
+				endwin_xerr(1, "write(%s)", dumpfile);
 		}
 	}
+	free(buf);
+
+	if (close(f) == -1)
+		endwin_xerr(1, "close(%s)", dumpfile);
+
+	if (screen_size_changed)
+		endwin_error(1, ECANCELED, "%s(%s)", __func__, dumpfile);
 }
-#endif	/* WITH_WATCH8BIT */
 
-#ifdef WITH_WATCH8BIT
-static void output_header(wchar_t *restrict wcommand, int wcommand_characters, double interval)
-#else
-static void output_header(char *restrict command, double interval)
-#endif	/* WITH_WATCH8BIT */
+
+
+static void output_header(void)
 {
-	time_t t = time(NULL);
-	char *ts = ctime(&t);
-	char *header;
-	char *right_header;
-	int max_host_name_len = (int) sysconf(_SC_HOST_NAME_MAX);
-	char hostname[max_host_name_len + 1];
-	int command_columns = 0;	/* not including final \0 */
+	if (flags & WATCH_NOTITLE)
+		return;
 
-	gethostname(hostname, sizeof(hostname));
+	static char *lheader;
+	static int lheader_len;
+#ifdef WITH_WATCH8BIT
+	static wchar_t *wlheader;
+	static int wlheader_wid;
+#endif
 
-	/*
-	 * left justify interval and command, right justify hostname and time,
+	static char rheader[256+128];  // hostname and timestamp
+	static int rheader_lenmid;  // just before timestamp
+	int rheader_len;
+#ifdef WITH_WATCH8BIT
+	wchar_t *wrheader;
+	int wrheader_wid;
+
+	static wchar_t *wcommand;
+	static size_t wcommand_len;
+	static int wcommand_wid;
+
+	static sf8 ellipsis_wid;
+#endif
+
+	if (! lheader_len) {
+		// my glibc says HOST_NAME_MAX is 64, but as soon as it updates it to be
+		// at least POSIX.1-2001-compliant, it will be one of: 255, very large,
+		// unspecified
+		if (gethostname(rheader, 256))
+			rheader[0] = '\0';
+		rheader[255] = '\0';
+		rheader_lenmid = strlen(rheader);
+		rheader[rheader_lenmid++] = ':';
+		rheader[rheader_lenmid++] = ' ';
+
+		// never freed for !WATCH8BIT
+		lheader_len = asprintf(&lheader, _("Every %.1fs: "), interval_real);
+		if (lheader_len == -1)
+			endwin_xerr(1, "%s()", __func__);
+#ifdef WITH_WATCH8BIT
+		// never freed
+		wlheader_wid = mbswidth(lheader, &wlheader);
+		if (wlheader_wid == -1) {
+			wlheader = L"";
+			wlheader_wid = 0;
+		}
+		free(lheader);
+
+		// never freed
+		wcommand_wid = mbswidth(command, &wcommand);
+		if (wcommand_wid == -1) {
+			wcommand = L"";
+			wcommand_wid = 0;
+		}
+		wcommand_len = wcslen(wcommand);
+
+		ellipsis_wid = wcwidth(L'\u2026');
+#endif
+	}
+
+	// TODO: a gettext string for rheader no longer used
+	const time_t t = time(NULL);
+	rheader_len = rheader_lenmid;
+	rheader_len += strftime(rheader+rheader_lenmid, sizeof(rheader)-rheader_lenmid, "%X", localtime(&t));
+	if (rheader_len == rheader_lenmid)
+		rheader[rheader_len] = '\0';
+#ifdef WITH_WATCH8BIT
+	wrheader_wid = mbswidth(rheader, &wrheader);
+	if (wrheader_wid == -1) {
+		wrheader = xmalloc(sizeof(*wrheader));
+		wrheader[0] = L'\0';
+		wrheader_wid = 0;
+	}
+#endif
+
+	if (first_screen) {
+		move(0, 0);
+		clrtoeol();
+	}
+
+	/* left justify interval and command, right justify hostname and time,
 	 * clipping all to fit window width
-	 */
-	int hlen = asprintf(&header, _("Every %.1fs: "), interval);
-	int rhlen = asprintf(&right_header, _("%s: %s"), hostname, ts);
-
-	/*
+	 *
 	 * the rules:
 	 *   width < rhlen : print nothing
 	 *   width < rhlen + hlen + 1: print hostname, ts
@@ -494,344 +591,521 @@ static void output_header(char *restrict command, double interval)
 	 *   width < rhlen + hlen + wcommand_columns: print header,
 	 *                           truncated wcommand, ..., hostname, ts
 	 *   width > "": print header, wcomand, hostname, ts
-	 * this is slightly different from how it used to be
-	 */
-	if (width < rhlen) {
-		free(header);
-		free(right_header);
-		return;
-	}
-	if (rhlen + hlen + 1 <= width) {
-		mvaddstr(0, 0, header);
-		if (rhlen + hlen + 2 <= width) {
-			if (width < rhlen + hlen + 4) {
-				mvaddstr(0, width - rhlen - 4, "... ");
-			} else {
+	 * this is slightly different from how it used to be */
+
+// (w)command_* can be large, *header_* are relatively small
 #ifdef WITH_WATCH8BIT
-	            command_columns = wcswidth(wcommand, -1);
-				if (width < rhlen + hlen + command_columns) {
-					/* print truncated */
-					int available = width - rhlen - hlen;
-					int in_use = command_columns;
-					int wcomm_len = wcommand_characters;
-					while (available - 4 < in_use) {
-						wcomm_len--;
-						in_use = wcswidth(wcommand, wcomm_len);
-					}
-					mvaddnwstr(0, hlen, wcommand, wcomm_len);
-					mvaddstr(0, width - rhlen - 4, "... ");
-				} else {
-					mvaddwstr(0, hlen, wcommand);
-				}
-#else
-                command_columns = strlen(command);
-                if (width < rhlen + hlen + command_columns) {
-                    /* print truncated */
-                    mvaddnstr(0, hlen, command, width - rhlen - hlen - 4);
-                    mvaddstr(0, width - rhlen - 4, "... ");
-                } else {
-                    mvaddnstr(0, hlen, command, width - rhlen - hlen);
-                }
-#endif	/* WITH_WATCH8BIT */
+	if (width >= wrheader_wid) {
+		mvaddwstr(0, width - wrheader_wid, wrheader);
+		const int avail4cmd = width - wlheader_wid - wrheader_wid;
+		if (avail4cmd >= 0) {
+			mvaddwstr(0, 0, wlheader);
+			// All of cmd fits, +1 for delimiting space
+			if (avail4cmd > wcommand_wid)
+				addwstr(wcommand);
+			// Else print truncated cmd (to 0 chars, possibly) + ellipsis. If
+			// there's too little space even for the ellipsis, print nothing.
+			else if (avail4cmd > ellipsis_wid) {
+				assert(wcommand_len > 0);
+				int newwcmdwid;
+				size_t newwcmdlen = wcommand_len;
+				// from the back
+				do newwcmdwid = wcswidth(wcommand, --newwcmdlen);
+				while (newwcmdwid > avail4cmd-ellipsis_wid-1);
+				addnwstr(wcommand, newwcmdlen&INT_MAX);
+				addwstr(L"\u2026");
 			}
 		}
 	}
-	mvaddstr(0, width - rhlen + 1, right_header);
-	free(header);
-	free(right_header);
-	return;
-}
-
-static void find_eol(FILE *p)
-{
-    int c;
-#ifdef WITH_WATCH8BIT
-    do {
-	c = my_getwc(p);
-    } while (c != WEOF
-	    && c!= L'\n');
+	free(wrheader);
 #else
-    do {
-	c = getc(p);
-    } while (c != EOF
-	    && c != '\n');
-#endif /* WITH_WATCH8BIT */
+	if (width >= rheader_len) {
+		mvaddstr(0, width - rheader_len, rheader);
+		const int avail4cmd = width - lheader_len - rheader_len;
+		if (avail4cmd >= 0) {
+			mvaddstr(0, 0, lheader);
+			if ((uintmax_t)avail4cmd > command_len)
+				addstr(command);
+			else if (avail4cmd > 3) {
+				addnstr(command, avail4cmd - 3 - 1);
+				addstr("...");
+			}
+		}
+	}
+#endif
 }
 
-static int run_command(char *restrict command, char **restrict command_argv)
+
+
+static void output_lowheader_pre(void) {
+	if (flags & WATCH_NOTITLE)
+		return;
+
+	move(1, 0);
+	clrtoeol();
+}
+
+static void output_lowheader(watch_usec_t span, uint8_t exitcode) {
+	if (flags & WATCH_NOTITLE)
+		return;
+
+	char s[64];
+	int skip;
+	// TODO: gettext everywhere
+	if (span > USECS_PER_SEC * 24 * 60 * 60)
+		snprintf(s, sizeof(s), "%s >1 %s (%" PRIu8 ")", "in", "day", exitcode);
+	// for the localized decimal point
+	else if (span < 1000)
+		snprintf(s, sizeof(s), "%s <%.3f%s (%" PRIu8 ")", "in", 0.001, "s", exitcode);
+	else snprintf(s, sizeof(s), "%s %.3Lf%s (%" PRIu8 ")", "in", (long double)span/USECS_PER_SEC, "s", exitcode);
+
+	move(1, 0);
+	clrtoeol();
+
+#ifdef WITH_WATCH8BIT
+	wchar_t *ws;
+	skip = mbswidth(s, &ws);
+	if (skip == -1)
+		return;
+	skip = width - skip;
+	if (skip >= 0)
+		mvaddwstr(1, skip, ws);
+	free(ws);
+#else
+	skip = width - (int)strlen(s);
+	if (skip >= 0)
+		mvaddstr(1, skip, s);
+#endif
+}
+
+
+
+// When first_screen, returns false. Otherwise, when WATCH_ALL_DIFF is false,
+// return value is unspecified. Otherwise, returns true <==> the character at
+// (y, x) changed. After return, cursor position is indeterminate.
+//
+// The change detection algorithm assumes that all characters (spacing and
+// non-spacing) belonging to a set of coords are display_char()d one after
+// another. That occurs naturally when writing out text from beginning to end.
+//
+// The function emulates the behavior ncurses claims to have according to
+// curs_add_wch(3x) in that a non-spacing c is added to the spacing character
+// already present at (y, x). In reality, ncurses (as of 6.4-20230401) adds it
+// to the character at (y, x-1). This affects add_wch() as well as addwstr() et
+// al.
+static bool display_char(int y, int x, Xint c, int cwid) {
+	assert(c != XEOF && c != XL('\0'));  // among other things
+	assert(cwid >= 0);
+	assert(width-x >= cwid);  // fits
+	bool changed = false;
+	bool old_standout = false;
+
+#ifdef WITH_WATCH8BIT
+// there's an array on stack the size of a function of this
+#if (CCHARW_MAX < 3 || CCHARW_MAX > 15)
+#error "ncurses' CCHARW_MAX has an unexpected value!"
+#endif
+	if (! first_screen && flags&WATCH_ALL_DIFF) {
+		assert(cwid <= 15);
+		static wchar_t oldcc[15][CCHARW_MAX];
+		static uf8 oldcclen[15];  // each in [1, CCHARW_MAX)
+		static uf8 oldccwid;
+		static bool oldstnd;
+		static int curx = -1, cury = -1;
+		uf8 i, j;
+		// This wouldm't work properly if cmd output had a single character and
+		// we weren't manually printing ' 's to empty the rest of screen. But
+		// when flags&WATCH_ALL_DIFF we are printing the ' 's.
+		if (y != cury || x != curx) {
+			cchar_t cc;
+			short dummy;
+			attr_t attr;
+			cury = y; curx = x;
+			oldstnd = false;
+			// If cwid=0, do anything. It shouldn't happen in a proper string.
+			oldccwid = cwid;
+			// Check every column the new c will occupy. Takes care of, e.g.,
+			// 日a -> a日a (日 highlighted because of change in its 2nd column).
+			for (i=0; i<cwid; ++i) {
+				// terrible interface, so much copying
+				mvin_wch(y, x+i, &cc);  // c fits => ok
+				getcchar(&cc, oldcc[i], &attr, &dummy, NULL);
+				oldstnd |= attr & A_STANDOUT;
+				oldcclen[i] = wcslen(oldcc[i]);
+				// if nothing else, there is the ' ' there
+				assert(oldcclen[i] > 0);
+			}
+		}
+
+		// If there's no change, then c must be a component of each of the
+		// characters. A component not found yet. Find it and mark as found
+		// (L'\0').
+		for (i=0; i<oldccwid; ++i) {
+			for (j=0; j<oldcclen[i]; ++j) {
+				if (oldcc[i][j] == (wchar_t)c) {
+					oldcc[i][j] = L'\0';
+					break;
+				}
+			}
+			if (j == oldcclen[i]) {
+				oldccwid = 0;  // mark as changed for good
+				break;
+			}
+		}
+		if (! oldccwid)
+			changed = true;
+		else {
+			changed = false;
+			for (i=0; i<oldccwid; ++i) {
+				for (j=0; j<oldcclen[i]; ++j) {
+					if (oldcc[i][j]) {
+						changed = true;
+						break;
+					}
+				}
+				if (j < oldcclen[i])
+					break;
+			}
+		}
+
+		old_standout = oldstnd;
+	}
+
+	move(y, x);
+	if (cwid > 0) {
+		wchar_t c2 = c;
+		addnwstr(&c2, 1);
+	}
+	else {
+		cchar_t cc;
+		wchar_t wcs[CCHARW_MAX];
+		short dummy;
+		attr_t dummy2;
+		in_wch(&cc);
+		getcchar(&cc, wcs, &dummy2, &dummy, NULL);
+		uf8 len = wcslen(wcs);
+		if (len < CCHARW_MAX - 1) {
+			wcs[len] = c;
+			wcs[len+1] = L'\0';
+		}
+		setcchar(&cc, wcs, dummy2, dummy, NULL);
+		add_wch(&cc);
+	}
+#else
+	if (! first_screen && flags&WATCH_ALL_DIFF) {
+		chtype oldc = mvinch(y, x);
+		changed = (unsigned char)c != (oldc & A_CHARTEXT);
+		old_standout = oldc & A_STANDOUT;
+	}
+
+	move(y, x);
+	addch(c);
+#endif
+
+	if (flags & WATCH_DIFF) {
+		attr_t newattr;
+		short newcolor;
+		attr_get(&newattr, &newcolor, NULL);
+		// standout can flip on/off as the components of a compound char arrive
+		if (changed || (flags&WATCH_CUMUL && old_standout))
+			mvchgat(y, x, 1, newattr | A_STANDOUT, newcolor, NULL);
+		else
+			mvchgat(y, x, 1, newattr & ~(attr_t)A_STANDOUT, newcolor, NULL);
+	}
+
+	return changed;
+}
+
+
+
+static void skiptoeol(FILE *f)
 {
-	FILE *p;
-	int x, y;
-	int oldeolseen = 1;
-	int pipefd[2];
-	pid_t child;
-	int exit_early = 0;
-	int buffer_size = 0;
-	int unchanged_buffer = 0;
-	int status;
+	Xint c;
+	do c = Xgetc(f);
+	while (c != XEOF && c != XL('\n'));
+}
 
-	/* allocate pipes */
+static void skiptoeof(FILE *f) {
+	unsigned char dummy[4096];
+	while (! feof(f) && ! ferror(f))
+		(void)!fread(dummy, sizeof(dummy), 1, f);
+}
+
+static bool my_clrtoeol(int y, int x)
+{
+	if (flags & WATCH_ALL_DIFF) {
+		bool changed = false;
+		while (x < width)
+			changed = display_char(y, x++, XL(' '), 1) || changed;
+		return changed;
+	}
+
+	// make sure color is preserved
+	move(y, x);
+	clrtoeol();  // faster, presumably
+	return false;
+}
+
+static bool my_clrtobot(int y, int x)
+{
+	if (flags & WATCH_ALL_DIFF) {
+		bool changed = false;
+		while (y < height) {
+			while (x < width)
+				changed = display_char(y, x++, XL(' '), 1) || changed;
+			x = 0;
+			++y;
+		}
+		return changed;
+	}
+
+	// make sure color is preserved
+	move(y, x);
+	clrtobot();  // faster, presumably
+	return false;
+}
+
+
+
+// Sets screen_changed: when first_screen, screen_changed=false. Otherwise, when
+// ! WATCH_ALL_DIFF, screen_changed will be unspecified. Otherwise,
+// screen_changed=true <==> the screen changed.
+//
+// Make sure not to leak system resources (incl. fds, processes). Suggesting
+// -D_XOPEN_SOURCE=600 and an EINTR loop around every fclose() as well.
+static uint8_t run_command(void)
+{
+	int pipefd[2], status;  // [0] = output, [1] = input
 	if (pipe(pipefd) < 0)
-		xerr(7, _("unable to create IPC pipes"));
-
-	/* flush stdout and stderr, since we're about to do fd stuff */
+		endwin_xerr(2, _("unable to create IPC pipes"));
+	// child will share buffered data, will print it at fclose()
 	fflush(stdout);
 	fflush(stderr);
 
-	/* fork to prepare to run command */
-	child = fork();
+	pid_t child = fork();
+	if (child < 0)
+		endwin_xerr(2, _("unable to fork process"));
+	else if (child == 0) {  /* in child */
+		// stdout/err can't be used here. Avoid xerr(), close_stdout(), ...
+		// fclose() so as not to confuse _Exit().
+		fclose(stdout);
+		fclose(stderr);
+		// connect out and err up with pipe input
+		while (close(pipefd[0]) == -1 && errno == EINTR) ;
+		while (dup2(pipefd[1], STDOUT_FILENO) == -1 && errno == EINTR) ;
+		while (close(pipefd[1]) == -1 && errno == EINTR) ;
+		while (dup2(STDOUT_FILENO, STDERR_FILENO) == -1 && errno == EINTR) ;
+		// TODO: 0 left open. Is that intentional? I suppose the application
+		// might conclude it's run interactively (see ps). And hang if it should
+		// wait for input (watch 'read A; echo $A').
 
-	if (child < 0) {		/* fork error */
-		xerr(2, _("unable to fork process"));
-	} else if (child == 0) {	/* in child */
-		close(pipefd[0]);		/* child doesn't need read side of pipe */
-		close(1);			/* prepare to replace stdout with pipe */
-		if (dup2(pipefd[1], 1) < 0) {	/* replace stdout with write side of pipe */
-			xerr(3, _("dup2 failed"));
+		if (flags & WATCH_EXEC) {
+			execvp(command_argv[0], command_argv);
+			const char *const errmsg = strerror(errno);
+			(void)!write(STDERR_FILENO, command_argv[0], strlen(command_argv[0]));
+			// TODO: gettext?
+			(void)!write(STDERR_FILENO, ": ", 2);
+			(void)!write(STDERR_FILENO, errmsg, strlen(errmsg));
+			_Exit(0x7f);  // sort of like sh
 		}
-		close(pipefd[1]);		/* once duped, the write fd isn't needed */
-		dup2(1, 2);			/* stderr should default to stdout */
-
-		if (flags & WATCH_EXEC) {	/* pass command to exec instead of system */
-			if (execvp(command_argv[0], command_argv) == -1) {
-				xerr(4, _("unable to execute '%s'"),
-				     command_argv[0]);
-			}
-		} else {
-			status = system(command);	/* watch manpage promises sh quoting */
-			/* propagate command exit status as child exit status */
-			if (!WIFEXITED(status)) {	/* child exits nonzero if command does */
-				exit(EXIT_FAILURE);
-			} else {
-				exit(WEXITSTATUS(status));
-			}
+		status = system(command);
+		// errno from system() not guaranteed
+		// -1 = error from system() (exec(), wait(), ...), not command
+		if (status == -1) {
+			(void)!write(STDERR_FILENO, command, command_len);
+			// TODO: gettext
+			(void)!write(STDERR_FILENO, ": unable to run", 15);
+			_Exit(0x7f);
 		}
+		/* propagate command exit status as child exit status */
+		// error msg on stderr provided by sh
+		if (WIFEXITED(status))
+			_Exit(WEXITSTATUS(status));
+		// Else terminated by signal. system() ignores the stopping of children.
+		assert(WIFSIGNALED(status));
+		_Exit(0x80 + (WTERMSIG(status) & 0x7f));
 	}
-
 	/* otherwise, we're in parent */
-	close(pipefd[1]);	/* close write side of pipe */
-	if ((p = fdopen(pipefd[0], "r")) == NULL)
-		xerr(5, _("fdopen"));
 
-	reset_ansi();
-	for (y = show_title; y < height; y++) {
-		int eolseen = 0, tabpending = 0, tabwaspending = 0;
-		if (flags & WATCH_COLOR)
-			set_ansi_attribute(-1, NULL);
-#ifdef WITH_WATCH8BIT
-		wint_t carry = WEOF;
-#endif
-		for (x = 0; x < width; x++) {
-#ifdef WITH_WATCH8BIT
-			wint_t c = ' ';
-#else
-			int c = ' ';
-#endif
-			int attr = 0;
+	while (close(pipefd[1]) == -1 && errno == EINTR) ;
+	FILE *p = fdopen(pipefd[0], "r");
+	if (! p)
+		endwin_xerr(2, _("fdopen"));
+	setvbuf(p, NULL, _IOFBF, BUFSIZ);  // We'll getc() from it. A lot.
 
-			if (tabwaspending && (flags & WATCH_COLOR))
-				set_ansi_attribute(-1, NULL);
-			tabwaspending = 0;
+	Xint c, carry = XEOF;
+	int cwid, y, x;  // cwid = character width in terminal columns
+	screen_changed = false;
 
-			if (!eolseen) {
-				/* if there is a tab pending, just
-				 * spit spaces until the next stop
-				 * instead of reading characters */
-				if (!tabpending)
+	for (y = flags&WATCH_NOTITLE?0:2; y < height; ++y) {
+		x = 0;
+		while (true) {
+			// x is where the next char will be put. When x==width only
+			// characters with wcwidth()==0 are output. Used, e.g., for
+			// codepoints which modify the preceding character and swallowing a
+			// newline / a color sequence / ... after a printable character in
+			// the rightmost column.
+			assert(x <= width);
+			assert(x == 0 || carry == XEOF);
+
+			if (carry != XEOF) {
+				c = carry;
+				carry = XEOF;
+			}
+			else c = Xgetc(p);
+			assert(carry == XEOF);
+
+			if (c == XEOF) {
+				screen_changed = my_clrtobot(y, x) || screen_changed;
+				y = height - 1;
+				break;
+			}
+			if (c == XL('\n')) {
+				screen_changed = my_clrtoeol(y, x) || screen_changed;
+				break;
+			}
+			if (c == XL('\033')) {
+				process_ansi(p);
+				continue;
+			}
+			if (c == XL('\a')) {
+				beep();
+				continue;
+			}
+			if (c == XL('\t'))  // not is(w)print()
+				// one space is enough to consider a \t printed, if there're no
+				// more columns
+				cwid = 1;
+			else {
 #ifdef WITH_WATCH8BIT
-					do {
-						if (carry == WEOF) {
-							c = my_getwc(p);
-						} else {
-							c = carry;
-							carry = WEOF;
-						}
-					} while (c != WEOF && !iswprint(c)
-						 && c < 128
-						 && wcwidth(c) == 0
-                                                 && c != L'\a'
-						 && c != L'\n'
-						 && c != L'\t'
-						 && (c != L'\033'
-						     || !(flags & WATCH_COLOR)));
-#else
-					do
-						c = getc(p);
-					while (c != EOF && !isprint(c)
-					       && c != '\a'
-					       && c != '\n'
-					       && c != '\t'
-					       && (c != L'\033'
-						   || !(flags & WATCH_COLOR)));
-#endif
-				if (c == L'\033' && (flags & WATCH_COLOR)) {
-					x--;
-					process_ansi(p);
+				// There used to be (! iswprint(c) && c < 128) because of Debian
+				// #240989. Presumably because glibc of the time didn't
+				// recognize ä, ö, ü, Π, ά, λ, ς, ... as printable. Today,
+				// iswprint() in glibc works as expected and the "c<128" is
+				// letting all non-printables >=128 get through.
+				if (! iswprint(c))
 					continue;
-				}
-				if (c == L'\n')
-					if (!oldeolseen && x == 0) {
-						x = -1;
-						continue;
-					} else
-						eolseen = 1;
-				else if (c == L'\t')
-					tabpending = 1;
-                                else if (c == L'\a') {
-                                    beep();
-                                    continue;
-                                }
-#ifdef WITH_WATCH8BIT
-				if (x == width - 1 && wcwidth(c) == 2) {
-					y++;
-					x = -1;		/* process this double-width */
-					carry = c;	/* character on the next line */
-					continue;	/* because it won't fit here */
-				}
-				if (c == WEOF || c == L'\n' || c == L'\t') {
-					c = L' ';
-					if (flags & WATCH_COLOR)
-						attrset(A_NORMAL);
-				}
+				cwid = wcwidth(c);
+				assert(cwid >= 0 && cwid <= 2);
 #else
-				if (c == EOF || c == '\n' || c == '\t') {
-					c = ' ';
-					if (flags & WATCH_COLOR)
-						attrset(A_NORMAL);
-				}
+				if (! isprint(c))
+					continue;
+				cwid = 1;
 #endif
-				if (tabpending && (((x + 1) % 8) == 0)) {
-					tabpending = 0;
-					tabwaspending = 1;
-				}
 			}
-			move(y, x);
 
-			if (!first_screen && !exit_early && (flags & WATCH_CHGEXIT)) {
-#ifdef WITH_WATCH8BIT
-				cchar_t oldc;
-				in_wch(&oldc);
-				exit_early = (wchar_t) c != oldc.chars[0];
-#else
-				chtype oldch = inch();
-				unsigned char oldc = oldch & A_CHARTEXT;
-				exit_early = (unsigned char)c != oldc;
-#endif
+			// now c is something printable
+			// if it doesn't fit
+			if (cwid > width-x) {
+				assert(cwid > 0 && cwid <= 2);
+				assert(width-x <= 1);  // !!
+				if (! (flags & WATCH_NOWRAP))
+					carry = c;
+				else {
+					skiptoeol(p);
+					reset_ansi();
+					set_ansi_attribute(-1, NULL);
+				}
+				screen_changed = my_clrtoeol(y, x) || screen_changed;
+				break;
 			}
-			if (!first_screen && !exit_early && (flags & WATCH_EQUEXIT)) {
-				buffer_size++;
-#ifdef WITH_WATCH8BIT
-				cchar_t oldc;
-				in_wch(&oldc);
-				if ((wchar_t) c == oldc.chars[0])
-					unchanged_buffer++;
-#else
-				chtype oldch = inch();
-				unsigned char oldc = oldch & A_CHARTEXT;
-				if ((unsigned char)c == oldc)
-					unchanged_buffer++;
-#endif
+
+			// it fits, print it
+			if (c == XL('\t')) {
+				do screen_changed = display_char(y, x++, XL(' '), 1) || screen_changed;
+				while (x % TAB_WIDTH && x < width);
 			}
-			if (flags & WATCH_DIFF) {
-#ifdef WITH_WATCH8BIT
-				cchar_t oldc;
-				in_wch(&oldc);
-				attr = !first_screen
-				    && ((wchar_t) c != oldc.chars[0]
-					||
-					((flags & WATCH_CUMUL)
-					 && (oldc.attr & A_ATTRIBUTES)));
-#else
-				chtype oldch = inch();
-				unsigned char oldc = oldch & A_CHARTEXT;
-				attr = !first_screen
-				    && ((unsigned char)c != oldc
-					||
-					((flags & WATCH_CUMUL)
-					 && (oldch & A_ATTRIBUTES)));
-#endif
+			else {
+				// cwid=0 => non-spacing char modifying the preceding spacing
+				// char
+				screen_changed = display_char(y, x-!cwid, c, cwid) || screen_changed;
+				x += cwid;
 			}
-			if (attr)
-				standout();
-#ifdef WITH_WATCH8BIT
-			addnwstr((wchar_t *) & c, 1);
-#else
-			addch(c);
-#endif
-			if (attr)
-				standend();
-#ifdef WITH_WATCH8BIT
-			if (wcwidth(c) == 0) {
-				x--;
-			}
-			if (wcwidth(c) == 2) {
-				x++;
-			}
-#endif
 		}
-		oldeolseen = eolseen;
-		if (!line_wrap) {
-		    reset_ansi();
-		    if (flags & WATCH_COLOR)
-			attrset(A_NORMAL);
-		}
-                if (!line_wrap && !eolseen)
-                {
-                    find_eol(p);
-                }
 	}
 
+	skiptoeof(p);  // avoid SIGPIPE in child
 	fclose(p);
 
 	/* harvest child process and get status, propagated from command */
-	if (waitpid(child, &status, 0) < 0)
-		xerr(8, _("waitpid"));
+	// TODO: gettext string no longer used
+	while (waitpid(child, &status, 0) == -1) {
+		if (errno != EINTR)
+			return 0x7f;
+	}
+	if (WIFEXITED(status))
+		return WEXITSTATUS(status);
+	assert(WIFSIGNALED(status));
+	return 0x80 + (WTERMSIG(status) & 0x7f);
+}
 
-	/* if child process exited in error, beep if option_beep is set */
-	if ((!WIFEXITED(status) || WEXITSTATUS(status))) {
-		if (flags & WATCH_BEEP)
-			beep();
-		if (flags & WATCH_ERREXIT) {
-			mvaddstr(height - 1, 0,
-				 _("command exit with a non-zero status, press a key to exit"));
-			refresh();
-			fgetc(stdin);
-			endwin();
-			exit(8);
+
+
+static void get_terminal_size(void)
+{
+	static bool height_fixed, width_fixed;
+
+	if (height_fixed && width_fixed)
+		return;
+
+	if (! width) {
+		width = WIDTH_FALLBACK;
+		height = HEIGHT_FALLBACK;
+		const char *env;
+		char *endptr;
+		long t;
+
+		env = getenv("LINES");
+		if (env && env[0] >= '0' && env[0] <= '9') {
+			errno = 0;
+			t = strtol(env, &endptr, 0);
+			if (! *endptr && ! errno && t > 0 && t <= INT_MAX) {
+				height_fixed = true;
+				height = t;
+			}
+		}
+		env = getenv("COLUMNS");
+		if (env && env[0] >= '0' && env[0] <= '9') {
+			errno = 0;
+			t = strtol(env, &endptr, 0);
+			if (! *endptr && ! errno && t > 0 && t <= INT_MAX) {
+				width_fixed = true;
+				width = t;
+			}
 		}
 	}
 
-	if (unchanged_buffer == buffer_size && (flags & WATCH_EQUEXIT))
-		exit_early = 1;
+	struct winsize w;
+	if (ioctl(STDERR_FILENO, TIOCGWINSZ, &w) == 0) {
+		if (! height_fixed && w.ws_row > 0) {
+			static char env_row_buf[24] = "LINES=";
+			height = w.ws_row & INT_MAX;
+			snprintf(env_row_buf+6, sizeof(env_row_buf)-6, "%d", height);
+			putenv(env_row_buf);
+		}
+		if (! width_fixed && w.ws_col > 0) {
+			static char env_col_buf[24] = "COLUMNS=";
+			width = w.ws_col & INT_MAX;
+			snprintf(env_col_buf+8, sizeof(env_col_buf)-8, "%d", width);
+			putenv(env_col_buf);
+		}
+	}
 
-	first_screen = 0;
-	refresh();
-	return exit_early;
+	assert(width > 0 && height > 0);
 }
+
+
 
 int main(int argc, char *argv[])
 {
-	int optc;
-	double interval = 2;
-	int max_cycles = 1;
-	int cycle_count = 0;
-	char *interval_string;
-	char *command;
-	char **command_argv;
-	int command_length = 0;	/* not including final \0 */
-	watch_usec_t last_run = 0;
-	watch_usec_t next_loop = 0;	/* next loop time in us, used for precise time
-	                           	 * keeping only */
-#ifdef WITH_WATCH8BIT
-	wchar_t *wcommand = NULL;
-	int wcommand_characters = 0;	/* not including final \0 */
-#endif	/* WITH_WATCH8BIT */
-
-#ifdef WITH_COLORWATCH
-        flags |= WATCH_COLOR;
-#endif /* WITH_COLORWATCH */
-
-	static struct option longopts[] = {
+	int i;
+	watch_usec_t interval, last_tick = 0, t;
+	long max_cycles = 1, cycle_count = 1;
+	fd_set select_stdin;
+	uint8_t cmdexit;
+	struct timeval tosleep;
+	bool sleep_dontsleep, sleep_scrdumped, sleep_exit;
+	const struct option longopts[] = {
 		{"color", no_argument, 0, 'c'},
 		{"no-color", no_argument, 0, 'C'},
 		{"differences", optional_argument, 0, 'd'},
@@ -843,29 +1117,40 @@ int main(int argc, char *argv[])
 		{"equexit", required_argument, 0, 'q'},
 		{"exec", no_argument, 0, 'x'},
 		{"precise", no_argument, 0, 'p'},
-                {"no-rerun", no_argument, 0, 'r'},
+		{"no-rerun", no_argument, 0, 'r'},
+		{"shotsdir", required_argument, 0, 's'},
 		{"no-title", no_argument, 0, 't'},
 		{"no-wrap", no_argument, 0, 'w'},
 		{"version", no_argument, 0, 'v'},
-		{0, 0, 0, 0}
+		{0}
 	};
 
+	atexit(close_stdout);
+	setbuf(stdin, NULL);  // for select()
 #ifdef HAVE_PROGRAM_INVOCATION_NAME
 	program_invocation_name = program_invocation_short_name;
 #endif
+	// TODO: when !WATCH8BIT, setlocale() should be omitted or initd as "C",
+	// shouldn't it? Also, everywhere we rely on the fact that with !8BIT
+	// strlen(s) is the col width of s, for instance.
+	// Also, the build system doesn't honor WATCH8BIT when linking. On my system
+	// it links against libncursesw even when !WATCH8BIT. That results in half
+	// of the program working in wchars, half in chars. On the other hand,
+	// people with libncursesw.so probably configure with WATCH8BIT.
 	setlocale(LC_ALL, "");
 	bindtextdomain(PACKAGE, LOCALEDIR);
 	textdomain(PACKAGE);
-	atexit(close_stdout);
 
-	interval_string = getenv("WATCH_INTERVAL");
-	if(interval_string != NULL)
-		interval = strtod_nol_or_err(interval_string, _("Could not parse interval from WATCH_INTERVAL"));
+#ifdef WITH_COLORWATCH
+	flags |= WATCH_COLOR;
+#endif /* WITH_COLORWATCH */
 
-	while ((optc =
-		getopt_long(argc, argv, "+bCced::ghq:n:prtwvx", longopts, (int *)0))
-	       != EOF) {
-		switch (optc) {
+	const char *const interval_string = getenv("WATCH_INTERVAL");
+	if (interval_string != NULL)
+		interval_real = strtod_nol_or_err(interval_string, _("Could not parse interval from WATCH_INTERVAL"));
+
+	while ((i = getopt_long(argc,argv,"+bCced::ghq:n:prs:twvx",longopts,NULL)) != EOF) {
+		switch (i) {
 		case 'b':
 			flags |= WATCH_BEEP;
 			break;
@@ -887,26 +1172,31 @@ int main(int argc, char *argv[])
 			flags |= WATCH_CHGEXIT;
 			break;
 		case 'q':
+			max_cycles = strtol_or_err(optarg, _("failed to parse argument"));
+			if (max_cycles < 1)
+				max_cycles = 1;
 			flags |= WATCH_EQUEXIT;
-			max_cycles = strtod_nol_or_err(optarg, _("failed to parse argument"));
 			break;
-                case 'r':
-                        flags |= WATCH_NORERUN;
-                        break;
+		case 'r':
+			flags |= WATCH_NORERUN;
+			break;
+		case 's':
+			shotsdir = optarg;
+			break;
 		case 't':
-			show_title = 0;
+			flags |= WATCH_NOTITLE;
 			break;
 		case 'w':
-			line_wrap = 0;
+			flags |= WATCH_NOWRAP;
 			break;
 		case 'x':
 			flags |= WATCH_EXEC;
 			break;
 		case 'n':
-			interval = strtod_nol_or_err(optarg, _("failed to parse argument"));
+			interval_real = strtod_nol_or_err(optarg, _("failed to parse argument"));
 			break;
 		case 'p':
-			precise_timekeeping = 1;
+			flags |= WATCH_PRECISE;
 			break;
 		case 'h':
 			usage(stdout);
@@ -920,126 +1210,160 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	if (interval < 0.1)
-		interval = 0.1;
-	if (interval > UINT_MAX)
-		interval = UINT_MAX;
-
 	if (optind >= argc)
 		usage(stderr);
 
-	/* save for later */
-	command_argv = &(argv[optind]);
-
-	command = xstrdup(argv[optind++]);
-	command_length = strlen(command);
+	command_argv = argv + optind;  // for exec*()
+	command_len = strlen(argv[optind]);
+	command = xmalloc(command_len+1);  // never freed
+	memcpy(command, argv[optind++], command_len+1);
 	for (; optind < argc; optind++) {
-		char *endp;
-		int s = strlen(argv[optind]);
+		size_t s = strlen(argv[optind]);
 		/* space and \0 */
-		command = xrealloc(command, command_length + s + 2);
-		endp = command + command_length;
-		*endp = ' ';
-		memcpy(endp + 1, argv[optind], s);
+		command = xrealloc(command, command_len + s + 2);
+		command[command_len] = ' ';
+		memcpy(command+command_len+1, argv[optind], s);
 		/* space then string length */
-		command_length += 1 + s;
-		command[command_length] = '\0';
+		command_len += 1 + s;
+		command[command_len] = '\0';
 	}
 
-#ifdef WITH_WATCH8BIT
-	/* convert to wide for printing purposes */
-	/*mbstowcs(NULL, NULL, 0); */
-	wcommand_characters = mbstowcs(NULL, command, 0);
-	if (wcommand_characters < 0) {
-		fprintf(stderr, _("unicode handling error\n"));
-		exit(EXIT_FAILURE);
-	}
-	wcommand =
-	    (wchar_t *) malloc((wcommand_characters + 1) * sizeof(wcommand));
-	if (wcommand == NULL) {
-		fprintf(stderr, _("unicode handling error (malloc)\n"));
-		exit(EXIT_FAILURE);
-	}
-	mbstowcs(wcommand, command, wcommand_characters + 1);
-#endif	/* WITH_WATCH8BIT */
+	// interval_real must
+	// * be >= 0.1 (program design)
+	// * fit in time_t (in struct timeval), which may be 32b signed
+	// * be <=31 days (limitation of select(), as per POSIX 2001)
+	// * fit in watch_usec_t, even when multiplied by USECS_PER_SEC
+	if (interval_real < 0.1)
+		interval_real = 0.1;
+	if (interval_real > 60L * 60 * 24 * 31)
+		interval_real = 60L * 60 * 24 * 31;
+	interval = (long double)interval_real * USECS_PER_SEC;
+	tzset();
 
-	get_terminal_size();
+	FD_ZERO(&select_stdin);
 
-	/* Catch keyboard interrupts so we can put tty back in a sane
-	 * state.  */
+	// Catch keyboard interrupts so we can put tty back in a sane state.
 	signal(SIGINT, die);
 	signal(SIGTERM, die);
 	signal(SIGHUP, die);
 	signal(SIGWINCH, winch_handler);
-
 	/* Set up tty for curses use.  */
-	curses_started = 1;
-	initscr();
+	get_terminal_size();
+	initscr();  // succeeds or exit()s, may install sig handlers
 	if (flags & WATCH_COLOR) {
 		if (has_colors()) {
 			start_color();
 			use_default_colors();
 			init_ansi_colors();
-		} else {
-			flags &= ~WATCH_COLOR;
 		}
+		else flags &= ~WATCH_COLOR;
 	}
 	nonl();
 	noecho();
 	cbreak();
-
-	if (precise_timekeeping)
-		next_loop = get_time_usec();
+	curs_set(0);
 
 	while (1) {
+		reset_ansi();
+		set_ansi_attribute(-1, NULL);
 		if (screen_size_changed) {
+			screen_size_changed = false;  // "atomic" test-and-set
 			get_terminal_size();
 			resizeterm(height, width);
-			clear();
-			/* redrawwin(stdscr); */
-			screen_size_changed = 0;
-			first_screen = 1;
+			first_screen = true;
 		}
 
-		if (show_title)
-#ifdef WITH_WATCH8BIT
-			output_header(wcommand, wcommand_characters, interval);
-#else
-			output_header(command, interval);
-#endif	/* WITH_WATCH8BIT */
+		output_lowheader_pre();
+		refresh();
+		output_header();
+		t = get_time_usec();
+		if (flags & WATCH_PRECISE)
+			last_tick = t;
+		cmdexit = run_command();
+		if (flags & WATCH_PRECISE)
+			output_lowheader(get_time_usec() - t, cmdexit);
+		else {
+			last_tick = get_time_usec();
+			output_lowheader(last_tick - t, cmdexit);
+		}
 
-                if (!(flags & WATCH_NORERUN) ||
-                        get_time_usec() - last_run > interval * USECS_PER_SEC) {
-                    last_run = get_time_usec();
-                    int exit = run_command(command, command_argv);
+		if (cmdexit) {
+			if (flags & WATCH_BEEP)
+				beep();  // doesn't require refresh()
+			if (flags & WATCH_ERREXIT) {
+				// TODO: Hard to see when there's cmd output around it. Add
+				// spaces or move to lowheader.
+				mvaddstr(height-1, 0, _("command exit with a non-zero status, press a key to exit"));
+				i = fcntl(STDIN_FILENO, F_GETFL);
+				if (i >= 0 && fcntl(STDIN_FILENO, F_SETFL, i|O_NONBLOCK) >= 0) {
+					while (getchar() != EOF) ;
+					fcntl(STDIN_FILENO, F_SETFL, i);
+				}
+				refresh();
+				getchar();
+				endwin_exit(cmdexit);
+			}
+		}
 
-		    if (flags & WATCH_EQUEXIT) {
-			    if (cycle_count == max_cycles && exit) {
-				    break;
-			    } else if (exit) {
-				    cycle_count++;
-			    } else {
-				    cycle_count = 0;
-			    }
-		    } else if (exit) {
-			    break;
-		    }
-                } else {
-                    refresh();
-                }
+		// [BUG] When screen resizes, its contents change, but not
+		// necessarily because cmd output's changed. It may have, but that
+		// event is lost. Prevents cycle_count from soaring while resizing.
+		if (! first_screen) {
+			if (flags & WATCH_CHGEXIT && screen_changed)
+				break;
+			if (flags & WATCH_EQUEXIT) {
+				if (screen_changed)
+					cycle_count = 1;
+				else {
+					if (cycle_count == max_cycles)
+						break;
+					++cycle_count;
+				}
+			}
+		}
 
-		if (precise_timekeeping) {
-			watch_usec_t cur_time = get_time_usec();
-			next_loop += USECS_PER_SEC * interval;
-			if (cur_time < next_loop)
-				usleep(next_loop - cur_time);
-		} else
-			if (interval < UINT_MAX / USECS_PER_SEC)
-				usleep(interval * USECS_PER_SEC);
-			else
-				sleep(interval);
+		refresh();  // takes some time
+		first_screen = false;
+
+		// first process all available input, then respond to
+		// screen_size_changed, then sleep
+		sleep_dontsleep = sleep_scrdumped = sleep_exit = false;
+		do {
+			assert(FD_SETSIZE > STDIN_FILENO);
+			FD_SET(STDIN_FILENO, &select_stdin);
+			sleep_dontsleep |= screen_size_changed && ! (flags & WATCH_NORERUN);
+			if (! sleep_dontsleep && (t=get_time_usec()-last_tick) < interval) {
+				tosleep.tv_sec = (interval-t) / USECS_PER_SEC;
+				tosleep.tv_usec = (interval-t) % USECS_PER_SEC;
+			}
+			else memset(&tosleep, 0, sizeof(tosleep));
+			i = select(STDIN_FILENO+1, &select_stdin, NULL, NULL, &tosleep);
+			assert(i != -1 || errno == EINTR);
+			if (i > 0) {
+				// all keys idempotent
+				switch (getchar()) {
+				case EOF:
+					if (errno != EINTR)
+						endwin_xerr(1, "getchar()");
+					break;
+				case 'q':
+					sleep_dontsleep = sleep_exit = true;
+					break;
+				case ' ':
+					sleep_dontsleep = true;
+					break;
+				case 's':
+					if (! sleep_scrdumped) {
+						screenshot();
+						sleep_scrdumped = true;
+					}
+					break;
+				}
+			}
+		} while (i);
+		if (sleep_exit)
+			break;
 	}
 
-	endwin();
-	return EXIT_SUCCESS;
+	endwin_exit(EXIT_SUCCESS);
 }

@@ -88,7 +88,8 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-noinst_PROGRAMS = test-schedbatch$(EXEEXT)
+noinst_PROGRAMS = test-schedbatch$(EXEEXT) test-hugetlb$(EXEEXT) \
+	test-zombie$(EXEEXT)
 
 # These should be in defined in 'across the board' scope, but are
 # temporarily disabled on other than linux systems, see commit
@@ -96,24 +97,22 @@ noinst_PROGRAMS = test-schedbatch$(EXEEXT)
 @LINUX_TRUE@am__append_1 = \
 @LINUX_TRUE@	pmap
 
-@CYGWIN_FALSE@@LINUX_TRUE@am__append_2 = \
-@CYGWIN_FALSE@@LINUX_TRUE@	slabtop \
-@CYGWIN_FALSE@@LINUX_TRUE@	sysctl
-
-@BUILD_KILL_TRUE@@LINUX_TRUE@am__append_3 = kill
-@LINUX_TRUE@am__append_4 = \
+@CYGWIN_FALSE@@LINUX_TRUE@@WITH_NCURSES_TRUE@am__append_2 = slabtop
+@CYGWIN_FALSE@@LINUX_TRUE@am__append_3 = sysctl
+@BUILD_KILL_TRUE@@LINUX_TRUE@am__append_4 = kill
+@BUILD_W_TRUE@@LINUX_TRUE@am__append_5 = w
+@LINUX_TRUE@am__append_6 = \
 @LINUX_TRUE@	free \
+@LINUX_TRUE@	hugetop \
 @LINUX_TRUE@	lib \
 @LINUX_TRUE@	pgrep \
 @LINUX_TRUE@	pkill \
 @LINUX_TRUE@	ps \
 @LINUX_TRUE@	pwdx \
-@LINUX_TRUE@	slabtop \
 @LINUX_TRUE@	uptime \
-@LINUX_TRUE@	vmstat \
-@LINUX_TRUE@	w
+@LINUX_TRUE@	vmstat
 
-@CYGWIN_FALSE@am__append_5 = \
+@CYGWIN_FALSE@am__append_7 = \
 @CYGWIN_FALSE@    slabtop.test/slabtop.exp \
 @CYGWIN_FALSE@    sysctl.test/sysctl_read.exp
 
@@ -136,13 +135,19 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 PROGRAMS = $(noinst_PROGRAMS)
 am__dirstamp = $(am__leading_dot)dirstamp
-am_test_schedbatch_OBJECTS = ps.test/test-schedbatch.$(OBJEXT)
-test_schedbatch_OBJECTS = $(am_test_schedbatch_OBJECTS)
-test_schedbatch_LDADD = $(LDADD)
+am_test_hugetlb_OBJECTS = ps.test/test-hugetlb.$(OBJEXT)
+test_hugetlb_OBJECTS = $(am_test_hugetlb_OBJECTS)
+test_hugetlb_LDADD = $(LDADD)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
 am__v_lt_1 = 
+am_test_schedbatch_OBJECTS = ps.test/test-schedbatch.$(OBJEXT)
+test_schedbatch_OBJECTS = $(am_test_schedbatch_OBJECTS)
+test_schedbatch_LDADD = $(LDADD)
+am_test_zombie_OBJECTS = ps.test/test-zombie.$(OBJEXT)
+test_zombie_OBJECTS = $(am_test_zombie_OBJECTS)
+test_zombie_LDADD = $(LDADD)
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -158,7 +163,9 @@ am__v_at_1 =
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__maybe_remake_depfiles = depfiles
-am__depfiles_remade = ps.test/$(DEPDIR)/test-schedbatch.Po
+am__depfiles_remade = ps.test/$(DEPDIR)/test-hugetlb.Po \
+	ps.test/$(DEPDIR)/test-schedbatch.Po \
+	ps.test/$(DEPDIR)/test-zombie.Po
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -178,8 +185,10 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(test_schedbatch_SOURCES)
-DIST_SOURCES = $(test_schedbatch_SOURCES)
+SOURCES = $(test_hugetlb_SOURCES) $(test_schedbatch_SOURCES) \
+	$(test_zombie_SOURCES)
+DIST_SOURCES = $(test_hugetlb_SOURCES) $(test_schedbatch_SOURCES) \
+	$(test_zombie_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -363,16 +372,20 @@ AUTOMAKE_OPTIONS = dejagnu
 
 # Programs that are expected across the board.
 DEJATOOL = $(am__append_1) $(am__append_2) $(am__append_3) \
-	$(am__append_4)
+	$(am__append_4) $(am__append_5) $(am__append_6)
 test_schedbatch_SOURCES = ps.test/test-schedbatch.c
-EXTRA_DIST = config/unix.exp free.test/free.exp kill.test/kill.exp \
+test_hugetlb_SOURCES = ps.test/test-hugetlb.c
+test_zombie_SOURCES = ps.test/test-zombie.c
+EXTRA_DIST = config/unix.exp free.test/free.exp \
+	hugetop.test/hugetop.exp kill.test/kill.exp \
 	lib.test/fileutils.exp lib.test/fileutils_badfd.sh \
 	lib.test/fileutils_full.sh lib.test/strutils.exp \
 	pgrep.test/pgrep.exp pkill.test/pkill.exp pmap.test/pmap.exp \
-	ps.test/ps_output.exp ps.test/ps_personality.exp \
-	ps.test/ps_sched_batch.exp pwdx.test/pwdx.exp \
-	slabtop.test/slabtop.exp uptime.test/uptime.exp \
-	vmstat.test/vmstat.exp w.test/w.exp $(am__append_5)
+	ps.test/ps_hugetlb.exp ps.test/ps_output.exp \
+	ps.test/ps_personality.exp ps.test/ps_sched_batch.exp \
+	pwdx.test/pwdx.exp slabtop.test/slabtop.exp \
+	uptime.test/uptime.exp vmstat.test/vmstat.exp w.test/w.exp \
+	$(am__append_7)
 all: all-am
 
 .SUFFIXES:
@@ -421,12 +434,24 @@ ps.test/$(am__dirstamp):
 ps.test/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) ps.test/$(DEPDIR)
 	@: > ps.test/$(DEPDIR)/$(am__dirstamp)
+ps.test/test-hugetlb.$(OBJEXT): ps.test/$(am__dirstamp) \
+	ps.test/$(DEPDIR)/$(am__dirstamp)
+
+test-hugetlb$(EXEEXT): $(test_hugetlb_OBJECTS) $(test_hugetlb_DEPENDENCIES) $(EXTRA_test_hugetlb_DEPENDENCIES) 
+	@rm -f test-hugetlb$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_hugetlb_OBJECTS) $(test_hugetlb_LDADD) $(LIBS)
 ps.test/test-schedbatch.$(OBJEXT): ps.test/$(am__dirstamp) \
 	ps.test/$(DEPDIR)/$(am__dirstamp)
 
 test-schedbatch$(EXEEXT): $(test_schedbatch_OBJECTS) $(test_schedbatch_DEPENDENCIES) $(EXTRA_test_schedbatch_DEPENDENCIES) 
 	@rm -f test-schedbatch$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(test_schedbatch_OBJECTS) $(test_schedbatch_LDADD) $(LIBS)
+ps.test/test-zombie.$(OBJEXT): ps.test/$(am__dirstamp) \
+	ps.test/$(DEPDIR)/$(am__dirstamp)
+
+test-zombie$(EXEEXT): $(test_zombie_OBJECTS) $(test_zombie_DEPENDENCIES) $(EXTRA_test_zombie_DEPENDENCIES) 
+	@rm -f test-zombie$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_zombie_OBJECTS) $(test_zombie_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -435,7 +460,9 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@ps.test/$(DEPDIR)/test-hugetlb.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@ps.test/$(DEPDIR)/test-schedbatch.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@ps.test/$(DEPDIR)/test-zombie.Po@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
 	@$(MKDIR_P) $(@D)
@@ -642,7 +669,9 @@ clean-am: clean-generic clean-libtool clean-noinstPROGRAMS \
 	mostlyclean-am
 
 distclean: distclean-am
-		-rm -f ps.test/$(DEPDIR)/test-schedbatch.Po
+		-rm -f ps.test/$(DEPDIR)/test-hugetlb.Po
+	-rm -f ps.test/$(DEPDIR)/test-schedbatch.Po
+	-rm -f ps.test/$(DEPDIR)/test-zombie.Po
 	-rm -f Makefile
 distclean-am: clean-am distclean-DEJAGNU distclean-compile \
 	distclean-generic distclean-tags
@@ -688,7 +717,9 @@ install-ps-am:
 installcheck-am:
 
 maintainer-clean: maintainer-clean-am
-		-rm -f ps.test/$(DEPDIR)/test-schedbatch.Po
+		-rm -f ps.test/$(DEPDIR)/test-hugetlb.Po
+	-rm -f ps.test/$(DEPDIR)/test-schedbatch.Po
+	-rm -f ps.test/$(DEPDIR)/test-zombie.Po
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 

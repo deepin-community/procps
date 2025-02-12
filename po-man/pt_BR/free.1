@@ -16,11 +16,11 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH FREE 1 2023\-05\-02 procps\-ng "Comandos de usuário"
+.TH FREE 1 2023\-05\-02 procps\-ng 
 .SH NOME
 free \- Exibe quantidade de memória livre e usada no sistema
 .SH SINOPSE
-\fBfree\fP [\fIopções\fP]
+\fBfree\fP [\fIoption\fP .\|.\|.]
 .SH DESCRIÇÃO
 \fBfree\fP exibe a quantidade total de memória física e de swap livre e usada
 no sistema, bem como os buffers e caches usados pelo kernel. A informação é
@@ -149,18 +149,16 @@ Exibe a ajuda.
 .TP 
 \fB\-V\fP, \fB\-\-version\fP
 Exibe informação da versão.
-.PD
 .SH ARQUIVOS
 .TP 
 /proc/meminfo
 informações da memória
-.PD
 .SH ERROS
 O valor para a coluna \fBcompart.\fP não está disponível para kernels
 anteriores a 2.6.32 e é exibido como zero.
-.TP 
-Por favor, envie relatórios de erro para
-.UR procps@freelists.org
-.UE
+.P
+Please send bug reports to
+.MT procps@freelists.org
+.ME .
 .SH "VEJA TAMBÉM"
 \fBps\fP(1), \fBslabtop\fP(1), \fBtop\fP(1), \fBvmstat\fP(8).

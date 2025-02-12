@@ -16,11 +16,11 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH FREE 1 02.05.2023 procps\-ng "Comenzi utilizator"
+.TH FREE 1 02.05.2023 procps\-ng 
 .SH NUME
 free \- Afișează cantitatea de memorie liberă și utilizată din sistem
 .SH REZUMAT
-\fBfree\fP [\fIopțiuni\fP]
+\fBfree\fP [\fIopțiuni\fP .\|.\|.]
 .SH DESCRIERE
 \fBfree\fP afișează cantitatea totală de memorie fizică și swap liberă și
 utilizată din sistem, precum și dimensiunile memoriilor tampon(buffer) și a
@@ -68,7 +68,7 @@ emulat pe nucleele 2.6.27+, altfel la fel ca \fBliberă\fP)
 Afișează cantitatea de memorie în octeți.
 .TP 
 \fB\-k\fP, \fB\-\-kibi\fP
-Afișează cantitatea de memorie în kibiocteți.  Aceasta este valoarea
+Afișează cantitatea de memorie în kibiocteți. Aceasta este valoarea
 implicită.
 .TP 
 \fB\-m\fP, \fB\-\-mebi\fP
@@ -105,7 +105,7 @@ Afișează cantitatea de memorie în petaocteți. Implică utilizarea opțiunii
 .TP 
 \fB\-h\fP, \fB\-\-human\fP
 Afișează toate câmpurile de ieșire scalate automat la cea mai scurtă unitate
-de trei cifre și afișează unitățile de măsură.  Sunt utilizate următoarele
+de trei cifre și afișează unitățile de măsură. Sunt utilizate următoarele
 unități.
 .sp
 .nf
@@ -125,7 +125,7 @@ Comută la modul larg. Modul larg produce linii mai lungi de 80 de
 caractere. În acest mod, \fBmemoriile tampon(buffers)\fP și \fBzonele de prestocare(cache)\fP sunt raportate în două coloane separate.
 .TP 
 \fB\-c\fP, \fB\-\-count\fP \fIN\-ori\fP
-Afișează rezultatul de \fInumăr\fP ori.  Necesită opțiunea \fB\-s\fP.
+Afișează rezultatul de \fInumăr\fP ori. Necesită opțiunea \fB\-s\fP.
 .TP 
 \fB\-l\fP, \fB\-\-lohi\fP
 Afișează statistici detaliate despre memorie scăzută(lowmem) și
@@ -137,10 +137,9 @@ Afișează ieșirea pe o singură linie, adesea utilizată împreună cu opțiun
 .TP 
 \fB\-s\fP, \fB\-\-seconds\fP \fIîntârzierea\fP
 Afișează în mod continuu rezultatul la un interval de \fIîntârziere\fP
-secunde.  Puteți specifica, de fapt, orice număr zecimal pentru
-\fIîntârziere\fP folosind fie «.», fie «,» pentru a marca virgula zecimală.
-\fBusleep\fP(3)  este utilizată pentru timpii de întârziere ai rezoluției în
-microsecunde.
+secunde. Puteți specifica, de fapt, orice număr zecimal pentru \fIîntârziere\fP
+folosind fie «.», fie «,» pentru a marca virgula zecimală. \fBusleep\fP(3) este
+utilizată pentru timpii de întârziere ai rezoluției în microsecunde.
 .TP 
 \fB\-\-si\fP
 Utilizează kilo, mega, giga, etc (putere de 1000) în loc de kibi, mebi, gibi
@@ -151,27 +150,25 @@ Afișează o linie care arată totalurile coloanelor.
 .TP 
 \fB\-v\fP, \fB\-\-committed\fP
 Afișează o linie care arată limita de alocare a memoriei și cantitatea de
-memorie alocată/nealocată.  Coloana \fBtotal\fP de pe această linie va afișa
-limita de alocare a memoriei.  Această linie este relevantă dacă
-supralocarea memoriei este dezactivată.
+memorie alocată/nealocată. Coloana \fBtotal\fP de pe această linie va afișa
+limita de alocare a memoriei. Această linie este relevantă dacă supralocarea
+memoriei este dezactivată.
 .TP 
 \fB\-\-help\fP
 Afișează mesajul de ajutor.
 .TP 
 \fB\-V\fP, \fB\-\-version\fP
 Afișați informațiile despre versiune.
-.PD
 .SH FIȘIERE
 .TP 
 /proc/meminfo
 informații despre memorie
-.PD
 .SH ERORI
 Valoarea pentru coloana \fBpartajată\fP nu este disponibilă în nucleele
 dinainte de versiunea 2.6.32, și este afișată ca zero.
-.TP 
-Trimiteți rapoartele de erori la
-.UR procps@freelists.org
-.UE
+.P
+Trimiteți rapoartele de eroare la
+.MT procps@freelists.org
+.ME .
 .SH "CONSULTAȚI ȘI"
 \fBps\fP(1), \fBslabtop\fP(1), \fBtop\fP(1), \fBvmstat\fP(8).

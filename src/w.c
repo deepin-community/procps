@@ -207,9 +207,7 @@ static void print_display_or_interface(const char *restrict host, int len, int r
 
 /* This routine prints either the hostname or the IP address of the remote */
 static void print_from(
-#if (defined(WITH_SYSTEMD) || defined(WITH_ELOGIND)) && defined(HAVE_SD_SESSION_GET_LEADER)
 		       const char *session,
-#endif
 		       const utmp_t *restrict const u, const int ip_addresses, const int fromlen) {
 #if (defined(WITH_SYSTEMD) || defined(WITH_ELOGIND)) && defined(HAVE_SD_SESSION_GET_LEADER)
         if (session) {
@@ -228,6 +226,13 @@ static void print_from(
 	char buf[fromlen + 1];
 	char buf_ipv6[INET6_ADDRSTRLEN];
 	int len;
+
+            if (!u) {
+                /* Both systemd session and utmp not available */
+                print_host("", 0, fromlen);
+                return;
+            }
+
 #ifndef __CYGWIN__
 	int32_t ut_addr_v6[4];      /* IP address of the remote host */
 
@@ -380,6 +385,32 @@ static int get_tty_device(const char *restrict const name)
     return -1;
 }
 
+static struct pids_fetch *cache_pids(struct pids_info **info)
+{
+    struct pids_fetch *reap;
+    *info = NULL;
+
+    enum pids_item items[] = {
+        PIDS_ID_PID,
+        PIDS_ID_TGID,
+        PIDS_TICS_BEGAN,
+        PIDS_ID_EUID,
+        PIDS_ID_RUID,
+        PIDS_ID_TPGID,
+        PIDS_ID_PGRP,
+        PIDS_TTY,
+        PIDS_TICS_ALL,
+        PIDS_CMDLINE};
+
+    if (procps_pids_new(info, items, 10) < 0)
+        xerrx(EXIT_FAILURE,
+              _("Unable to create pid info structure"));
+    if ((reap = procps_pids_reap(*info, PIDS_FETCH_TASKS_ONLY)) == NULL)
+        xerrx(EXIT_FAILURE,
+              _("Unable to load process information"));
+    return reap;
+}
+
 /*
  * This function scans the process table accumulating total cpu
  * times for any processes "associated" with this login session.
@@ -396,12 +427,13 @@ static int find_best_proc(
         unsigned long long *restrict const jcpu,
         unsigned long long *restrict const pcpu,
         char *cmdline,
-        pid_t *pid)
+        pid_t *pid,
+        struct pids_fetch *reap)
 {
-#define PIDS_GETINT(e) PIDS_VAL(EU_ ## e, s_int, reap->stacks[i], info)
-#define PIDS_GETUNT(e) PIDS_VAL(EU_ ## e, u_int, reap->stacks[i], info)
-#define PIDS_GETULL(e) PIDS_VAL(EU_ ## e, ull_int, reap->stacks[i], info)
-#define PIDS_GETSTR(e) PIDS_VAL(EU_ ## e, str, reap->stacks[i], info)
+#define PIDS_GETINT(e) PIDS_VAL(EU_ ## e, s_int, reap->stacks[i])
+#define PIDS_GETUNT(e) PIDS_VAL(EU_ ## e, u_int, reap->stacks[i])
+#define PIDS_GETULL(e) PIDS_VAL(EU_ ## e, ull_int, reap->stacks[i])
+#define PIDS_GETSTR(e) PIDS_VAL(EU_ ## e, str, reap->stacks[i])
     unsigned uid = ~0U;
     pid_t ut_pid = -1;
     int found_utpid = 0;
@@ -409,19 +441,7 @@ static int find_best_proc(
     unsigned long long best_time = 0;
     unsigned long long secondbest_time = 0;
 
-    struct pids_info *info=NULL;
-    struct pids_fetch *reap;
-    enum pids_item items[] = {
-        PIDS_ID_PID,
-        PIDS_ID_TGID,
-        PIDS_TICS_BEGAN,
-        PIDS_ID_EUID,
-        PIDS_ID_RUID,
-        PIDS_ID_TPGID,
-        PIDS_ID_PGRP,
-        PIDS_TTY,
-        PIDS_TICS_ALL,
-        PIDS_CMDLINE};
+    /* Must match items in cache_pids */
     enum rel_items {
         EU_PID, EU_TGID, EU_START, EU_EUID, EU_RUID, EU_TPGID, EU_PGRP, EU_TTY,
         EU_TICS_ALL, EU_CMDLINE};
@@ -450,12 +470,6 @@ static int find_best_proc(
 
     line = get_tty_device(tty);
 
-    if (procps_pids_new(&info, items, 10) < 0)
-        xerrx(EXIT_FAILURE,
-              _("Unable to create pid info structure"));
-    if ((reap = procps_pids_reap(info, PIDS_FETCH_TASKS_ONLY)) == NULL)
-        xerrx(EXIT_FAILURE,
-              _("Unable to load process information"));
     total_procs = reap->counts->total;
 
     if (u)
@@ -479,7 +493,7 @@ static int find_best_proc(
         }
         if (PIDS_GETINT(TTY) != line)
             continue;
-        (*jcpu) += PIDS_VAL(EU_TICS_ALL, ull_int, reap->stacks[i], info);
+        (*jcpu) += PIDS_VAL(EU_TICS_ALL, ull_int, reap->stacks[i]);
         if (!(secondbest_time && PIDS_GETULL(START) <= secondbest_time)) {
             secondbest_time = PIDS_GETULL(START);
             if (cmdline[0] == '-' && cmdline[1] == '\0') {
@@ -500,7 +514,6 @@ static int find_best_proc(
         *pid = PIDS_GETULL(PID);
         *pcpu = PIDS_GETULL(TICS_ALL);
     }
-    procps_pids_unref(&info);
     return found_utpid;
 #undef PIDS_GETINT
 #undef PIDS_GETUNT
@@ -508,13 +521,31 @@ static int find_best_proc(
 #undef PIDS_GETSTR
 }
 
+static void show_uptime(
+            int container)
+{
+    double uptime_secs=0;
+    char buf[100];
+
+    if ( (getenv("PROCPS_CONTAINER") != NULL) || container) {
+	if (procps_container_uptime(&uptime_secs) < 0)
+		xerr(EXIT_FAILURE, _("Cannot get container uptime"));
+    } else {
+	if (procps_uptime(&uptime_secs, NULL) < 0)
+		xerr(EXIT_FAILURE, _("Cannot get system uptime"));
+    }
+    if (procps_uptime_snprint(buf, 100, uptime_secs, 0) < 0)
+        xerr(EXIT_FAILURE, _("Cannot format uptime"));
+
+    printf("%s\n", buf);
+}
+
 static void showinfo(
-#if (defined(WITH_SYSTEMD) || defined(WITH_ELOGIND)) && defined(HAVE_SD_SESSION_GET_LEADER)
             const char *session, const char *name,
-#endif
-            utmp_t * u, int formtype, int maxcmd, int from,
+            utmp_t * u, const int longform, int maxcmd, int from,
             const int userlen, const int fromlen, const int ip_addresses,
-            const int pids)
+            const int pids,
+            struct pids_fetch *reap)
 {
     unsigned long long jcpu, pcpu;
     unsigned i;
@@ -533,12 +564,14 @@ static void showinfo(
         char *sd_tty;
 
         if (sd_session_get_tty(session, &sd_tty) >= 0) {
-            for (i = 0; i < strlen (sd_tty); i++)
+	    for (i = 0; i < UT_LINESIZE; i++) {
+		if (sd_tty[i] == '\0') break;
                 /* clean up tty if garbled */
 	        if (isalnum(sd_tty[i]) || (sd_tty[i] == '/'))
 		    tty[i + 5] = sd_tty[i];
 		else
 		    tty[i + 5] = '\0';
+	    }
 	    free(sd_tty);
 	}
     } else {
@@ -557,7 +590,7 @@ static void showinfo(
 #if (defined(WITH_SYSTEMD) || defined(WITH_ELOGIND)) && defined(HAVE_SD_SESSION_GET_LEADER)
 		       session,
 #endif
-		       u, tty + 5, &jcpu, &pcpu, cmdline, &best_pid) == 0)
+		       u, tty + 5, &jcpu, &pcpu, cmdline, &best_pid, reap) == 0)
     /*
      * just skip if stale utmp entry (i.e. login proc doesn't
      * exist). If there is a desire a cmdline flag could be
@@ -566,34 +599,25 @@ static void showinfo(
      */
         return;
 
-#if (defined(WITH_SYSTEMD) || defined(WITH_ELOGIND)) && defined(HAVE_SD_SESSION_GET_LEADER)
     if (name)
       strncpy(uname, name, UT_NAMESIZE);
-    else
-#endif
-      strncpy(uname, u->ut_user, UT_NAMESIZE);
     /* force NUL term for printf */
     uname[UT_NAMESIZE] = '\0';
 
-    if (formtype) {
-        printf("%-*.*s%-9.8s", userlen + 1, userlen, uname, tty + 5);
+    printf("%-*.*s%-9.8s", userlen + 1, userlen, uname, tty + 5);
+    if (from)
+        print_from(session, u, ip_addresses, fromlen);
+
+    /* login time */
+    if (longform) {
 #if (defined(WITH_SYSTEMD) || defined(WITH_ELOGIND)) && defined(HAVE_SD_SESSION_GET_LEADER)
         if (session) {
             uint64_t ltime;
-
-            if (from)
-              print_from(session, NULL, ip_addresses, fromlen);
 
             sd_session_get_start_time(session, &ltime);
             print_logintime(ltime/((uint64_t) 1000000ULL), stdout);
         } else {
 #endif
-            if (from)
-                print_from(
-#if (defined(WITH_SYSTEMD) || defined(WITH_ELOGIND)) && defined(HAVE_SD_SESSION_GET_LEADER)
-			   NULL,
-#endif
-			   u, ip_addresses, fromlen);
 
 #ifdef HAVE_UTMPX_H
             print_logintime(u->ut_tv.tv_sec, stdout);
@@ -603,11 +627,18 @@ static void showinfo(
 #if (defined(WITH_SYSTEMD) || defined(WITH_ELOGIND)) && defined(HAVE_SD_SESSION_GET_LEADER)
         }
 #endif
-        if (u && *u->ut_line == ':')
-            /* idle unknown for xdm logins */
-            printf(" ?xdm? ");
-        else
-            print_time_ival7(idletime(tty), 0, stdout);
+    }
+    /* idle */
+    if (u && *u->ut_line == ':')
+        /* idle unknown for xdm logins */
+        printf(" ?xdm? ");
+    else if (tty[5])
+        print_time_ival7(idletime(tty), 0, stdout);
+    else
+	printf("       ");
+
+    /* jpcpu/pcpu */
+    if (longform) {
         print_time_ival7(jcpu / hertz, (jcpu % hertz) * (100. / hertz),
                  stdout);
         if (pcpu > 0)
@@ -616,20 +647,8 @@ static void showinfo(
                              stdout);
         else
             printf("   ?   ");
-    } else {
-        printf("%-*.*s%-9.8s", userlen + 1, userlen, uname, tty + 5);
-        if (from)
-	    print_from(
-#if (defined(WITH_SYSTEMD) || defined(WITH_ELOGIND)) && defined(HAVE_SD_SESSION_GET_LEADER)
-		       NULL,
-#endif
-		       u, ip_addresses, fromlen);
-        if (u && *u->ut_line == ':')
-            /* idle unknown for xdm logins */
-            printf(" ?xdm? ");
-        else
-            print_time_ival7(idletime(tty), 0, stdout);
     }
+    /* what */
     if (pids) {
         pid_t ut_pid = -1;
         if (u)
@@ -655,6 +674,7 @@ static void __attribute__ ((__noreturn__))
 	fprintf(out,
               _(" %s [options] [user]\n"), program_invocation_short_name);
 	fputs(USAGE_OPTIONS, out);
+	fputs(_(" -c, --container     show container uptime\n"),out);
 	fputs(_(" -h, --no-header     do not print header\n"),out);
 	fputs(_(" -u, --no-current    ignore current process username\n"),out);
 	fputs(_(" -s, --short         short format\n"),out);
@@ -672,7 +692,7 @@ static void __attribute__ ((__noreturn__))
 
 int main(int argc, char **argv)
 {
-	char *user = NULL, *p;
+	char *match_user = NULL, *p;
 	utmp_t *u;
 	struct winsize win;
 	int ch;
@@ -682,17 +702,21 @@ int main(int argc, char **argv)
 	char *env_var;
 
 	/* switches (defaults) */
+        int container = 0;
 	int header = 1;
 	int longform = 1;
 	int from = 1;
 	int ip_addresses = 0;
 	int pids = 0;
+        struct pids_info *info = NULL;
+        struct pids_fetch *pids_cache = NULL;
 
 	enum {
 		HELP_OPTION = CHAR_MAX + 1
 	};
 
 	static const struct option longopts[] = {
+                {"container", no_argument, NULL, 'c'},
 		{"no-header", no_argument, NULL, 'h'},
 		{"no-current", no_argument, NULL, 'u'},
 		{"short", no_argument, NULL, 's'},
@@ -718,8 +742,11 @@ int main(int argc, char **argv)
 #endif
 
 	while ((ch =
-		getopt_long(argc, argv, "husfoVip", longopts, NULL)) != -1)
+		getopt_long(argc, argv, "chusfoVip", longopts, NULL)) != -1)
 		switch (ch) {
+                case 'c':
+                        container = 1;
+                        break;
 		case 'h':
 			header = 0;
 			break;
@@ -752,7 +779,7 @@ int main(int argc, char **argv)
 		}
 
 	if ((argv[optind]))
-		user = (argv[optind]);
+		match_user = (argv[optind]);
 
 	/* Get user field length from environment */
 	if ((env_var = getenv("PROCPS_USERLEN")) != NULL) {
@@ -791,51 +818,58 @@ int main(int argc, char **argv)
 #undef CLAMP_CMD_WIDTH
 
 
+        if ( (pids_cache = cache_pids(&info)) == NULL) {
+            return(EXIT_FAILURE);
+        }
 	if (header) {
 		/* print uptime and headers */
-		printf("%s\n", procps_uptime_sprint());
+                show_uptime(container);
 		/* Translation Hint: Following five uppercase messages are
 		 * headers. Try to keep alignment intact.  */
 		printf(_("%-*s TTY      "), userlen, _("USER"));
 		if (from)
-			printf("%-*s", fromlen - 1, _("FROM"));
+			printf("%-*s", fromlen, _("FROM"));
 		if (longform)
-			printf(_("  LOGIN@   IDLE   JCPU   PCPU WHAT\n"));
+			printf(_(" LOGIN@   IDLE   JCPU   PCPU  WHAT\n"));
 		else
 			printf(_("   IDLE WHAT\n"));
 	}
 #if (defined(WITH_SYSTEMD) || defined(WITH_ELOGIND)) && defined(HAVE_SD_SESSION_GET_LEADER)
-	if (sd_booted() > 0) {
-		char **sessions_list;
-		int sessions;
+	char **sessions_list;
+	int sessions = 0;
+
+	if (sd_booted() > 0)
+		sessions = sd_get_sessions (&sessions_list);
+
+	if (sessions < 0 && sessions != -ENOENT)
+		error(EXIT_FAILURE, -sessions, _("error getting sessions"));
+
+	if (sessions > 0) {
 		int i;
 
-		sessions = sd_get_sessions (&sessions_list);
-		if (sessions < 0 && sessions != -ENOENT)
-			error(EXIT_FAILURE, -sessions, _("error getting sessions"));
+		for (int i = 0; i < sessions; i++) {
+			char *class, *name;
+			int r;
 
-		if (sessions >= 0) {
-			for (int i = 0; i < sessions; i++) {
-				char *name;
-				int r;
+			if ((r = sd_session_get_class(sessions_list[i], &class)) < 0)
+				error(EXIT_FAILURE, -r, _("session get class failed"));
+                        if (strncmp(class, "user", 4) != 0) { // user, user-early, user-incomplete
+                                free(class);
+                                continue;
+                        }
+			if ((r = sd_session_get_username(sessions_list[i], &name)) < 0)
+				error(EXIT_FAILURE, -r, _("get user name failed"));
 
-				if ((r = sd_session_get_username(sessions_list[i], &name)) < 0)
-					error(EXIT_FAILURE, -r, _("get user name failed"));
+			if (!match_user || (0 == strcmp(name, match_user)))
+				showinfo(sessions_list[i], name, NULL, longform, maxcmd,
+					from, userlen, fromlen, ip_addresses, pids,
+					pids_cache);
 
-				if (user) {
-					if (!strcmp(name, user))
-						showinfo(sessions_list[i], name, NULL, longform,
-							 maxcmd, from, userlen, fromlen,
-							 ip_addresses, pids);
-				} else {
-					showinfo(sessions_list[i], name, NULL, longform, maxcmd,
-						 from, userlen, fromlen, ip_addresses, pids);
-				}
-				free(name);
-				free(sessions_list[i]);
-			}
-			free(sessions_list);
+			free(class);
+			free(name);
+			free(sessions_list[i]);
 		}
+		free(sessions_list);
 	} else {
 #endif
 #ifdef HAVE_UTMPX_H
@@ -844,44 +878,22 @@ int main(int argc, char **argv)
 	utmpname(UTMP_FILE);
 	setutent();
 #endif
-	if (user) {
-		for (;;) {
+	for (;;) {
 #ifdef HAVE_UTMPX_H
-			u = getutxent();
+		u = getutxent();
 #else
-			u = getutent();
+		u = getutent();
 #endif
-			if (!u)
-				break;
-			if (u->ut_type != USER_PROCESS)
-				continue;
-			if (!strncmp(u->ut_user, user, UT_NAMESIZE))
-				showinfo(
-#if (defined(WITH_SYSTEMD) || defined(WITH_ELOGIND)) && defined(HAVE_SD_SESSION_GET_LEADER)
-					 NULL, NULL,
-#endif
-					 u, longform, maxcmd, from, userlen,
-					 fromlen, ip_addresses, pids);
-		}
-	} else {
-		for (;;) {
-#ifdef HAVE_UTMPX_H
-			u = getutxent();
-#else
-			u = getutent();
-#endif
-			if (!u)
-				break;
-			if (u->ut_type != USER_PROCESS)
-				continue;
-			if (*u->ut_user)
-				showinfo(
-#if (defined(WITH_SYSTEMD) || defined(WITH_ELOGIND)) && defined(HAVE_SD_SESSION_GET_LEADER)
-					 NULL, NULL,
-#endif
-					 u, longform, maxcmd, from, userlen,
-					 fromlen, ip_addresses, pids);
-		}
+		if (!u)
+			break;
+		if (u->ut_type != USER_PROCESS || ('\0' == u->ut_user[0]))
+			continue;
+		if (!match_user ||
+                    (0 == strncmp(u->ut_user, match_user, UT_NAMESIZE)))
+			showinfo(
+				 NULL, u->ut_user,
+				 u, longform, maxcmd, from, userlen,
+				 fromlen, ip_addresses, pids, pids_cache);
 	}
 #ifdef HAVE_UTMPX_H
 	endutxent();
@@ -892,5 +904,6 @@ int main(int argc, char **argv)
 	}
 #endif
 
+        procps_pids_unref(&info);
 	return EXIT_SUCCESS;
 }

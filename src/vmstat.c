@@ -1,8 +1,8 @@
 /*
  * vmstat - report memory statistics
  *
- * Copyright © 2011-2023 Craig Small <csmall@dropbear.xyz>
- * Copyright © 2012-2023 Jim Warner <james.warner@comcast.net>
+ * Copyright © 2011-2024 Craig Small <csmall@dropbear.xyz>
+ * Copyright © 2012-2024 Jim Warner <james.warner@comcast.net>
  * Copyright © 2011-2012 Sami Kerola <kerolasa@iki.fi>
  * Copyright © 2010      Jan Görig <jgorig@redhat.com>
  * Copyright © 2003      Fabian Frederick
@@ -240,13 +240,54 @@ static void __attribute__ ((__noreturn__))
     exit(out == stderr ? EXIT_FAILURE : EXIT_SUCCESS);
 }
 
+/*
+ * "fields": a table of output column headers and widths.
+ *
+ * If you change these, you will also need to adjust the strings
+ * for the first line of the header/wide_header in new_header().
+ *
+ * The header strings need to be translated when used.
+ *
+ * Translation Hint: the maximum width of field "header" is the
+ * value of field "width",
+ */
+struct field {
+	char *header;
+	int width;
+	int wide_width;		/* If -w option is given */
+	unsigned long value;	/* Set by program code, not initialized */
+};
+
+static struct field fields[] = {
+	{ "r",		2,  4	},	/* fields[0] */
+	{ "b",		2,  4	},
+	{ "swpd",	6, 12	},
+	{ "free",	6, 12	},
+	{ "buff",	6, 12	},	/* modified to "inact" if a_option */
+	{ "cache",	6, 12	},	/* modified to "active" if a_option */
+	{ "si",		4,  4	},
+	{ "so",		4,  4	},
+	{ "bi",		5,  5	},
+	{ "bo",		5,  5	},
+	{ "in",		4,  4	},
+	{ "cs",		4,  4	},
+	{ "us",		2,  3	},
+	{ "sy",		2,  3	},
+	{ "id",		2,  3	},
+	{ "wa",		2,  3	},
+	{ "st",		2,  3	},
+	{ "gu",		2,  3	},	/* fields[17] */
+	{ NULL,		0,  0	}	/* Sentinel */
+};
+
 static void new_header(void)
 {
     struct tm *tm_ptr;
     time_t the_time;
     char timebuf[32];
+    struct field *field;
 
-    /* Translation Hint: Translating folloging header & fields
+    /* Translation Hint: Translating following header & fields
      * that follow (marked with max x chars) might not work,
      * unless manual page is translated as well.  */
     const char *header =
@@ -254,12 +295,6 @@ static void new_header(void)
     const char *wide_header =
         _("--procs-- -----------------------memory---------------------- ---swap-- -----io---- -system-- ----------cpu----------");
     const char *timestamp_header = _(" -----timestamp-----");
-
-    const char format[] =
-        "%2s %2s %6s %6s %6s %6s %4s %4s %5s %5s %4s %4s %2s %2s %2s %2s %2s %2s";
-    const char wide_format[] =
-        "%4s %4s %12s %12s %12s %12s %4s %4s %5s %5s %4s %4s %3s %3s %3s %3s %3s %3s";
-
 
     printf("%s", w_option ? wide_header : header);
 
@@ -269,49 +304,22 @@ static void new_header(void)
 
     printf("\n");
 
-    printf(
-        w_option ? wide_format : format,
-        /* Translation Hint: max 2 chars */
-         _("r"),
-        /* Translation Hint: max 2 chars */
-         _("b"),
-        /* Translation Hint: max 6 chars */
-         _("swpd"),
-        /* Translation Hint: max 6 chars */
-         _("free"),
-        /* Translation Hint: max 6 chars */
-         a_option ? _("inact") :
-        /* Translation Hint: max 6 chars */
-            _("buff"),
-        /* Translation Hint: max 6 chars */
-         a_option ? _("active") :
-        /* Translation Hint: max 6 chars */
-            _("cache"),
-        /* Translation Hint: max 4 chars */
-         _("si"),
-        /* Translation Hint: max 4 chars */
-         _("so"),
-        /* Translation Hint: max 5 chars */
-         _("bi"),
-        /* Translation Hint: max 5 chars */
-         _("bo"),
-        /* Translation Hint: max 4 chars */
-         _("in"),
-        /* Translation Hint: max 4 chars */
-         _("cs"),
-        /* Translation Hint: max 2 chars */
-         _("us"),
-        /* Translation Hint: max 2 chars */
-         _("sy"),
-        /* Translation Hint: max 2 chars */
-         _("id"),
-        /* Translation Hint: max 2 chars */
-         _("wa"),
-        /* Translation Hint: max 2 chars */
-         _("st"),
-        /* Translation Hint: max 2 chars */
-         _("gu"));
+    /* Print the field headers */
 
+    if (a_option) {
+        /* Translation Hint: max 6 chars each */
+        fields[4].header = "inact";
+        fields[5].header = "active";
+    }
+
+    for (field=fields; field->header != NULL; field++) {
+        printf("%*s", !w_option ? field->width : field->wide_width,
+                  _(field->header));
+
+        if (field[1].header != NULL) {
+            printf(" ");
+        }
+    }
     if (t_option) {
         (void) time( &the_time );
         tm_ptr = localtime( &the_time );
@@ -337,20 +345,60 @@ static unsigned long unitConvert(unsigned long size)
     return ((unsigned long)cvSize);
 }
 
+static void output_line(struct field *fields, char timebuf[])
+{
+    struct field *field;
+    int skew = 0;	/* How many character columns too right are we? */
+
+    for (field=fields; field->header != NULL; field++) {
+        unsigned long v;    /* temporary */
+        unsigned digits;    /* How many digits does it print as? */
+        unsigned width;        /* Declared width of this column */
+
+        /* Calculate how many digits will print. We could sprintf into
+         * a string buffer and measure it, but this seems more reliable
+         * than guessing the max number of chars that an unsigned long
+         * could print as.
+         */
+        for (v = field->value, digits = 1;
+             v > 9;
+             v /= 10, digits++)
+            ;
+
+        width = !w_option ? field->width : field->wide_width;
+
+        /* Compensate for previous column-width overflows if possible */
+        while (skew > 0 && digits < width) {
+            width--; skew--;
+        }
+
+        printf("%*lu", width, field->value);
+
+        /* If it overflew the column width, remember by how far */
+        if (digits > width) skew += digits - width;
+
+        /* Print a space after all but the last field */
+        if (field[1].header != NULL) {
+            printf(" ");
+        }
+    }
+
+    if (t_option) {
+        printf(" %s", timebuf);
+    }
+
+    printf("\n");
+}
+
 static void new_format(void)
 {
-#define TICv(E) STAT_VAL(E, ull_int, stat_stack, stat_info)
-#define DTICv(E) STAT_VAL(E, sl_int, stat_stack, stat_info)
-#define SYSv(E) STAT_VAL(E, ul_int, stat_stack, stat_info)
-#define MEMv(E) MEMINFO_VAL(E, ul_int, mem_stack, mem_info)
-#define DSYSv(E) STAT_VAL(E, s_int, stat_stack, stat_info)
-    const char format[] =
-        "%2lu %2lu %6lu %6lu %6lu %6lu %4u %4u %5u %5u %4u %4u %2u %2u %2u %2u %2u %2u";
-    const char wide_format[] =
-        "%4lu %4lu %12lu %12lu %12lu %12lu %4u %4u %5u %5u %4u %4u %3u %3u %3u %3u %3u %3u";
-
+#define TICv(E) STAT_VAL(E, ull_int, stat_stack)
+#define DTICv(E) STAT_VAL(E, sl_int, stat_stack)
+#define SYSv(E) STAT_VAL(E, ul_int, stat_stack)
+#define MEMv(E) MEMINFO_VAL(E, ul_int, mem_stack)
+#define DSYSv(E) STAT_VAL(E, s_int, stat_stack)
     unsigned int tog = 0;    /* toggle switch for cleaner code */
-    unsigned int i;
+    unsigned long i;
     long long cpu_use, cpu_sys, cpu_idl, cpu_iow, cpu_sto, cpu_gue;
     long long Div, divo2;
     unsigned long pgpgin[2], pgpgout[2], pswpin[2] = {0,0}, pswpout[2];
@@ -418,32 +466,28 @@ static void new_format(void)
         divo2 = Div / 2UL;
         cpu_use = (cpu_use >= cpu_gue)? cpu_use - cpu_gue : 0;
 
-        printf(w_option ? wide_format : format,
-               SYSv(stat_PRU),
-               SYSv(stat_PBL),
-               unitConvert(MEMv(mem_SUS)),
-               unitConvert(MEMv(mem_FREE)),
-               unitConvert((a_option?MEMv(mem_INA):MEMv(mem_BUF))),
-               unitConvert((a_option?MEMv(mem_ACT):MEMv(mem_CAC))),
-               (unsigned)( unitConvert(VMSTAT_GET(vm_info, VMSTAT_PSWPIN, ul_int)  * kb_per_page) / uptime ),
-               (unsigned)( unitConvert(VMSTAT_GET(vm_info, VMSTAT_PSWPOUT, ul_int)  * kb_per_page) / uptime ),
-               (unsigned)( VMSTAT_GET(vm_info, VMSTAT_PGPGIN, ul_int) / uptime ),
-               (unsigned)( VMSTAT_GET(vm_info, VMSTAT_PGPGOUT, ul_int) / uptime ),
-               (unsigned)( SYSv(stat_INT) / uptime ),
-               (unsigned)( SYSv(stat_CTX) / Div ),
-               (unsigned)( (100*cpu_use        + divo2) / Div ),
-               (unsigned)( (100*cpu_sys        + divo2) / Div ),
-               (unsigned)( (100*cpu_idl        + divo2) / Div ),
-               (unsigned)( (100*cpu_iow        + divo2) / Div ),
-               (unsigned)( (100*cpu_sto        + divo2) / Div ),
-               (unsigned)( (100*cpu_gue        + divo2) / Div )
-        );
+#define V(n) fields[n].value
+	V( 0) = SYSv(stat_PRU);
+	V( 1) = SYSv(stat_PBL);
+	V( 2) = unitConvert(MEMv(mem_SUS));
+	V( 3) = unitConvert(MEMv(mem_FREE));
+	V( 4) = unitConvert((a_option?MEMv(mem_INA):MEMv(mem_BUF)));
+	V( 5) = unitConvert((a_option?MEMv(mem_ACT):MEMv(mem_CAC)));
+	V( 6) = (unsigned)( unitConvert(VMSTAT_GET(vm_info, VMSTAT_PSWPIN, ul_int)  * kb_per_page) / uptime );
+	V( 7) = (unsigned)( unitConvert(VMSTAT_GET(vm_info, VMSTAT_PSWPOUT, ul_int)  * kb_per_page) / uptime );
+	V( 8) = (unsigned)( VMSTAT_GET(vm_info, VMSTAT_PGPGIN, ul_int) / uptime );
+	V( 9) = (unsigned)( VMSTAT_GET(vm_info, VMSTAT_PGPGOUT, ul_int) / uptime );
+	V(10) = (unsigned)( SYSv(stat_INT) / uptime );
+	V(11) = (unsigned)( SYSv(stat_CTX) / Div );
+	V(12) = (100*cpu_use + divo2) / Div;
+	V(13) = (100*cpu_sys + divo2) / Div;
+	V(14) = (100*cpu_idl + divo2) / Div;
+	V(15) = (100*cpu_iow + divo2) / Div;
+	V(16) = (100*cpu_sto + divo2) / Div;
+	V(17) = (100*cpu_gue + divo2) / Div;
+#undef V
 
-        if (t_option) {
-            printf(" %s", timebuf);
-        }
-
-        printf("\n");
+	output_line(fields, timebuf);
     } else
         num_updates++;
 
@@ -462,7 +506,7 @@ static void new_format(void)
         cpu_idl = DTICv(stat_IDL);
         cpu_iow = DTICv(stat_IOW);
         cpu_sto = DTICv(stat_STO);
-        cpu_gue = TICv(stat_GST) + TICv(stat_GNI);
+        cpu_gue = DTICv(stat_GST) + DTICv(stat_GNI);
         pgpgin[tog] = VMSTAT_GET(vm_info, VMSTAT_PGPGIN, ul_int);
         pgpgout[tog] = VMSTAT_GET(vm_info, VMSTAT_PGPGOUT, ul_int);
         pswpin[tog] = VMSTAT_GET(vm_info, VMSTAT_PSWPIN, ul_int);
@@ -503,44 +547,28 @@ static void new_format(void)
             cpu_use = 0;
         }
 
-        printf(w_option ? wide_format : format,
-               SYSv(stat_PRU),
-               SYSv(stat_PBL),
-               unitConvert(MEMv(mem_SUS)),
-               unitConvert(MEMv(mem_FREE)),
-               unitConvert((a_option?MEMv(mem_INA):MEMv(mem_BUF))),
-               unitConvert((a_option?MEMv(mem_ACT):MEMv(mem_CAC))),
-               /*si */
-               (unsigned)( ( unitConvert((pswpin [tog] - pswpin [!tog])*kb_per_page)+sleep_half )/sleep_time ),
-               /* so */
-               (unsigned)( ( unitConvert((pswpout[tog] - pswpout[!tog])*kb_per_page)+sleep_half )/sleep_time ),
-               /* bi */
-               (unsigned)( (  pgpgin [tog] - pgpgin [!tog]           +sleep_half )/sleep_time ),
-               /* bo */
-               (unsigned)( (  pgpgout[tog] - pgpgout[!tog]           +sleep_half )/sleep_time ),
-               /* in */
-               (unsigned)( (  DSYSv(stat_INT)           +sleep_half )/sleep_time ),
-               /* cs */
-               (unsigned)( (  DSYSv(stat_CTX)           +sleep_half )/sleep_time ),
-               /* us */
-               (unsigned)( (100*cpu_use+divo2)/Div ),
-               /* sy */
-               (unsigned)( (100*cpu_sys+divo2)/Div ),
-               /* id */
-               (unsigned)( (100*cpu_idl+divo2)/Div ),
-               /* wa */
-               (unsigned)( (100*cpu_iow+divo2)/Div ),
-               /* st */
-               (unsigned)( (100*cpu_sto+divo2)/Div ),
-           /* gu */
-               (unsigned)( (100*cpu_gue+divo2)/Div )
-        );
+#define V(n) fields[n].value
+	V( 0) = SYSv(stat_PRU);
+	V( 1) = SYSv(stat_PBL);
+	V( 2) = unitConvert(MEMv(mem_SUS));
+	V( 3) = unitConvert(MEMv(mem_FREE));
+	V( 4) = unitConvert((a_option?MEMv(mem_INA):MEMv(mem_BUF)));
+	V( 5) = unitConvert((a_option?MEMv(mem_ACT):MEMv(mem_CAC)));
+	V( 6) = (unsigned)( ( unitConvert((pswpin [tog] - pswpin [!tog])*kb_per_page)+sleep_half )/sleep_time );
+	V( 7) = (unsigned)( ( unitConvert((pswpout [tog] - pswpout [!tog])*kb_per_page)+sleep_half )/sleep_time );
+	V( 8) = (unsigned)( (  pgpgin [tog] - pgpgin [!tog]           +sleep_half )/sleep_time );
+	V( 9) = (unsigned)( (  pgpgout[tog] - pgpgout[!tog]           +sleep_half )/sleep_time );
+	V(10) = (unsigned)( (  DSYSv(stat_INT)           +sleep_half )/sleep_time );
+	V(11) = (unsigned)( (  DSYSv(stat_CTX)           +sleep_half )/sleep_time );
+	V(12) = (100*cpu_use + divo2) / Div;
+	V(13) = (100*cpu_sys + divo2) / Div;
+	V(14) = (100*cpu_idl + divo2) / Div;
+	V(15) = (100*cpu_iow + divo2) / Div;
+	V(16) = (100*cpu_sto + divo2) / Div;
+	V(17) = (100*cpu_gue + divo2) / Div;
+#undef V
 
-        if (t_option) {
-            printf(" %s", timebuf);
-        }
-
-        printf("\n");
+	output_line(fields, timebuf);
     }
     /* Cleanup */
     procps_stat_unref(&stat_info);
@@ -573,12 +601,12 @@ static void diskpartition_header(const char *partition_name)
 
 static void diskpartition_format(const char *partition_name)
 {
- #define partVAL(x) DISKSTATS_VAL(x, ul_int, stack, disk_stat)
+ #define partVAL(x) DISKSTATS_VAL(x, ul_int, stack)
     struct diskstats_info *disk_stat = NULL;
     struct diskstats_stack *stack;
     struct diskstats_result *got;
     const char format[] = "%21lu  %16lu  %10lu  %16lu\n";
-    int i;
+    unsigned long i;
 
     if (procps_diskstats_new(&disk_stat) < 0)
         xerrx(EXIT_FAILURE, _("Unable to create diskstat structure"));
@@ -673,10 +701,11 @@ static void diskheader(void)
 
 static void diskformat(void)
 {
-#define diskVAL(e,t) DISKSTATS_VAL(e, t, reap->stacks[j], disk_stat)
+#define diskVAL(e,t) DISKSTATS_VAL(e, t, reap->stacks[j])
     struct diskstats_info *disk_stat = NULL;
     struct diskstats_reaped *reap;
-    int i, j;
+    unsigned long i;
+    int j;
     time_t the_time;
     struct tm *tm_ptr;
     char timebuf[32];
@@ -752,10 +781,11 @@ static void slabheader(void)
 static void slabformat (void)
 {
  #define MAX_ITEMS (int)(sizeof(node_items) / sizeof(node_items[0]))
- #define slabVAL(e,t) SLABINFO_VAL(e, t, p, slab_info)
+ #define slabVAL(e,t) SLABINFO_VAL(e, t, p)
     struct slabinfo_info *slab_info = NULL;
     struct slabinfo_reaped *reaped;
-    int i, j;
+    unsigned long i;
+    int j;
     enum slabinfo_item node_items[] = {
         SLAB_ACTIVE_OBJS, SLAB_NUM_OBJS,
         SLAB_OBJ_SIZE,    SLAB_OBJ_PER_SLAB,
@@ -796,7 +826,7 @@ static void slabformat (void)
 
 static void disksum_format(void)
 {
-#define diskVAL(e,t) DISKSTATS_VAL(e, t, reap->stacks[j], disk_stat)
+#define diskVAL(e,t) DISKSTATS_VAL(e, t, reap->stacks[j])
     struct diskstats_info *disk_stat = NULL;
     struct diskstats_reaped *reap;
     int j, disk_count, part_count;
@@ -853,9 +883,9 @@ static void disksum_format(void)
 
 static void sum_format(void)
 {
-#define TICv(E) STAT_VAL(E, ull_int, stat_stack, stat_info)
-#define SYSv(E) STAT_VAL(E, ul_int, stat_stack, stat_info)
-#define MEMv(E) unitConvert(MEMINFO_VAL(E, ul_int, mem_stack, mem_info))
+#define TICv(E) STAT_VAL(E, ull_int, stat_stack)
+#define SYSv(E) STAT_VAL(E, ul_int, stat_stack)
+#define MEMv(E) unitConvert(MEMINFO_VAL(E, ul_int, mem_stack))
     struct stat_info *stat_info = NULL;
     struct vmstat_info *vm_info = NULL;
     struct meminfo_info *mem_info = NULL;
@@ -897,6 +927,12 @@ static void sum_format(void)
     printf(_("%13lu K paged out\n"), VMSTAT_GET(vm_info, VMSTAT_PGPGOUT, ul_int));
     printf(_("%13lu pages swapped in\n"), VMSTAT_GET(vm_info, VMSTAT_PSWPIN, ul_int));
     printf(_("%13lu pages swapped out\n"), VMSTAT_GET(vm_info, VMSTAT_PSWPOUT, ul_int));
+    printf(_("%13lu pages alloc in dma\n"), VMSTAT_GET(vm_info, VMSTAT_PGALLOC_DMA, ul_int));
+    printf(_("%13lu pages alloc in dma32\n"), VMSTAT_GET(vm_info, VMSTAT_PGALLOC_DMA32, ul_int));
+    printf(_("%13lu pages alloc in high\n"), VMSTAT_GET(vm_info, VMSTAT_PGALLOC_HIGH, ul_int));
+    printf(_("%13lu pages alloc in movable\n"), VMSTAT_GET(vm_info, VMSTAT_PGALLOC_MOVABLE, ul_int));
+    printf(_("%13lu pages alloc in normal\n"), VMSTAT_GET(vm_info, VMSTAT_PGALLOC_NORMAL, ul_int));
+    printf(_("%13lu pages free\n"), VMSTAT_GET(vm_info, VMSTAT_PGFREE, ul_int));
     printf(_("%13lu interrupts\n"), SYSv(sstat_INT));
     printf(_("%13lu CPU context switches\n"), SYSv(sstat_CTX));
     printf(_("%13lu boot time\n"), SYSv(sstat_TOB));
@@ -1052,7 +1088,6 @@ int main(int argc, char *argv[])
         sleep_time = tmp;
         infinite_updates = 1;
     }
-    num_updates = 1;
     if (optind < argc) {
         num_updates = strtol_or_err(argv[optind++], _("failed to parse argument"));
         infinite_updates = 0;

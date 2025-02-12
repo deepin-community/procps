@@ -15,13 +15,13 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH PIDOF 1 "16. Januar 2023" "" "Dienstprogramme für Benutzer"
+.TH PIDOF 1 "16. Januar 2023" procps\-ng 
 .SH BEZEICHNUNG
 pidof \- die Prozesskennung eines laufenden Programms ermitteln
 .SH ÜBERSICHT
 \fBpidof\fP [\fB\-s\fP] [\fB\-c\fP] [\fB\-q\fP] [\fB\-w\fP] [\fB\-x\fP] [\fB\-o\fP
-\fIüberspringen[,überspringen …] …\fP] [\fB\-t\fP] [\fB\-S\fP \fITrenner\fP] \fIProgramm\fP
-\fI[\fP\fBProgramm …\fP\fI]\fP
+\fIüberspringen\fP[,.\|.\|.\&]] \&.\|.\|.\& [\fB\-t\fP] [\fB\-S\fP \fITrenner\fP]
+\fIProgramm\fP .\|.\|.
 .SH BESCHREIBUNG
 \fBPidof\fP findet die Prozesskennungen (PIDs) der benannten Programme. Es
 schreibt diese Kennungen in die Standardausgabe.
@@ -61,16 +61,14 @@ Es wurde mindestens ein Programm mit dem angegebenen Namen gefunden.
 .TP 
 \fB1\fP
 Es wurde kein Programm mit dem angegebenen Namen gefunden.
-
 .SH FEHLER
 Wenn Sie die Option \fB\-x\fP verwenden, verfügt \fBpidof\fP nur eine einfache
 Methode zum Erkennen von Skripten und wird beispielsweise Skripte nicht
 erkennen, die \fBenv\fP verwenden. Diese Einschränkung ist darauf
 zurückzuführen, wie die Skripte im proc\-Dateisystem aussehen.
-
 .SH "SIEHE AUCH"
 \fBpgrep\fP(1), \fBpkill\fP(1)
 .SH AUTOR
-.UR jcapik@redhat.com
+.MT jcapik@redhat.com
 Jaromir Capik
-.UE
+.ME

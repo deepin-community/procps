@@ -61,10 +61,10 @@ static format_node *do_one_spec(const char *spec, const char *override){
     if(override){
       w2 = strlen(override);
       thisnode->width = (w1>w2)?w1:w2;
-      thisnode->name = strdup(override);
+      thisnode->name = xstrdup(override);
     }else{
       thisnode->width = w1;
-      thisnode->name = strdup(fs->head);
+      thisnode->name = xstrdup(fs->head);
     }
     thisnode->pr = fs->pr;
     thisnode->vendor = fs->vendor;
@@ -125,26 +125,24 @@ static void O_wrap(sf_node *sfn, int otype){
 static const char *aix_format_parse(sf_node *sfn){
   char *buf;                   /* temp copy of arg to hack on */
   char *walk;
-  int items;
 
-  /*** sanity check and count items ***/
-  items = 0;
+  /*** sanity check ***/
   walk = sfn->sf;
   /* state machine */ {
   int c = *walk++;
+  if(c!='%'&&c!=' ')
+                  goto aix_oops;
   initial:
     if(c=='%')    goto get_desc;
     if(!c)        goto looks_ok;
   /* get_text: */
-    items++;
   get_more:
     c = *walk++;
     if(c=='%')    goto get_desc;
     if(c==' ')    goto get_more;
-    if(c)         goto aix_oops;
+    if(c)         goto get_more;
     goto looks_ok;
   get_desc:
-    items++;
     c = *walk++;
     if(c&&c!=' ') goto initial;
     return _("missing AIX field descriptor");
@@ -155,10 +153,10 @@ static const char *aix_format_parse(sf_node *sfn){
   }
 
   /*** sanity check passed ***/
-  buf = strdup(sfn->sf);
+  buf = xstrdup(sfn->sf);
   walk = sfn->sf;
 
-  while(items--){
+  while(1){
     format_node *fnode;  /* newly allocated */
     format_node *endp;   /* for list manipulation */
 
@@ -181,12 +179,14 @@ static const char *aix_format_parse(sf_node *sfn){
     } else {
       size_t len;
       len = strcspn(walk, "%");
+      /* ladies and gentlemen, please use the following exit only ... */
+      if(!len) break;
       memcpy(buf,walk,len);
       buf[len] = '\0';
       walk += len;
       fnode = xmalloc(sizeof(format_node));
       fnode->width = len < INT_MAX ? len : INT_MAX;
-      fnode->name = strdup(buf);
+      fnode->name = xstrdup(buf);
       fnode->pr = NULL;     /* checked for */
       fnode->vendor = AIX;
       fnode->flags = CF_PRINT_EVERY_TIME;
@@ -218,7 +218,7 @@ static const char *format_parse(sf_node *sfn){
   static char errbuf[80]; /* for variable-text error message */
 
   /*** prepare to operate ***/
-  buf = strdup(sfn->sf);
+  buf = xstrdup(sfn->sf);
 
   /*** sanity check and count items ***/
   need_item = 1; /* true */
@@ -315,7 +315,20 @@ static const char *format_parse(sf_node *sfn){
   if(0) improper: err=_("improper format list");
   if(0) badwidth: err=_("column widths must be unsigned decimal numbers");
   if(0) notmacro: err=_("can not set width for a macro (multi-column) format specifier");
-  if(strchr(sfn->sf,'%')) err = aix_format_parse(sfn);
+  /*
+   * Use the AIX parser if the field starts with '%' and is not
+   * literally "%cpu", "%mem", "%cpu " or "%mem " 
+   * as these are regular fields
+   * "%cpublah" is treated as %c publah and parsed as AIX format
+   * "%cpu blah" is an error
+   * %m is not a valid AIX format anyway
+   */
+  if (strchr(sfn->sf,'%')
+    && strcmp("%cpu", sfn->sf) != 0
+    && strncmp("%cpu ", sfn->sf,5) != 0
+    && strncmp("%cpu,", sfn->sf,5) != 0
+    && strncmp("%m", sfn->sf, 2) != 0)
+      err = aix_format_parse(sfn);
   return err;
 }
 
@@ -357,7 +370,7 @@ static const char *long_sort_parse(sf_node *sfn){
   int need_item;
 
   /*** prepare to operate ***/
-  buf = strdup(sfn->sf);
+  buf = xstrdup(sfn->sf);
 
   /*** sanity check and count items ***/
   need_item = 1; /* true */
@@ -562,7 +575,7 @@ int defer_sf_option(const char *arg, int source){
   int need_item = 1;
 
   sfn = xmalloc(sizeof(sf_node));
-  sfn->sf = strdup(arg);
+  sfn->sf = xstrdup(arg);
   sfn->sf_code = source;
   sfn->s_cooked = NULL;
   sfn->f_cooked = NULL;
@@ -687,7 +700,7 @@ static const char *generate_sysv_list(void){
       PUSH("sgi_rss");
       fn = xmalloc(sizeof(format_node));
       fn->width = 1;
-      fn->name = strdup(":");
+      fn->name = xstrdup(":");
       fn->pr = NULL;     /* checked for */
       fn->vendor = AIX;   /* yes, for SGI weirdness */
       fn->flags = CF_PRINT_EVERY_TIME;

@@ -1,6 +1,6 @@
 .\"
 .\" Copyright (c) 2016-2023 Jim Warner <james.warner@comcast.net>
-.\" Copyright (c) 2019-2023 Craig Small <csmall@dropbear.xyz>
+.\" Copyright (c) 2019-2024 Craig Small <csmall@dropbear.xyz>
 .\" Copyright (c) 2011-2012 Sami Kerola <kerolasa@iki.fi>
 .\" Copyright (c) 1999      George Staikos <staikos@0wned.org>
 .\"
@@ -15,75 +15,66 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH SYSCTL.CONF 5 "15. September 2021" procps\-ng Dateiformate
+.TH SYSCTL.CONF 5 "24. Oktober 2024" procps\-ng 
 .SH BEZEICHNUNG
-sysctl.conf \- Vorlade\-/Konfigurationsdatei für Sysctl
+sysctl.conf \- Konfigurationsparameter des Linux\-Kernels
 .SH BESCHREIBUNG
-\fBsysctl.conf\fP ist eine einfache Datei, welche Sysctl\-Werte enthält, die in
-\fBsysctl\fP gelesen und gesetzt werden. Die Syntax ist einfach, wie folgt:
+\fBsysctl.conf\fP ist ein Satz von Konfigurationsdateien, die
+Konfigurationsparameter für den Linux\-Kernel enthalten, welche von
+\fBsysctl\fP(8) gelesen und geschrieben werden.
+.PP
+Diese Handbuchseite beschreibt die Konfigurationsdateien für die
+\fIprocps\fP\-Version von \fBsysctl\fP. Falls Sie \fBsystemd\-sysctl\fP(8) verwenden,
+beziehen Sie sich auf \fBsysctl.d\fP(5)  und beachten Sie, dass jenes die Datei
+\fI\%/etc/\:\%sysctl\:\%.conf\fP nicht verwendet.
+.SS Konfigurationsformat
+Jede Zeile einer von \fBsysctl\fP aus \fIprocps\fP gelesenen Datei beschreibt
+einen Kernelparameter in folgendem Format.
+.P
 .RS
-.sp
-.nf
-.ne 7
-# Kommentar
-; Kommentar
-
+.EX
 Token = Wert
-.fi
+.EE
 .RE
-.PP
-Beachten Sie, dass leere Zeilen sowie Leerräume vor und nach einem Token
-oder einem Wert ignoriert werden, obwohl ein Token auch Leerraum enthalten
-kann. Zeilen, die mit einem \fI#\fP oder \fI;\fP beginnen, werden als
-Kommentarzeilen angesehen und ignoriert.
-
-Falls eine Zeile mit einem einzelnen \fB\-\fP beginnt, werden alle
-fehlschlagenden Versuche, den Wert zu setzen, ignoriert.
-
-.SH ANMERKUNGEN
-Da die Datei \fB/etc/sysctl.conf\fP zur Außerkraftsetzung standardmäßiger Werte
-der Kernelparameter verwendet wird, ist in der Datei nur eine kleine Anzahl
-Parameter vordefiniert. Verwenden Sie \fI/sbin/sysctl\ \-a\fP oder folgen Sie
-\fBsysctl\fP(8), um alle möglichen Parameter aufzulisten. Die Beschreibungen
-der einzelnen Parameter finden Sie in der Kerneldokumentation.
-
-Aufgrund einer Beschränkung der \fI/proc\fP\-Einträge im Linux\-Kernel ist die
-maximal mögliche Zeilenlänge auf 4096 Zeichen begrenzt.
-.SH BEISPIEL
-.RS
-.sp
-.nf
-.ne 7
-# sysctl.conf sample
-#
-  kernel.domainname = example.com
-; this one has a space which will be written to the sysctl!
-  kernel.modprobe = /sbin/mod probe
-.fi
-.RE
-.PP
+.P
+Leere Zeilen sowie jene, die mit \[lq]\fB#\fP\[rq] oder \[lq]\fB;\fP\[rq]
+beginnen, werden ignoriert.
+.P
+Falls eine Zeile mit einem einzelnen \[lq]\fB\-\fP\[rq] beginnt, wird ein
+fehlgeschlagener Versuch, den Wert zu setzen, ignoriert.
 .SH DATEIEN
-\fI/etc/sysctl.d/*.conf\fP
-.br
-\fI/run/sysctl.d/*.conf\fP
-.br
-\fI/usr/local/lib/sysctl.d/*.conf\fP
-.br
-\fI/usr/lib/sysctl.d/*.conf\fP
-.br
-\fI/lib/sysctl.d/*.conf\fP
-.br
-\fI/etc/sysctl.conf\fP
-
-Die Pfade, aus denen \fBsysctl\fP Dateien vorlädt, existieren
-üblicherweise. Siehe auch die Option \fB\-\-system\fP zu \fBsysctl\fP.
+Wenn die \fIprocps\fP\-Version von \fBsysctl\fP mit der Option \fB\%\-\-system\fP
+ausgeführt wird, werden Dateien aus Verzeichnissen in der nachstehend
+gelisteten Reihenfolge gelesen.
+.P
+.RS
+.TP 
+\fI/etc/sysctl.d/\fP*\fI.conf\fP
+.TQ
+\fI/run/sysctl.d/\fP*\fI.conf\fP
+.TQ
+\fI/usr/local/lib/sysctl.d/\fP*\fI.conf\fP
+.TQ
+\fI/usr/lib/sysctl.d/\fP*\fI.conf\fP
+.TQ
+\fI/lib/sysctl.d/\fP*\fI.conf\fP
+.RE
+.P
+Zum Schluss liest die \fIprocps\fP\-Version von \fBsysctl\fP die Datei
+\fI\%/etc/\:\%sysctl\:\%.conf\fP. Diese Datei wird von \fBsystemd\-sysctl\fP nicht
+verwendet, was zur Folge hat, dass einige Kernel\-Parameter nicht gesetzt
+werden, abhängig davon, wie die installierte Version von \fBsysctl\fP
+implementiert ist.
+.SH FEHLER
+Aufgrund einer Beschränkung der \fI/proc\fP\-Einträge im Linux\-Kernel ist der
+\fIWert\fP der maximal möglichen Zeilenlänge auf 4096 Zeichen begrenzt.
+.SH BEISPIELE
+.EX
+#
+#
+kernel.domainname = example.com
+; A value containing a space is written to the sysctl.
+kernel.modprobe = /sbin/mod probe
+.EE
 .SH "SIEHE AUCH"
-\fBsysctl\fP(8)
-.SH AUTOR
-.UR staikos@0wned.org
-George Staikos
-.UE
-.SH "FEHLER MELDEN"
-Bitte schicken Sie Fehlermeldungen (auf Englisch) an
-.MT procps@freelists.org
-.ME
+\fBsysctl.d\fP(5), \fBsysctl\fP(8), \fBsystemd\-sysctl\fP(8)

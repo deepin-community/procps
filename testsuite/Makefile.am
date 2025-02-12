@@ -4,9 +4,13 @@ export DEJAGNU
 # Programs that are expected across the board.
 DEJATOOL =
 
-noinst_PROGRAMS = test-schedbatch
+noinst_PROGRAMS = test-schedbatch test-hugetlb test-zombie
 
 test_schedbatch_SOURCES = ps.test/test-schedbatch.c
+
+test_hugetlb_SOURCES = ps.test/test-hugetlb.c
+
+test_zombie_SOURCES = ps.test/test-zombie.c
 
 if LINUX
 # These should be in defined in 'across the board' scope, but are
@@ -14,32 +18,39 @@ if LINUX
 # 3d807ae853b8b4264da156065b34f1447658a8ba
 DEJATOOL += \
 	pmap
+
 if !CYGWIN
-DEJATOOL += \
-	slabtop \
-	sysctl
+if WITH_NCURSES
+DEJATOOL += slabtop
+endif
+
+DEJATOOL += sysctl
 endif
 
 if BUILD_KILL
 DEJATOOL += kill
 endif
 
+if BUILD_W
+DEJATOOL += w
+endif
+
 DEJATOOL += \
 	free \
+	hugetop \
 	lib \
 	pgrep \
 	pkill \
 	ps \
 	pwdx \
-	slabtop \
 	uptime \
-	vmstat \
-	w
+	vmstat
 endif
 
 EXTRA_DIST = \
     config/unix.exp \
     free.test/free.exp \
+    hugetop.test/hugetop.exp \
     kill.test/kill.exp \
     lib.test/fileutils.exp \
     lib.test/fileutils_badfd.sh \
@@ -48,6 +59,7 @@ EXTRA_DIST = \
     pgrep.test/pgrep.exp \
     pkill.test/pkill.exp \
     pmap.test/pmap.exp \
+    ps.test/ps_hugetlb.exp \
     ps.test/ps_output.exp \
     ps.test/ps_personality.exp \
     ps.test/ps_sched_batch.exp \

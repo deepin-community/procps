@@ -64,7 +64,7 @@ PROCPS_PROG_PO4A
 
 # Checks for header files.
 AC_HEADER_MAJOR
-AC_CHECK_HEADERS([arpa/inet.h fcntl.h float.h langinfo.h libintl.h limits.h locale.h stdint.h stdio_ext.h stdlib.h string.h sys/file.h sys/ioctl.h sys/param.h sys/time.h termios.h unistd.h utmp.h utmpx.h values.h wchar.h wctype.h])
+AC_CHECK_HEADERS([arpa/inet.h fcntl.h float.h langinfo.h libintl.h limits.h locale.h ncursesw/ncurses.h stdint.h stdio_ext.h stdlib.h string.h sys/file.h sys/ioctl.h sys/param.h sys/time.h termios.h unistd.h utmp.h utmpx.h values.h wchar.h wctype.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_CHECK_HEADER_STDBOOL
@@ -120,9 +120,7 @@ then
   AC_SUBST([datadir])
   AC_SUBST([mandir])
   AC_SUBST([infodir])
- AC_DEFINE([USE_PROC_CTTY], [1], [Use /proc/$PID/ctty to determine controlling TTY])
-else
- AC_DEFINE([USE_PROC_CTTY], [0], [Use /proc/$PID/ctty to determine controlling TTY])
+  AC_DEFINE([USE_PROC_CTTY], [1], [Use /proc/$PID/ctty to determine controlling TTY])
 fi
 
 AM_GNU_GETTEXT_VERSION([0.14.1])
@@ -169,21 +167,6 @@ AC_TRY_COMPILE([#include <errno.h>],
 			[Define if program_invocation_short_name is defined])
 		AC_MSG_RESULT(yes),
 		AC_MSG_RESULT(no))
-
-AC_CHECK_FUNC([pidfd_open], [enable_pidwait=yes], [
-  AC_MSG_CHECKING([for __NR_pidfd_open])
-  AC_COMPILE_IFELSE([AC_LANG_SOURCE([
-#include <sys/syscall.h>
-#ifndef __NR_pidfd_open
-#error __NR_pidfd_open not defined
-#endif
-    ])], [enable_pidwait=yes], [enable_pidwait=no])
-  AC_MSG_RESULT([$enable_pidwait])
-])
-if test "$enable_pidwait" = yes; then
-  AC_DEFINE([ENABLE_PIDWAIT], [1], [Enable pidwait])
-fi
-AM_CONDITIONAL([BUILD_PIDWAIT], [test x$enable_pidwait = xyes])
 
 dnl watch8bit must be before the AC_ARG_WITH set as it sets up ncurses
 AC_SUBST([WITH_WATCH8BIT])
@@ -321,6 +304,36 @@ AC_ARG_ENABLE([pidof],
 )
 AM_CONDITIONAL(BUILD_PIDOF, test "x$enable_pidof" = xyes)
 
+# If pidwait is enabled, we need either pidfd_open() or __NR_pidfd_open need to be defined
+# Cannot use AC_CHECK_FUNC as it (incorrectly) passes with pidfd_open missing
+AC_ARG_ENABLE([pidwait],
+  AS_HELP_STRING([--disable-pidwait], [do not build pidwait]),
+  [], [
+    enable_pidwait=yes
+    AC_DEFINE(ENABLE_PIDWAIT, 1, [enable pidwait])
+  ]
+)
+AM_CONDITIONAL(BUILD_PIDWAIT, test "x$enable_pidwait" = xyes)
+AC_MSG_CHECKING([for pidfd_open()])
+AC_LINK_IFELSE([AC_LANG_PROGRAM([], [[pidfd_open(1,1)]])],
+  have_pidfd_open=yes; AC_DEFINE(HAVE_PIDFD_OPEN, 1, [pidfd_open is defined]) AC_MSG_RESULT([yes]),
+  have_pidfd_open=no; AC_MSG_RESULT([no])
+  )
+
+AS_IF([[test "x$enable_pidwait" = xyes -a "x$have_pidfd_open" = xno]],
+   AC_MSG_CHECKING([for __NR_pidfd_open])
+   AC_COMPILE_IFELSE([AC_LANG_SOURCE([
+#include <sys/syscall.h>
+#ifndef __NR_pidfd_open
+#error __NR_pidfd_open not defined
+#endif
+      ])],
+      AC_MSG_RESULT([yes]),
+      AC_MSG_RESULT([no])
+      AC_MSG_ERROR([Neither pidfd_open or __NR_pidfd_open found. Disable pidwait with configure option --disable-pidwait])
+    )
+   ,[])
+
 AC_ARG_ENABLE([kill],
   AS_HELP_STRING([--disable-kill], [do not build kill]),
   [], [enable_kill=yes]
@@ -417,7 +430,7 @@ then
 fi
 AC_SUBST(DEJAGNU)
 
-AC_CHECK_FUNCS([__fpending alarm atexit dup2 gethostname getpagesize gettimeofday iswprint memchr memmove memset mkdir nl_langinfo putenv regcomp rpmatch select setlocale sigabbrev_np strcasecmp strchr strcspn strdup strerror strncasecmp strndup strpbrk strrchr strspn strstr strtol strtoul strverscmp utmpname wcwidth])
+AC_CHECK_FUNCS([__fpending alarm atexit dup2 clock_gettime gethostname getpagesize gettimeofday iswprint memchr memmove memset mkdir nl_langinfo putenv regcomp rpmatch select setlocale sigabbrev_np strcasecmp strchr strcspn strdup strerror strncasecmp strndup strpbrk strrchr strspn strstr strtol strtoul strverscmp utmpname wcwidth])
 
 AC_CONFIG_FILES([Makefile
                  local/Makefile

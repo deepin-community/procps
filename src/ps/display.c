@@ -357,12 +357,12 @@ next_proc:
 
 /***** forest output requires sorting by ppid; add start_time by default */
 static void prep_forest_sort(void){
-  sort_node *tmp_list = sort_list;
+  sort_node *endp, *tmp_list;
   const format_struct *incoming;
 
   if(!sort_list) {     /* assume start time order */
-    incoming = search_format_array("ppid");
-    if(!incoming) { fprintf(stderr, _("could not find ppid\n")); exit(1); }
+    incoming = search_format_array("start_time");
+    if(!incoming) { fprintf(stderr, _("could not find start_time\n")); exit(1); }
     tmp_list = xmalloc(sizeof(sort_node));
     tmp_list->reverse = PIDS_SORT_ASCEND;
     tmp_list->typecode = '?'; /* what was this for? */
@@ -371,14 +371,15 @@ static void prep_forest_sort(void){
     sort_list = tmp_list;
   }
   /* this is required for the forest option */
-  incoming = search_format_array("start_time");
-  if(!incoming) { fprintf(stderr, _("could not find start_time\n")); exit(1); }
+  incoming = search_format_array("ppid");
+  if(!incoming) { fprintf(stderr, _("could not find ppid\n")); exit(1); }
   tmp_list = xmalloc(sizeof(sort_node));
   tmp_list->reverse = PIDS_SORT_ASCEND;
   tmp_list->typecode = '?'; /* what was this for? */
   tmp_list->sr = incoming->sr;
-  tmp_list->next = sort_list;
-  sort_list = tmp_list;
+  tmp_list->next = NULL;
+  endp = sort_list; while(endp->next) endp = endp->next;
+  endp->next = tmp_list;
 }
 
 /* we rely on the POSIX requirement for zeroed memory */
@@ -507,14 +508,37 @@ static void arg_check_conflicts(void)
 {
   int selection_list_len;
   int has_quick_pid;
+  int has_try_quick_pid;
   selection_node *walk = selection_list;
   has_quick_pid = 0;
+  has_try_quick_pid = 0;
   selection_list_len = 0;
 
   while (walk) {
     if (walk->typecode == SEL_PID_QUICK) has_quick_pid++;
+    else if (walk->typecode == SEL_PID_TRY_QUICK) has_try_quick_pid++;
     walk = walk->next;
     selection_list_len++;
+  }
+
+  if (has_try_quick_pid > 0) {
+    int sel_pid;
+
+    if (has_try_quick_pid > 1 ||
+        has_quick_pid > 0 ||
+        selection_list_len > (has_try_quick_pid + has_quick_pid) ||
+        forest_type ||
+        sort_list ||
+        negate_selection) {
+      sel_pid = SEL_PID;
+    } else {
+      sel_pid = SEL_PID_QUICK;
+      has_quick_pid += has_try_quick_pid;
+    }
+
+    for (walk = selection_list; walk; walk = walk->next) {
+      if (walk->typecode == SEL_PID_TRY_QUICK) walk->typecode = sel_pid;
+    }
   }
 
   /* -q doesn't allow multiple occurrences */

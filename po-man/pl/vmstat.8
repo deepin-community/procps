@@ -1,5 +1,5 @@
 .\"
-.\" Copyright (c) 2002-2023 Craig Small <csmall@dropbear.xyz>
+.\" Copyright (c) 2002-2024 Craig Small <csmall@dropbear.xyz>
 .\" Copyright (c) 2012-2023 Jim Warner <james.warner@comcast.net>
 .\" Copyright (c) 2011-2012 Sami Kerola <kerolasa@iki.fi>
 .\" Copyright (c) 1994      Henry Ware <al172@yfn.ysu.edu>
@@ -15,11 +15,11 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH VMSTAT 8 2023\-01\-18 procps\-ng "Administracja systemem"
+.TH VMSTAT 8 2024\-07\-19 procps\-ng 
 .SH NAZWA
 vmstat \- statystyki pamięci wirtualnej
 .SH SKŁADNIA
-\fBvmstat\fP [opcje] [\fIopóźnienie\fP [\fIliczba\fP]]
+\fBvmstat\fP [\fIoption\fP .\|.\|.\&] [\fIdelay\fP [\fIcount\fP]]
 .SH OPIS
 \fBvmstat\fP raportuje informacje o aktywności procesów, pamięci,
 stronicowania, blokowego we/wy, pułapek, dysków i procesora.
@@ -71,9 +71,8 @@ Szczegółowe statystyki dotyczące partycji (wymagane jądro 2.5.70 lub
 nowsze).
 .TP 
 \fB\-S\fP, \fB\-\-unit\fP \fIznak\fP
-Przełączenie wyjścia między jednostkami 1000 (\fIk\fP), 1024 (\fIK\fP),1000000
-(\fIm\fP) lub 1048576 (\fIM\fP) bajtów. Opcja nie zmienia pól operacji wymiany
-(si/so) ani blokowych (bi/bo).
+Switches outputs between 1000 (\fIk\fP), 1024 (\fIK\fP), 1000000 (\fIm\fP), or
+1048576 (\fIM\fP)  bytes.  Note this does not change the block (bi/bo) fields.
 .TP 
 \fB\-t\fP, \fB\-\-timestamp\fP
 Dołączenie znacznika czasu do każdej linii
@@ -91,7 +90,6 @@ Wyświetlenie informacji o wersji i zakończenie.
 .TP 
 \fB\-h\fP, \fB\-\-help\fP
 Wyświetlenie opisu i zakończenie.
-.PD
 .SH "OPIS PÓL DLA TRYBU VM"
 .SS Proc.
 .nf
@@ -181,6 +179,6 @@ what is visible.
 \fBfree\fP(1), \fBiostat\fP(1), \fBmpstat\fP(1), \fBps\fP(1), \fBsar\fP(1), \fBtop\fP(1),
 \fBslabinfo\fP(5)
 .SH "ZGŁASZANIE BŁĘDÓW"
-Zgłoszenia błędów prosimy wysyłać na adres
-.UR procps@freelists.org
-.UE
+Please send bug reports to
+.MT procps@freelists.org
+.ME .

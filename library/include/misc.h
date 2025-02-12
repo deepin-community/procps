@@ -1,8 +1,8 @@
 /*
  * misc.h - miscellaneous declarations for libproc2
  *
- * Copyright © 2015-2023 Craig Small <csmall@dropbear.xyz>
- * Copyright © 2021-2023 Jim Warner <james.warner@comcast.net>
+ * Copyright © 2015-2024 Craig Small <csmall@dropbear.xyz>
+ * Copyright © 2021-2024 Jim Warner <james.warner@comcast.net>
  * Copyright © 1998-2003 Albert Cahalan
  * Copyright © 1992-1998 Michael K. Johnson <johnsonm@redhat.com>
  * Copyright © 1996      Charles Blake <cblake@bbn.com>
@@ -48,7 +48,7 @@ unsigned int procps_pid_length (void);
 #define LINUX_VERSION_MINOR(x) (((x)>> 8) & 0xFF)
 #define LINUX_VERSION_PATCH(x) ( (x)      & 0xFF)
 
-int procps_linux_version(void);
+int procps_linux_version (void);
 
 
 // //////////////////////////////////////////////////////////////////
@@ -56,8 +56,11 @@ int procps_linux_version(void);
 
 int   procps_loadavg (double *av1, double *av5, double *av15);
 int   procps_uptime (double *uptime_secs, double *idle_secs);
+int   procps_container_uptime (double *uptime_secs);
 char *procps_uptime_sprint (void);
 char *procps_uptime_sprint_short (void);
+int   procps_uptime_snprint (char *__restrict str, size_t size, double uptime_secs, const int pretty);
+int   procps_users (void);
 
 
 // //////////////////////////////////////////////////////////////////
@@ -83,6 +86,13 @@ const char *procps_ns_get_name (const int id);
 int procps_ns_get_id (const char *name);
 int procps_ns_read_pid (const int pid, struct procps_ns *nsp);
 
+
+// //////////////////////////////////////////////////////////////////
+// Mask Name Resolving //////////////////////////////////////////////
+
+int procps_sigmask_names (char *str, size_t size, const char *sigmask);
+
+int procps_capmask_names (char *str, size_t size, const char *capmask);
 
 #ifdef __cplusplus
 }

@@ -65,3 +65,14 @@ global:
 local:
 	*;
 };
+
+LIBPROC_2.1 {
+	procps_container_uptime;
+	procps_users;
+	procps_uptime_snprint;
+} LIBPROC_2;
+
+LIBPROC_2.2 {
+        procps_sigmask_names;
+        procps_capmask_names;
+} LIBPROC_2.1;

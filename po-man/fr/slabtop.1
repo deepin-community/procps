@@ -16,11 +16,11 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH SLABTOP 1 2021\-03\-11 procps\-ng "Commandes de l'utilisateur"
+.TH SLABTOP 1 2023\-12\-26 procps\-ng 
 .SH NOM
 slabtop \- Afficher en temps réel les informations des caches slab du noyau
 .SH SYNOPSIS
-\fBslabtop\fP [\fIoptions\fP]
+\fBslabtop\fP [\fIoption\fP .\|.\|.]
 .SH DESCRIPTION
 \fBslabtop\fP affiche en temps réel les informations détaillées des caches slab
 (objets alloués au noyau) du noyau. Une liste des principaux caches, triée
@@ -40,6 +40,22 @@ Trier selon le critère de tri \fIS\fP.
 .TP 
 \fB\-o\fP, \fB\-\-once\fP
 Afficher la sortie une seule fois et quitter.
+.TP 
+\fB\-\-human\fP
+Show slab sizes automatically scaled to shortest three digit unit and
+display the units of print out.  Following units are used.
+.sp
+.nf
+  B  = octets
+  Ki = kibioctets
+  Mi = mébioctets
+  Gi = gibioctets
+  Ti = tébioctets
+  Pi = pébioctets
+.fi
+.sp
+.TP 
+If this flag is not used, the slab sizes will be shown in KiB.
 .TP 
 \fB\-V\fP, \fB\-\-version\fP
 Afficher la version du logiciel et quitter.
@@ -105,4 +121,6 @@ slab" is not constant and may decrease.
 .PP
 \fBslabtop\fP a été inspiré par le script Perl \fBvmtop\fP de Martin Bligh.
 .SH BOGUES
-Signalez les bogues à <\fIprocps@freelists.org\fP>
+Please send bug reports to
+.MT procps@freelists.org
+.ME .

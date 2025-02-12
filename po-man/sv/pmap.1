@@ -21,11 +21,11 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH PMAP 1 2020\-06\-04 procps\-ng Användarkommandon
+.TH PMAP 1 2020\-06\-04 procps\-ng 
 .SH NAMN
 pmap — rapportera minneskartan över en process
 .SH SYNOPSIS
-\fBpmap\fP [\fIflaggor\fP] \fIpid\fP […]
+\fBpmap\fP [\fIoption\fP .\|.\|.\&] \fIpid\fP .\|.\|.
 .SH BESKRIVNING
 Kommandot \fBpmap\fP rapporterar minneskartan över en process eller processer.
 .SH FLAGGOR
@@ -73,7 +73,6 @@ Visa versionsinformation och avsluta.
 .SH SLUTSTATUS
 .PP
 .RS
-.PD 0
 .TP 
 \fB0\fP
 Gick bra.
@@ -83,7 +82,6 @@ Misslyckades.
 .TP 
 \fB42\fP
 Hittade inte alla efterfrågade processer.
-.PD
 .RE
 .SH "SE ÄVEN"
 \fBps\fP(1), \fBpgrep\fP(1)
@@ -91,9 +89,6 @@ Hittade inte alla efterfrågade processer.
 Inga standarder är tillämpliga, men \fBpmap\fP liknar väldigt mycket ett
 SunOS\-kommando.
 .SH "RAPPORTERA FEL"
-Skicka felrapporter till
-.UR procps@freelists.org
-.UE
-Skicka synpunkter på översättningen till
-.UR tp\-sv@listor.tp\-sv.se
-.UE
+Please send bug reports to
+.MT procps@freelists.org
+.ME .

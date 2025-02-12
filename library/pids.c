@@ -1,8 +1,8 @@
 /*
  * pids.c - process related definitions for libproc2
  *
- * Copyright © 2015-2023 Jim Warner <james.warner@comcast.net>
- * Copyright © 2015-2023 Craig Small <csmall@dropbear.xyz>
+ * Copyright © 2015-2024 Jim Warner <james.warner@comcast.net>
+ * Copyright © 2015-2024 Craig Small <csmall@dropbear.xyz>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -29,13 +29,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <unistd.h>
 
 #include <sys/stat.h>
 #include <sys/types.h>
 
 #include "devname.h"
-#include "misc.h"
 #include "numa.h"
 #include "readproc.h"
 #include "wchan.h"
@@ -99,6 +99,7 @@ struct pids_info {
     proc_t get_proc;                   // the proc_t used by procps_pids_get
     proc_t fetch_proc;                 // the proc_t used by pids_stacks_fetch
     SET_t *func_array;                 // extracted Item_table 'setsfunc' pointers
+    int containers_yes;                // need to call pids_containers_check
 };
 
 
@@ -113,6 +114,30 @@ static void freNAME(str) (struct pids_result *R) {
 static void freNAME(strv) (struct pids_result *R) {
     if (R->result.strv && *R->result.strv) free(*R->result.strv);
 }
+
+
+// ___ Special Suppott Funtion(s) |||||||||||||||||||||||||||||||||||||||||||||
+
+static const char *pids_sched_to_classstr (
+//  struct pids_info *,
+//  struct pids_result *r,
+    proc_t *p)
+{
+    switch (p->sched) {
+        case -1: return "-";   // not reported
+        case  0: return "TS";  // SCHED_OTHER SCHED_NORMAL
+        case  1: return "FF";  // SCHED_FIFO
+        case  2: return "RR";  // SCHED_RR
+        case  3: return "B";   // SCHED_BATCH
+        case  4: return "ISO"; // reserved for SCHED_ISO (Con Kolivas)
+        case  5: return "IDL"; // SCHED_IDLE
+        case  6: return "DLN"; // SCHED_DEADLINE
+        case  7: return "#7";  //
+        case  8: return "#8";  //
+        case  9: return "#9";  //
+    }
+    return "?";
+} // end: pids_sched_to_classstr
 
 
 // ___ Results 'Set' Support ||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -157,12 +182,15 @@ REG_set(ADDR_CURR_ESP,    ul_int,  kstk_esp)
 REG_set(ADDR_STACK_START, ul_int,  start_stack)
 REG_set(AUTOGRP_ID,       s_int,   autogrp_id)
 REG_set(AUTOGRP_NICE,     s_int,   autogrp_nice)
+DUP_set(CAPS_PERMITTED,            capprm)
 STR_set(CGNAME,                    cgname)
 STR_set(CGROUP,                    cgroup)
 VEC_set(CGROUP_V,                  cgroup_v)
 STR_set(CMD,                       cmd)
 STR_set(CMDLINE,                   cmdline)
 VEC_set(CMDLINE_V,                 cmdline_v)
+REG_set(DOCKER_ID,        str,     dockerid)
+REG_set(DOCKER_ID_64,     str,     dockerid_64)
 STR_set(ENVIRON,                   environ)
 VEC_set(ENVIRON_V,                 environ_v)
 STR_set(EXE,                       exe)
@@ -228,6 +256,7 @@ REG_set(NS_USER,          ul_int,  ns.ns[6])
 REG_set(NS_UTS,           ul_int,  ns.ns[7])
 REG_set(OOM_ADJ,          s_int,   oom_adj)
 REG_set(OOM_SCORE,        s_int,   oom_score)
+REG_set(OPEN_FILES,       s_int,   fds)
 REG_set(PRIORITY,         s_int,   priority)
 REG_set(PRIORITY_RT,      s_int,   rtprio)
 REG_set(PROCESSOR,        s_int,   processor)
@@ -235,6 +264,7 @@ setDECL(PROCESSOR_NODE) { (void)I; R->result.s_int = numa_node_of_cpu(P->process
 REG_set(RSS,              ul_int,  rss)
 REG_set(RSS_RLIM,         ul_int,  rss_rlim)
 REG_set(SCHED_CLASS,      s_int,   sched)
+setDECL(SCHED_CLASSSTR) { (void)I; R->result.str = (char *)pids_sched_to_classstr(P); }
 STR_set(SD_MACH,                   sd_mach)
 STR_set(SD_OUID,                   sd_ouid)
 STR_set(SD_SEAT,                   sd_seat)
@@ -284,13 +314,13 @@ REG_set(TICS_USER,        ull_int, utime)
 setDECL(TICS_USER_C)    { (void)I; R->result.ull_int = P->utime + P->cutime; }
 setDECL(TIME_ALL)       { R->result.real = ((double)P->utime + P->stime) / I->hertz; }
 setDECL(TIME_ALL_C)     { R->result.real = ((double)P->utime + P->stime + P->cutime + P->cstime) / I->hertz; }
-setDECL(TIME_ELAPSED)   { double t = I->boot_tics - P->start_time; if (t > 0) R->result.real = t / I->hertz; }
+setDECL(TIME_ELAPSED)   { double t = (double)I->boot_tics - P->start_time; if (t > 0) R->result.real = t / I->hertz; }
 setDECL(TIME_START)     { R->result.real = (double)P->start_time / I->hertz; }
 REG_set(TTY,              s_int,   tty)
 setDECL(TTY_NAME)       { char buf[64]; freNAME(str)(R); dev_to_tty(buf, sizeof(buf), P->tty, P->tid, ABBREV_DEV); if (!(R->result.str = strdup(buf))) I->seterr = 1; }
 setDECL(TTY_NUMBER)     { char buf[64]; freNAME(str)(R); dev_to_tty(buf, sizeof(buf), P->tty, P->tid, ABBREV_DEV|ABBREV_TTY|ABBREV_PTS); if (!(R->result.str = strdup(buf))) I->seterr = 1; }
-setDECL(UTILIZATION)    { double t = I->boot_tics - P->start_time; if (t > 0) R->result.real = ((P->utime + P->stime) * 100.0f) / t; }
-setDECL(UTILIZATION_C)  { double t = I->boot_tics - P->start_time; if (t > 0) R->result.real = ((P->utime + P->stime + P->cutime + P->cstime) * 100.0f) / t; }
+setDECL(UTILIZATION)    { double t = (double)I->boot_tics - P->start_time; if (t > 0) R->result.real = ((P->utime + P->stime) * 100.0f) / t; }
+setDECL(UTILIZATION_C)  { double t = (double)I->boot_tics - P->start_time; if (t > 0) R->result.real = ((P->utime + P->stime + P->cutime + P->cstime) * 100.0f) / t; }
 REG_set(VM_DATA,          ul_int,  vm_data)
 REG_set(VM_EXE,           ul_int,  vm_exe)
 REG_set(VM_LIB,           ul_int,  vm_lib)
@@ -304,7 +334,7 @@ REG_set(VM_STACK,         ul_int,  vm_stack)
 REG_set(VM_SWAP,          ul_int,  vm_swap)
 setDECL(VM_USED)        { (void)I; R->result.ul_int = P->vm_swap + P->vm_rss; }
 REG_set(VSIZE_BYTES,      ul_int,  vsize)
-setDECL(WCHAN_NAME)     { freNAME(str)(R); if (!(R->result.str = strdup(lookup_wchan(P->tid)))) I->seterr = 1;; }
+setDECL(WCHAN_NAME)     { freNAME(str)(R); if (!(R->result.str = strdup(lookup_wchan(P->tid)))) I->seterr = 1; }
 
 #undef setDECL
 #undef CVT_set
@@ -379,6 +409,7 @@ srtDECL(noop) {
 
 #define f_either   PROC_SPARE_1        // either status or stat (favor stat)
 #define f_exe      PROC_FILL_EXE
+#define f_fds      PROC_FILL_FDS
 #define f_grp      PROC_FILLGRP
 #define f_io       PROC_FILLIO
 #define f_login    PROC_FILL_LUID
@@ -403,8 +434,9 @@ srtDECL(noop) {
 #define x_ogroup   PROC_FILL_OGROUPS
 #define x_ouser    PROC_FILL_OUSERS
 #define x_supgrp   PROC_FILL_SUPGRP
-   // placed here so an 'f' prefix wouldn't make 'em first
+   // placed here so an 'f' prefix wouldn't put at/near 1st
 #define z_autogrp  PROC_FILLAUTOGRP
+#define z_docker   PROC_FILL_DOCKER
 
 typedef void (*FRE_t)(struct pids_result *);
 typedef int  (*QSR_t)(const void *, const void *, void *);
@@ -447,12 +479,15 @@ static struct {
     { RS(ADDR_STACK_START),  f_stat,     NULL,      QS(ul_int),    0,        TS(ul_int)  },
     { RS(AUTOGRP_ID),        z_autogrp,  NULL,      QS(s_int),     0,        TS(s_int)   },
     { RS(AUTOGRP_NICE),      z_autogrp,  NULL,      QS(s_int),     0,        TS(s_int)   },
+    { RS(CAPS_PERMITTED),    f_status,   FF(str),   QS(str),       0,        TS(str)     },
     { RS(CGNAME),            x_cgroup,   FF(str),   QS(str),       0,        TS(str)     },
     { RS(CGROUP),            x_cgroup,   FF(str),   QS(str),       0,        TS(str)     },
     { RS(CGROUP_V),          v_cgroup,   FF(strv),  QS(strv),      0,        TS(strv)    },
     { RS(CMD),               f_either,   FF(str),   QS(str),       0,        TS(str)     },
     { RS(CMDLINE),           x_cmdline,  FF(str),   QS(str),       0,        TS(str)     },
     { RS(CMDLINE_V),         v_arg,      FF(strv),  QS(strv),      0,        TS(strv)    },
+    { RS(DOCKER_ID),         z_docker,   NULL,      QS(str),       0,        TS(str)     }, // freefunc NULL w/ cached string
+    { RS(DOCKER_ID_64),      z_docker,   NULL,      QS(str),       0,        TS(str)     }, // freefunc NULL w/ cached string
     { RS(ENVIRON),           x_environ,  FF(str),   QS(str),       0,        TS(str)     },
     { RS(ENVIRON_V),         v_env,      FF(strv),  QS(strv),      0,        TS(strv)    },
     { RS(EXE),               f_exe,      FF(str),   QS(str),       0,        TS(str)     },
@@ -518,6 +553,7 @@ static struct {
     { RS(NS_UTS),            f_ns,       NULL,      QS(ul_int),    0,        TS(ul_int)  },
     { RS(OOM_ADJ),           f_oom,      NULL,      QS(s_int),     0,        TS(s_int)   },
     { RS(OOM_SCORE),         f_oom,      NULL,      QS(s_int),     0,        TS(s_int)   },
+    { RS(OPEN_FILES),        f_fds,      NULL,      QS(s_int),     0,        TS(s_int)   },
     { RS(PRIORITY),          f_stat,     NULL,      QS(s_int),     0,        TS(s_int)   },
     { RS(PRIORITY_RT),       f_stat,     NULL,      QS(s_int),     0,        TS(s_int)   },
     { RS(PROCESSOR),         f_stat,     NULL,      QS(s_int),     0,        TS(s_int)   },
@@ -525,6 +561,7 @@ static struct {
     { RS(RSS),               f_stat,     NULL,      QS(ul_int),    0,        TS(ul_int)  },
     { RS(RSS_RLIM),          f_stat,     NULL,      QS(ul_int),    0,        TS(ul_int)  },
     { RS(SCHED_CLASS),       f_stat,     NULL,      QS(s_int),     0,        TS(s_int)   },
+    { RS(SCHED_CLASSSTR),    f_stat,     NULL,      QS(str),       0,        TS(str)     }, // freefunc NULL w/ cached string
     { RS(SD_MACH),           f_systemd,  FF(str),   QS(str),       0,        TS(str)     },
     { RS(SD_OUID),           f_systemd,  FF(str),   QS(str),       0,        TS(str)     },
     { RS(SD_SEAT),           f_systemd,  FF(str),   QS(str),       0,        TS(str)     },
@@ -610,10 +647,11 @@ enum pids_item PIDS_logical_end = MAXTABLE(Item_table);
 
 //#undef f_either                 // needed later
 #undef f_exe
+#undef f_fds
 #undef f_grp
 #undef f_io
 #undef f_login
-#undef f_lxc
+//#undef f_lxc                    // needed later
 #undef f_ns
 #undef f_oom
 #undef f_smaps
@@ -632,6 +670,7 @@ enum pids_item PIDS_logical_end = MAXTABLE(Item_table);
 #undef x_ouser
 #undef x_supgrp
 #undef z_autogrp
+//#undef z_docker                 // needed later
 
 
 // ___ History Support Private Functions ||||||||||||||||||||||||||||||||||||||
@@ -850,6 +889,33 @@ static void pids_unref_rpthash (
 #undef HHASH_SIZE
 
 
+// ___ Unique/Specialized Private Function(s) |||||||||||||||||||||||||||||||||
+
+        /*
+         * This routine periodically invokes the garbage collection services
+         * embedded in 'lxc' and 'docker' container extraction functions. It
+         * exists in case a library caller (like top) is kept running for an
+         * extended period of time (perhaps weeks or months). In such a case
+         * containers long since disappeared would otherwise be tracked thus
+         * consuming ever more memory while needlessly slowing the searches. */
+static void pids_containers_check (void) {
+ #define oneDAY (60 * 60 * 24)
+    static __thread time_t sav_secs;
+    time_t cur_secs = time(NULL);
+
+    if (!sav_secs)
+       sav_secs = cur_secs;
+    else if (oneDAY <= (cur_secs - sav_secs)) {
+        lxc_containers(NULL, NULL);
+        docker_containers(NULL, NULL);
+        sav_secs = cur_secs;
+    }
+    return;
+ #undef oneDAY
+} // pids_containers_check
+
+
+
 // ___ Standard Private Functions |||||||||||||||||||||||||||||||||||||||||||||
 
 static inline int pids_assign_results (
@@ -1005,6 +1071,7 @@ static inline void pids_libflags_set (
         if (!(info->oldflags & (f_stat | f_status)))
             info->oldflags |= f_stat;
     }
+    info->containers_yes = info->oldflags & (f_lxc | z_docker);
     return;
 } // end: pids_libflags_set
 
@@ -1065,7 +1132,9 @@ static inline int pids_proc_tally (
         case 'R':
             ++counts->running;
             break;
-        case 'D':      // 'D' (disk sleep)
+        case 'D':
+            ++counts->disk_sleep;
+            break;
         case 'S':
             ++counts->sleeping;
             break;
@@ -1416,7 +1485,7 @@ PROCPS_EXPORT struct pids_stack *procps_pids_get (
         struct pids_info *info,
         enum pids_fetch_type which)
 {
-    double up_secs;
+    struct timespec ts;
 
     errno = EINVAL;
     if (info == NULL)
@@ -1444,11 +1513,12 @@ fresh_start:
     }
     errno = 0;
 
-    /* when in a namespace with proc mounted subset=pid,
-       we will be restricted to process information only */
+    if (info->containers_yes)
+        pids_containers_check();
+
     info->boot_tics = 0;
-    if (0 >= procps_uptime(&up_secs, NULL))
-        info->boot_tics = up_secs * info->hertz;
+    if (0 >= clock_gettime(CLOCK_BOOTTIME, &ts))
+        info->boot_tics = (ts.tv_sec + ts.tv_nsec * 1.0e-9) * info->hertz;
 
     if (NULL == info->read_something(info->get_PT, &info->get_proc))
         return NULL;
@@ -1469,7 +1539,7 @@ PROCPS_EXPORT struct pids_fetch *procps_pids_reap (
         struct pids_info *info,
         enum pids_fetch_type which)
 {
-    double up_secs;
+    struct timespec ts;
     int rc;
 
     errno = EINVAL;
@@ -1483,15 +1553,16 @@ PROCPS_EXPORT struct pids_fetch *procps_pids_reap (
         return NULL;
     errno = 0;
 
+    if (info->containers_yes)
+        pids_containers_check();
+
     if (!pids_oldproc_open(&info->fetch_PT, info->oldflags))
         return NULL;
     info->read_something = which ? readeither : readproc;
 
-    /* when in a namespace with proc mounted subset=pid,
-       we will be restricted to process information only */
     info->boot_tics = 0;
-    if (0 >= procps_uptime(&up_secs, NULL))
-        info->boot_tics = up_secs * info->hertz;
+    if (0 >= clock_gettime(CLOCK_BOOTTIME, &ts))
+        info->boot_tics = (ts.tv_sec + ts.tv_nsec * 1.0e-9) * info->hertz;
 
     rc = pids_stacks_fetch(info);
 
@@ -1569,7 +1640,7 @@ PROCPS_EXPORT struct pids_fetch *procps_pids_select (
         enum pids_select_type which)
 {
     unsigned ids[FILL_ID_MAX + 1];
-    double up_secs;
+    struct timespec ts;
     int rc;
 
     errno = EINVAL;
@@ -1586,6 +1657,9 @@ PROCPS_EXPORT struct pids_fetch *procps_pids_select (
         return NULL;
     errno = 0;
 
+    if (info->containers_yes)
+        pids_containers_check();
+
     // this zero delimiter is really only needed with PIDS_SELECT_PID
     memcpy(ids, these, sizeof(unsigned) * numthese);
     ids[numthese] = 0;
@@ -1594,11 +1668,9 @@ PROCPS_EXPORT struct pids_fetch *procps_pids_select (
         return NULL;
     info->read_something = (which & PIDS_FETCH_THREADS_TOO) ? readeither : readproc;
 
-    /* when in a namespace with proc mounted subset=pid,
-       we will be restricted to process information only */
     info->boot_tics = 0;
-    if (0 >= procps_uptime(&up_secs, NULL))
-        info->boot_tics = up_secs * info->hertz;
+    if (0 >= clock_gettime(CLOCK_BOOTTIME, &ts))
+        info->boot_tics = (ts.tv_sec + ts.tv_nsec * 1.0e-9) * info->hertz;
 
     rc = pids_stacks_fetch(info);
 
@@ -1676,7 +1748,6 @@ PROCPS_EXPORT struct pids_result *xtra_pids_val (
         int relative_enum,
         const char *typestr,
         const struct pids_stack *stack,
-        struct pids_info *info,
         const char *file,
         int lineno)
 {
@@ -1696,5 +1767,4 @@ PROCPS_EXPORT struct pids_result *xtra_pids_val (
         fprintf(stderr, "%s line %d: was %s, expected %s\n", file, lineno, typestr, str);
     }
     return &stack->head[relative_enum];
-    (void)info;
 } // end: xtra_pids_val

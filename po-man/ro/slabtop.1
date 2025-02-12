@@ -16,34 +16,51 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH SLABTOP 1 11.03.2021 procps\-ng "Comenzi utilizator"
+.TH SLABTOP 1 26.12.2023 procps\-ng 
 .SH NUME
 slabtop \- afișează în timp real informațiile din zona de prestocare a
 memoriei „slab” din nucleu
 .SH REZUMAT
-\fBslabtop\fP [\fIopțiuni\fP]
+\fBslabtop\fP [\fIopțiune\fP .\|.\|.]
 .SH DESCRIERE
 \fBslabtop\fP afișează în timp real informații detaliate din zona de prestocare
-a memoriei „slab” din nucleu.  Afișează o listă cu principale zone de
+a memoriei „slab” din nucleu. Afișează o listă cu principale zone de
 prestocare a memoriei, sortate după unul dintre criteriile de sortare
 enumerate. De asemenea, afișează un antet de statistici plin cu informații
 despre stratul „slab” (obiecte alocate nucleului).
 .SH OPȚIUNI
-Invocarea normală a lui \fBslabtop\fP nu necesită nicio opțiune.
-Comportamentul, totuși, poate fi ajustat prin specificarea uneia sau a mai
-multora dintre următoarele opțiuni:
+Invocarea normală a lui \fBslabtop\fP nu necesită nicio
+opțiune. Comportamentul, totuși, poate fi ajustat prin specificarea uneia
+sau a mai multora dintre următoarele opțiuni:
 .TP 
 \fB\-d\fP, \fB\-\-delay\fP=\fIN\fP
-Reîmprospătează afișajul la fiecare \fIn\fP secunde.  În mod implicit,
-\fBslabtop\fP reîmprospătează afișajul la fiecare trei secunde.  Pentru a ieși
-din program, apăsați \fBq\fP.  Această opțiune nu poate fi combinată cu
-opțiunea \fB\-o\fP.
+Reîmprospătează afișajul la fiecare \fIn\fP secunde. În mod implicit,
+\fBslabtop\fP reîmprospătează afișajul la fiecare trei secunde. Pentru a ieși
+din program, apăsați \fBq\fP. Această opțiune nu poate fi combinată cu opțiunea
+\fB\-o\fP.
 .TP 
 \fB\-s\fP, \fB\-\-sort\fP=\fIS\fP
 Sortați după \fIS\fP, unde \fIS\fP este unul dintre criteriile de sortare.
 .TP 
 \fB\-o\fP, \fB\-\-once\fP
 Afișează ieșirea o dată și apoi iese.
+.TP 
+\fB\-\-human\fP
+Afișează dimensiunile de „slab” scalate automat la cea mai scurtă unitate de
+trei cifre și afișează unitățile de măsură în rezultatul de la iețire. Sunt
+utilizate următoarele unități.
+.sp
+.nf
+  B = octeți
+  Ki = kibiocteți
+  Mi = mebiocteți
+  Gi = gibiocteți
+  Ti = tebiocteți
+  Pi = pebiocteți
+.fi
+.sp
+.TP 
+Dacă această opțiune nu este utilizată, dimensiunile „slab”\-urilor vor fi afișate în Kio.
 .TP 
 \fB\-V\fP, \fB\-\-version\fP
 Afișează informațiile despre versiune și iese.
@@ -53,7 +70,7 @@ Afișează informațiile de utilizare și iese.
 .SH "CRITERIILE DE SORTARE"
 Următoarele sunt criterii de sortare valide utilizate pentru a sorta zonele
 de prestocare «slab» individuale și, prin urmare, pentru a determina care
-sunt zonele de prestocare «slab» „principale” de afișat.  Criteriul implicit
+sunt zonele de prestocare «slab» „principale” de afișat. Criteriul implicit
 de sortare este sortarea după numărul de obiecte ("o").
 .PP
 Criteriile de sortare pot fi modificate și în timp ce \fBslabtop\fP rulează
@@ -74,7 +91,7 @@ u	utilizarea zonei de prestocare	USE
 .TE
 .SH COMENZI
 \fBslabtop\fP acceptă comenzi de la tastatură de la utilizator în timpul
-utilizării.  Sunt acceptate următoarele.  În cazul literelor, ambele tipuri
+utilizării. Sunt acceptate următoarele. În cazul literelor, ambele tipuri
 (majuscule + minuscule) sunt acceptate.
 .PP
 Fiecare dintre caracterele de sortare valide sunt de asemenea acceptate,
@@ -93,11 +110,11 @@ informații despre „slab”
 \fBfree\fP(1), \fBps\fP(1), \fBtop\fP(1), \fBvmstat\fP(8)
 .SH NOTE
 În prezent, \fBslabtop\fP necesită un nucleu 2.4 sau mai recent (în special, o
-versiune 1.1 sau mai recentă a \fI/proc/slabinfo\fP).  Nucleul 2.2 ar trebui să
+versiune 1.1 sau mai recentă a \fI/proc/slabinfo\fP). Nucleul 2.2 ar trebui să
 fie acceptat în viitor.
 .PP
 Antetul statistic \fBslabtop\fP urmărește câți octeți de „slabs” sunt utilizați
-și nu este o măsură a memoriei fizice.  Câmpul „Slab” din fișierul
+și nu este o măsură a memoriei fizice. Câmpul „Slab” din fișierul
 \fI/proc/meminfo\fP urmărește informații despre memoria fizică „slab”
 utilizate.
 .PP
@@ -112,5 +129,5 @@ Scris de Chris Rivera și Robert Love.
 \fBslabtop\fP a fost inspirat de scriptul perl al lui Martin Bligh, \fBvmtop\fP.
 .SH "RAPORTAREA ERORILOR"
 Trimiteți rapoartele de eroare la
-.UR procps@freelists.org
-.UE
+.MT procps@freelists.org
+.ME .

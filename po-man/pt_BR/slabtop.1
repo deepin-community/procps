@@ -16,11 +16,11 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH SLABTOP 1 2021\-03\-11 procps\-ng "Comandos de usuário"
+.TH SLABTOP 1 2023\-12\-26 procps\-ng 
 .SH NOME
 slabtop \- exibe informações de cache de slabs do kernel em tempo real
 .SH SINOPSE
-\fBslabtop\fP [\fIopções\fP]
+\fBslabtop\fP [\fIoption\fP .\|.\|.]
 .SH DESCRIÇÃO
 \fBslabtop\fP exibe informações detalhadas do cache de slabs do kernel em tempo
 real. Ele exibe uma listagem dos caches superiores ordenados por um dos
@@ -40,6 +40,22 @@ Ordena por \fIS\fP, sendo \fIS\fP um dos critérios de ordem.
 .TP 
 \fB\-o\fP, \fB\-\-once\fP
 Exige a saída uma vez e, então, sai.
+.TP 
+\fB\-\-human\fP
+Show slab sizes automatically scaled to shortest three digit unit and
+display the units of print out.  Following units are used.
+.sp
+.nf
+  B = bytes
+  Ki = kibibyte
+  Mi = mebibyte
+  Gi = gibibyte
+  Ti = tebibyte
+  Pi = pebibyte
+.fi
+.sp
+.TP 
+If this flag is not used, the slab sizes will be shown in KiB.
 .TP 
 \fB\-V\fP, \fB\-\-version\fP
 Exibe informação da versão e sai.
@@ -105,6 +121,6 @@ Escrito porChris Rivera e Robert Love.
 .PP
 \fBslabtop\fP foi inspirado no script perl de Martin Bligh, \fBvmtop\fP.
 .SH "RELATANDO ERROS"
-Por favor, envie relatórios de erros para
-.UR procps@freelists.org
-.UE
+Please send bug reports to
+.MT procps@freelists.org
+.ME .

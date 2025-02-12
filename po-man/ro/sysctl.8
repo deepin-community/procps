@@ -1,5 +1,5 @@
 .\"
-.\" Copyright (c) 2011-2023 Craig Small <csmall@dropbear.xyz>
+.\" Copyright (c) 2011-2024 Craig Small <csmall@dropbear.xyz>
 .\" Copyright (c) 2013-2023 Jim Warner <james.warner@comcast.net>
 .\" Copyright (c) 2011-2012 Sami Kerola <kerolasa@iki.fi>
 .\" Copyright (c) 2004-2006 Albert Cahalan
@@ -16,28 +16,29 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH SYSCTL 8 19.08.2023 procps\-ng "Administrare sistem"
+.TH SYSCTL 8 19.07.2024 procps\-ng 
 .SH NUME
 sysctl \- configurează parametrii nucleului în timpul rulării
 .SH REZUMAT
-\fBsysctl\fP [\fIopțiuni\fP] [\fIvariabilă\fP[\fB=\fP\fIvaloare\fP]] [...]
-.br
-\fBsysctl \-p\fP [\fIfișier\fP sau \fIexp_reg\fP] [...]
+\fBsysctl\fP [\fIopțiune\fP .\|.\|.\&] \fIvariabilă\fP[\fB=\fP\fIvaloaree\fP] .\|.\|.
+.P
+\fBsysctl \-p\fP \fIfișier\-sau\-exp_reg\fP .\|.\|.
 .SH DESCRIERE
 \fBsysctl\fP este folosit pentru a modifica parametrii nucleului în timpul
-rulării.  Parametrii disponibili sunt cei enumerați în \fI/proc/sys/\fP.
-Procfs este necesar pentru suportul \fBsysctl\fP în Linux.  Puteți folosi
-\fBsysctl\fP atât pentru a citi, cât și pentru a scrie date \fIsysctl\fP.
+rulării. Parametrii disponibili sunt cei enumerați în \fI/proc/sys/\fP. Procfs
+este necesar pentru suportul \fBsysctl\fP în Linux.  Puteți folosi \fBsysctl\fP
+atât pentru a citi, cât și pentru a scrie date \fIsysctl\fP.
 .SH PARAMETRI
 .TP 
 \fIvariabilă\fP
-Numele unei chei din care să citiți. Un exemplu este „kernel.ostype”.
-Separatorul „/” este de asemenea acceptat în locul unui „.”.
+Numele unei chei din care să citiți. Un exemplu este
+„kernel.ostype”. Separatorul „/” este de asemenea acceptat în locul unui
+„.”.
 .TP 
 \fIvariabilă\fP=\fIvaloare\fP
 Pentru a configura o cheie, utilizați forma \fIvariabilă\fP=\fIvaloare\fP unde
 \fIvariabilă\fP este cheia și \fIvaloare\fP este valoarea la care să o
-configurați.  Dacă valoarea conține ghilimele sau caracterele care sunt
+configurați. Dacă valoarea conține ghilimele sau caracterele care sunt
 analizate de shell, poate fi necesar să includeți valoarea între ghilimele
 duble.
 .TP 
@@ -50,7 +51,7 @@ Utilizați această opțiune pentru a ignora erorile legate de cheile
 necunoscute.
 .TP 
 \fB\-N\fP, \fB\-\-names\fP
-Utilizați această opțiune pentru a afișa numai numele.  Poate fi util cu
+Utilizați această opțiune pentru a afișa numai numele. Poate fi util cu
 shell\-uri care au o completare programabilă.
 .TP 
 \fB\-q\fP, \fB\-\-quiet\fP
@@ -63,14 +64,15 @@ dacă acestea nu pot fi analizate în acest mod.
 .TP 
 \fB\-p\fP[\fIFIȘIER\fP], \fB\-\-load\fP[=\fIFIȘIER\fP]
 Încărcați configurările \fIsysctl\fP din fișierul specificat sau
-\fI/etc/sysctl.conf\fP dacă nu este specificat niciunul.  Specificarea „\-” ca
-nume de fișier înseamnă citirea datelor de la intrarea standard.  Utilizarea
+\fI/etc/sysctl.conf\fP dacă nu este specificat niciunul. Specificarea „\-” ca
+nume de fișier înseamnă citirea datelor de la intrarea standard. Utilizarea
 acestei opțiuni va însemna că argumentele pentru \fBsysctl\fP sunt fișiere,
-care sunt citite în ordinea în care sunt specificate.  Argumentul fișier
+care sunt citite în ordinea în care sunt specificate. Argumentul fișier
 poate fi specificat ca expresie regulată.
 .TP 
 \fB\-a\fP, \fB\-\-all\fP
-Afișează toate valorile disponibile în prezent.
+Afișează toate valorile disponibile în prezent, cu excepția parametrilor
+depreciați și interziși.
 .TP 
 \fB\-\-deprecated\fP
 Include parametrii învechiți în lista cu valori \fB\-\-all\fP.
@@ -79,11 +81,12 @@ Include parametrii învechiți în lista cu valori \fB\-\-all\fP.
 Afișează valoarea fără linie nouă.
 .TP 
 \fB\-\-system\fP
-Încarcă configurările din toate fișierele de configurare a sistemului.
-Consultați secțiunea \fBPRECEDENȚA FIȘIERELOR DE SISTEM\fP de mai jos.
+Încarcă configurările din toate fișierele de configurare a
+sistemului. Consultați secțiunea \fBPRECEDENȚA FIȘIERELOR DE SISTEM\fP de mai
+jos.
 .TP 
 \fB\-r\fP, \fB\-\-pattern\fP \fImodel\fP
-Aplică doar configurările care se potrivesc cu \fImodel\fP.  Opțiunea
+Aplică doar configurările care se potrivesc cu \fImodel\fP. Opțiunea
 \fI\-\-pattern\fP folosește sintaxa extinsă a expresiei regulate.
 .TP 
 \fB\-A\fP
@@ -109,29 +112,60 @@ Afișează acest mesaj de ajutor.
 .TP 
 \fB\-V\fP, \fB\-\-version\fP
 Afișează informațiile despre versiune și iese.
-.SH "PRECEDENȚA FIȘIERELOR DE SISTEM"
+.SH FIȘIERE
+.TS
+Li.
+/proc/sys
+/etc/sysctl.d/*.conf
+/run/sysctl.d/*.conf
+/usr/local/lib/sysctl.d/*.conf
+/usr/lib/sysctl.d/*.conf
+/lib/sysctl.d/*.conf
+/etc/sysctl.conf
+.TE
+.SH NOTE
+.SS "Prioritatea fișierelor de sistem"
 Când se utilizează opțiunea \fB\-\-system\fP, \fBsysctl\fP va citi fișierele din
-directoarele din următoarea listă, în ordinea dată de sus în jos.  Odată ce
+directoarele din următoarea listă, în ordinea dată de sus în jos. Odată ce
 un fișier cu un anumit nume de fișier este încărcat, orice fișier cu același
 nume din directoarele ulterioare este ignorat.
-
+.P
+.TS
+Li.
 /etc/sysctl.d/*.conf
-.br
 /run/sysctl.d/*.conf
-.br
 /usr/local/lib/sysctl.d/*.conf
-.br
 /usr/lib/sysctl.d/*.conf
-.br
 /lib/sysctl.d/*.conf
-.br
-/etc/sysctl.conf
-
+.TE
+.P
 Toate fișierele de configurare sunt sortate în ordine lexicografică,
 indiferent de directorul în care se află . Fișierele de configurare pot fi
 fie complet înlocuite (prin a avea un nou fișier de configurare cu același
 nume într\-un director cu prioritate mai mare), fie parțial înlocuite (prin a
 avea un fișier de configurare care este ordonat ulterior).
+.P
+Fișierul \fI/etc/sysctl.conf\fP este citit ultimul, ceea ce înseamnă că poate
+înlocui/anula orice parametri definiți anterior în fișierele din
+directoarele enumerate.
+
+.SS "Parametri învechiți"
+Parametrii \fBbase_reachable_time\fP și \fBretrans_time\fP sunt învechiți. Comanda
+\fBsysctl\fP nu permite modificarea valorilor acestor parametri. Utilizatorii
+care insistă să folosească interfețe de nucleu depreciate ar trebui să
+introducă valori în sistemul de fișiere \fB/proc\fP prin alte mijloace.  De
+exemplu:
+.PP
+echo 256 > /proc/sys/net/ipv6/neigh/eth0/base_reachable_time
+
+.SS "Parametri interziși"
+Anumiți parametri ai nucleului nu trebuie citiți din cauza efectelor
+secundare și vor fi omiși de \fBsysctl\fP la utilizarea opțiunii \fB\-\-all\fP.
+.TP 
+\fBstat_refresh\fP
+Acest parametru nu returnează nicio valoare, dar elimină statisticile vm
+per\-cpu.
+
 .SH EXEMPLE
 /sbin/sysctl \-a
 .br
@@ -148,35 +182,9 @@ avea un fișier de configurare care este ordonat ulterior).
 /sbin/sysctl \-a \-\-pattern 'net.ipv4.conf.(eth|wlan)0.arp'
 .br
 /sbin/sysctl \-\-pattern '\[char94]net.ipv6' \-\-system
-.SH "PARAMETRI ÎNVECIȚI"
-Parametrii \fBbase_reachable_time\fP și \fBretrans_time\fP sunt învechiți.
-Comanda \fBsysctl\fP nu permite modificarea valorilor acestor parametri.
-Utilizatorii care insistă să folosească interfețe de nucleu depreciate ar
-trebui să introducă valori în sistemul de fișiere \fB/proc\fP prin alte
-mijloace.  De exemplu:
-.PP
-echo 256 > /proc/sys/net/ipv6/neigh/eth0/base_reachable_time
-.SH FIȘIERE
-\fI/proc/sys\fP
-.br
-\fI/etc/sysctl.d/*.conf\fP
-.br
-\fI/run/sysctl.d/*.conf\fP
-.br
-\fI/usr/local/lib/sysctl.d/*.conf\fP
-.br
-\fI/usr/lib/sysctl.d/*.conf\fP
-.br
-\fI/lib/sysctl.d/*.conf\fP
-.br
-\fI/etc/sysctl.conf\fP
 .SH "CONSULTAȚI ȘI"
 \fBproc\fP(5), \fBsysctl.conf\fP(5), \fBregex\fP(7)
-.SH AUTOR
-.UR staikos@0wned.org
-George Staikos
-.UE
 .SH "RAPORTAREA ERORILOR"
 Trimiteți rapoartele de eroare la
-.UR procps@freelists.org
-.UE
+.MT procps@freelists.org
+.ME .
