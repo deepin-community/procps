@@ -1,3 +1,9 @@
+procps (2:4.0.5-1deepin1) unstable; urgency=medium
+
+  * fix mem leak.
+
+ -- xinpeng.wang <wangxinpeng@uniontech.com>  Thu, 27 Mar 2025 16:47:30 +0800
+
 procps (2:4.0.5-1) unstable; urgency=medium
 
   * New upstream version
