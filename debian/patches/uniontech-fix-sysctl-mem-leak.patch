@@ -1,0 +1,70 @@
+Index: deepin-procps/src/sysctl.c
+===================================================================
+--- deepin-procps.orig/src/sysctl.c	2025-03-27 16:21:15.350473560 +0800
++++ deepin-procps/src/sysctl.c	2025-03-27 16:37:45.588344669 +0800
+@@ -151,7 +151,7 @@
+ 	}
+ }
+ 
+-#if 0  // avoid '-Wunused-function' warning
++
+ static void setting_free(SysctlSetting *s) {
+     if (!s)
+ 	return;
+@@ -161,7 +161,7 @@
+     free(s->value);
+     free(s);
+ }
+-#endif
++
+ 
+ static SysctlSetting *setting_new(
+ 	const char *key,
+@@ -198,6 +198,24 @@
+     return s;
+ }
+ 
++static void settinglist_free(SettingList *l) {
++    if (!l) {
++        return;
++    }
++
++    SysctlSetting *current = l->head;
++    SysctlSetting *next;
++
++    while (current != NULL) {
++        next = current->next;
++        setting_free(current);
++        current = next;
++    }
++
++    l->head = NULL;
++    l->tail = NULL;
++}
++
+ static void settinglist_add(SettingList *l, SysctlSetting *s) {
+     SysctlSetting *old_tail;
+ 
+@@ -917,6 +935,13 @@
+ 	return rc;
+ }
+ 
++static void cleanup_settinglist(SettingList **l) {
++    if (*l) {
++        settinglist_free(*l);
++        free(*l);
++    }
++}
++
+ /*
+  * Main...
+  */
+@@ -929,7 +954,7 @@
+ 	int c;
+ 	int rc = 0;
+ 	const char *preloadfile = NULL;
+-    SettingList *setlist;
++    __attribute__((__cleanup__(cleanup_settinglist))) SettingList *setlist = NULL;
+ 
+ 	enum {
+ 		DEPRECATED_OPTION = CHAR_MAX + 1,
