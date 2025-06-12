@@ -1,0 +1,240 @@
+Index: procps_commit/src/ps/common.h
+===================================================================
+--- procps_commit.orig/src/ps/common.h
++++ procps_commit/src/ps/common.h
+@@ -329,7 +329,15 @@ makEXT(noop)
+ #define FM_P 0x0010 /* -P */
+ #define FM_M 0x0020 /* -M */
+ //#define FM_T 0x0040 /* -T */
++
++
++
++
+ #define FM_F 0x0080 /* -F */  /* -F also sets the regular -f flags */
++#define FM_UsecUser 0x0100 /* --usec-user */
++#define FM_UsecProc 0x0200 /* --usec-proc */
++#define FM_UsecSlevel 0x0400 /* --usec-slevel */
++#define FM_UsecIlevel 0x0800 /* --user-ilevel */
+ 
+ /* sorting & formatting */
+ /* U,B,G is Unix,BSD,Gnu and then there is the option itself */
+Index: procps_commit/src/ps/output.c
+===================================================================
+--- procps_commit.orig/src/ps/output.c
++++ procps_commit/src/ps/output.c
+@@ -1537,6 +1537,107 @@ setREL1(ID_TGID)
+   return len;
+ }
+ 
++static int pr_usecuser(char *restrict const outbuf, const proc_t *restrict const pp){
++    static int (*getpid_usec_user)(pid_t, char*, int);
++    static int tried_usec_load;
++    size_t len;
++
++    if (!getpid_usec_user && !tried_usec_load){
++        void *handle = dlopen("libusec.so", RTLD_NOW);
++        if(handle){
++            getpid_usec_user = dlsym(handle, "getpid_usec_user");
++            if(dlerror())
++                getpid_usec_user = 0;
++        }
++    }
++
++    if (getpid_usec_user) {
++        len = getpid_usec_user(rSv(ID_PID, s_int, pp), outbuf, OUTBUF_SIZE);
++    } else {
++        outbuf[0] = '-';
++        outbuf[1] = '\0';
++        len = 1;
++    }
++
++    return len;
++}
++
++
++static int pr_usecproc(char *restrict const outbuf, const proc_t *restrict const pp){
++    static int (*getpid_usec_proc)(pid_t, char*, int);
++    static int tried_usec_load;
++    size_t len;
++
++    if (!getpid_usec_proc && !tried_usec_load){
++        void *handle = dlopen("libusec.so", RTLD_NOW);
++        if(handle){
++            getpid_usec_proc = dlsym(handle, "getpid_usec_proc");
++            if(dlerror())
++                getpid_usec_proc = 0;
++        }
++    }
++
++    if (getpid_usec_proc) {
++        len = getpid_usec_proc(rSv(ID_PID, s_int, pp), outbuf, OUTBUF_SIZE);
++    } else {
++        outbuf[0] = '-';
++        outbuf[1] = '\0';
++        len = 1;
++    }
++
++    return len;
++}
++
++static int pr_usecilevel(char *restrict const outbuf, const proc_t *restrict const pp){
++    static int (*getpid_usec_ilevel)(pid_t, char*, int);
++    static int tried_usec_load;
++    size_t len;
++
++    if (!getpid_usec_ilevel && !tried_usec_load){
++        void *handle = dlopen("libusec.so", RTLD_NOW);
++        if(handle){
++            getpid_usec_ilevel = dlsym(handle, "getpid_usec_ilevel");
++            if(dlerror())
++                getpid_usec_ilevel = 0;
++        }
++    }
++
++    if (getpid_usec_ilevel) {
++        len = getpid_usec_ilevel(rSv(ID_PID, s_int, pp), outbuf, OUTBUF_SIZE);
++    } else {
++        outbuf[0] = '-';
++        outbuf[1] = '\0';
++        len = 1;
++    }
++
++    return len;
++}
++
++static int pr_usecslevel(char *restrict const outbuf, const proc_t *restrict const pp){
++    static int (*getpid_usec_slevel)(pid_t, char*, int);
++    static int tried_usec_load;
++    size_t len;
++
++    if (!getpid_usec_slevel && !tried_usec_load){
++        void *handle = dlopen("libusec.so", RTLD_NOW);
++        if(handle){
++            getpid_usec_slevel = dlsym(handle, "getpid_usec_slevel");
++            if(dlerror())
++                getpid_usec_slevel = 0;
++        }
++    }
++
++    if (getpid_usec_slevel) {
++        len = getpid_usec_slevel(rSv(ID_PID, s_int, pp), outbuf, OUTBUF_SIZE);
++    } else {
++        outbuf[0] = '-';
++        outbuf[1] = '\0';
++        len = 1;
++    }
++
++    return len;
++}
++
+ /************************ Linux miscellaneous ***************************/
+ static int pr_agid(char *restrict const outbuf, const proc_t *restrict const pp){
+ setREL1(AUTOGRP_ID)
+@@ -1912,6 +2013,10 @@ static const format_struct format_array[
+ {"unit",      "UNIT",    pr_sd_unit,       PIDS_SD_UNIT,            31,    LNX,  ET|LEFT},
+ {"upr",       "UPR",     pr_nop,           PIDS_noop,                3,    BSD,  TO|RIGHT}, /*usrpri*/
+ {"uprocp",    "UPROCP",  pr_nop,           PIDS_noop,                8,    BSD,  AN|RIGHT},
++{"usec-ilevel","USEC-ILEVEL",pr_usecilevel, PIDS_ID_TGID,            31,    SGI,  ET|LEFT},
++{"usec-proc", "USEC-PROC",pr_usecproc,     PIDS_ID_TGID,             23,    SGI,  ET|LEFT},
++{"usec-slevel","USEC-SLEVEL",pr_usecslevel, PIDS_ID_TGID,            31,    SGI,  ET|LEFT},
++{"usec-user", "USEC-USER",pr_usecuser,     PIDS_ID_TGID,            31,    SGI,  ET|LEFT},
+ {"user",      "USER",    pr_euser,         PIDS_ID_EUSER,            8,    U98,  ET|USER},  /* BSD n forces this to UID */
+ {"userns",    "USERNS",  pr_userns,        PIDS_NS_USER,            10,    LNX,  ET|RIGHT},
+ {"usertime",  "USER",    pr_nop,           PIDS_noop,                4,    DEC,  ET|RIGHT},
+@@ -1935,7 +2040,7 @@ static const format_struct format_array[
+ {"wname",     "WCHAN",   pr_wchan,         PIDS_WCHAN_NAME,          6,    SGI,  TO|WCHAN}, /* opposite of nwchan */
+ {"wops",      "WOPS",    pr_wops,          PIDS_IO_WRITE_OPS,        5,    LNX,  TO|RIGHT},
+ {"xstat",     "XSTAT",   pr_nop,           PIDS_noop,                5,    BSD,  AN|RIGHT},
+-{"zone",      "ZONE",    pr_context,       PIDS_ID_TGID,            31,    SUN,  ET|LEFT},  // Solaris zone == Linux context?
++{"zone",      "ZONE",    pr_context,       PIDS_ID_PID,            31,    SUN,  ET|LEFT},  // Solaris zone == Linux context?
+ {"zoneid",    "ZONEID",  pr_nop,           PIDS_noop,               31,    SUN,  ET|RIGHT}, // Linux only offers context names
+ {"~",         "-",       pr_nop,           PIDS_noop,                1,    LNX,  AN|RIGHT}  /* NULL would ruin alphabetical order */
+ };
+Index: procps_commit/src/ps/parser.c
+===================================================================
+--- procps_commit.orig/src/ps/parser.c
++++ procps_commit/src/ps/parser.c
+@@ -836,6 +836,10 @@ static const char *parse_gnu_option(void
+   {"signames",      &&case_signames},
+   {"sort",          &&case_sort},
+   {"tty",           &&case_tty},
++  {"usec-ilevel",   &&case_usec_ilevel},
++  {"usec-proc",     &&case_usec_proc},
++  {"usec-slevel",   &&case_usec_slevel},
++  {"usec-user",     &&case_usec_user},
+   {"user",          &&case_user},        /* euid */
+   {"version",       &&case_version},
+   {"width",         &&case_width},
+@@ -1041,6 +1045,22 @@ static const char *parse_gnu_option(void
+     trace("--context\n");
+     format_flags |= FF_Fc;
+     return NULL;
++  case_usec_user:
++    trace("--usec-user\n");
++    format_modifiers |= FM_UsecUser;
++    return NULL;
++  case_usec_slevel:
++    trace("--usec-slevel\n");
++    format_modifiers |= FM_UsecSlevel;
++    return NULL;
++  case_usec_ilevel:
++    trace("--usec-ilevel\n");
++    format_modifiers |= FM_UsecIlevel;
++    return NULL;
++  case_usec_proc:
++    trace("--usec-proc\n");
++    format_modifiers |= FM_UsecProc;
++    return NULL;
+ }
+ 
+ /*************** process trailing PIDs  **********************/
+Index: procps_commit/src/ps/sortformat.c
+===================================================================
+--- procps_commit.orig/src/ps/sortformat.c
++++ procps_commit/src/ps/sortformat.c
+@@ -752,6 +752,18 @@ static const char *generate_sysv_list(vo
+   if(format_modifiers & FM_M){
+     PUSH("label");  /* Mandatory Access Control */
+   }
++  if(format_modifiers & FM_UsecUser){
++    PUSH("usec-user");
++  }
++  if(format_modifiers & FM_UsecProc){
++    PUSH("usec-proc");
++  }
++  if(format_modifiers & FM_UsecSlevel){
++    PUSH("usec-slevel");
++  }
++  if(format_modifiers & FM_UsecIlevel){
++    PUSH("usec-ilevel");
++  }
+   return NULL;
+ }
+ 
+@@ -943,6 +955,26 @@ did_lwp:
+       fn->next=format_list;
+       format_list=fn;
+     }
++    if(format_modifiers & FM_UsecUser){
++        fn = do_one_spec("usec-user", NULL);
++        fn->next=format_list;
++        format_list=fn;
++    }
++    if(format_modifiers & FM_UsecProc){
++        fn = do_one_spec("usec-proc", NULL);
++        fn->next=format_list;
++        format_list=fn;
++    }
++    if(format_modifiers & FM_UsecSlevel){
++        fn = do_one_spec("usec-slevel", NULL);
++        fn->next=format_list;
++        format_list=fn;
++    }
++    if(format_modifiers & FM_UsecIlevel){
++        fn = do_one_spec("usec-ilevel", NULL);
++        fn->next=format_list;
++        format_list=fn;
++    }
+     /* Do personality-specific translations not covered by format_flags.
+      * Generally, these only get hit when personality overrides unix output.
+      * That (mostly?) means the Digital and Debian personalities.
